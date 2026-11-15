@@ -1,0 +1,16 @@
+{
+  "name": "meridian-valley",
+  "version": "1.0.0",
+  "synthetic": true,
+  "description": "Meridian Valley — a FICTIONAL district. All assets, coordinates and figures are synthetic. Coordinates are placed near 0°N 0°E deliberately so they cannot be mistaken for a real place.",
+  "bounds": [
+    0.0,
+    0.0,
+    0.12,
+    0.09
+  ],
+  "center": [
+    0.06,
+    0.045
+  ]
+}

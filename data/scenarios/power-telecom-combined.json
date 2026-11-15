@@ -1,0 +1,21 @@
+{
+  "key": "power-telecom-combined",
+  "name": "Combined power and telecom disruption",
+  "synthetic": true,
+  "description": "Northgate Substation trips on a protection fault; 30 minutes later the Central Telephone Exchange suffers an equipment failure.",
+  "horizon_minutes": 4320,
+  "initiating_events": [
+    {
+      "kind": "ASSET_FAILURE",
+      "t_minutes": 0,
+      "asset_code": "SUB-01",
+      "condition": "DAMAGED"
+    },
+    {
+      "kind": "ASSET_FAILURE",
+      "t_minutes": 30,
+      "asset_code": "TEL-HUB",
+      "condition": "DAMAGED"
+    }
+  ]
+}

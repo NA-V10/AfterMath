@@ -1,0 +1,380 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "$defs": {
+      "AssetCategory": {
+        "enum": [
+          "GRID_SUPPLY",
+          "POWER_GENERATION",
+          "SUBSTATION",
+          "POWER_DISTRIBUTION",
+          "HOSPITAL",
+          "TELECOM_HUB",
+          "TELECOM_TOWER",
+          "DATA_CENTER",
+          "EMERGENCY_OPS_CENTER",
+          "FIRE_STATION",
+          "WATER_INTAKE",
+          "WATER_TREATMENT",
+          "WATER_PUMPING",
+          "FUEL_DEPOT",
+          "ROAD_SEGMENT",
+          "BRIDGE",
+          "DEMAND_ZONE"
+        ],
+        "title": "AssetCategory",
+        "type": "string"
+      },
+      "LineStringGeometry": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "LineString",
+            "title": "Type",
+            "type": "string"
+          },
+          "coordinates": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maximum": 180,
+                  "minimum": -180,
+                  "type": "number"
+                },
+                {
+                  "maximum": 90,
+                  "minimum": -90,
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 2,
+            "title": "Coordinates",
+            "type": "array"
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "LineStringGeometry",
+        "type": "object"
+      },
+      "PhysicalCondition": {
+        "enum": [
+          "INTACT",
+          "DEGRADED",
+          "DAMAGED",
+          "DESTROYED"
+        ],
+        "title": "PhysicalCondition",
+        "type": "string"
+      },
+      "PointGeometry": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "Point",
+            "title": "Type",
+            "type": "string"
+          },
+          "coordinates": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "maximum": 180,
+                "minimum": -180,
+                "type": "number"
+              },
+              {
+                "maximum": 90,
+                "minimum": -90,
+                "type": "number"
+              }
+            ],
+            "title": "Coordinates",
+            "type": "array"
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "PointGeometry",
+        "type": "object"
+      },
+      "PolygonGeometry": {
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "const": "Polygon",
+            "title": "Type",
+            "type": "string"
+          },
+          "coordinates": {
+            "items": {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "maximum": 180,
+                    "minimum": -180,
+                    "type": "number"
+                  },
+                  {
+                    "maximum": 90,
+                    "minimum": -90,
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "minItems": 1,
+            "title": "Coordinates",
+            "type": "array"
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "PolygonGeometry",
+        "type": "object"
+      },
+      "RecoveryProfile": {
+        "additionalProperties": false,
+        "description": "What it takes to repair/replace the asset (used from Phase 4).",
+        "properties": {
+          "trade": {
+            "$ref": "#/$defs/Trade"
+          },
+          "crew_size": {
+            "maximum": 20,
+            "minimum": 1,
+            "title": "Crew Size",
+            "type": "integer"
+          },
+          "repair_minutes": {
+            "exclusiveMinimum": 0,
+            "title": "Repair Minutes",
+            "type": "integer"
+          },
+          "replace_minutes": {
+            "exclusiveMinimum": 0,
+            "title": "Replace Minutes",
+            "type": "integer"
+          },
+          "parts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "consumed by a repair",
+            "title": "Parts",
+            "type": "object"
+          },
+          "replace_parts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "consumed by a full replacement",
+            "title": "Replace Parts",
+            "type": "object"
+          },
+          "cost": {
+            "description": "repair cost, synthetic currency units",
+            "minimum": 0,
+            "title": "Cost",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "trade",
+          "crew_size",
+          "repair_minutes",
+          "replace_minutes",
+          "cost"
+        ],
+        "title": "RecoveryProfile",
+        "type": "object"
+      },
+      "Trade": {
+        "enum": [
+          "ELECTRICAL",
+          "TELECOM",
+          "WATER",
+          "CIVIL",
+          "MECHANICAL"
+        ],
+        "title": "Trade",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "code": {
+        "pattern": "^[A-Z]{2,5}-\\d{2,3}$|^[A-Z]{2,5}-[A-Z]{2,5}$",
+        "title": "Code",
+        "type": "string"
+      },
+      "name": {
+        "maxLength": 120,
+        "minLength": 1,
+        "title": "Name",
+        "type": "string"
+      },
+      "category": {
+        "$ref": "#/$defs/AssetCategory"
+      },
+      "geometry": {
+        "discriminator": {
+          "mapping": {
+            "LineString": "#/$defs/LineStringGeometry",
+            "Point": "#/$defs/PointGeometry",
+            "Polygon": "#/$defs/PolygonGeometry"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/PointGeometry"
+          },
+          {
+            "$ref": "#/$defs/LineStringGeometry"
+          },
+          {
+            "$ref": "#/$defs/PolygonGeometry"
+          }
+        ],
+        "title": "Geometry"
+      },
+      "elevation_m": {
+        "anyOf": [
+          {
+            "maximum": 9000,
+            "minimum": -100,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Elevation M"
+      },
+      "physical_condition": {
+        "$ref": "#/$defs/PhysicalCondition",
+        "default": "INTACT"
+      },
+      "criticality": {
+        "maximum": 100,
+        "minimum": 0,
+        "title": "Criticality",
+        "type": "integer"
+      },
+      "capacity": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Capacity"
+      },
+      "capacity_unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Capacity Unit"
+      },
+      "utilization": {
+        "anyOf": [
+          {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Utilization"
+      },
+      "population_served": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Population Served"
+      },
+      "is_source": {
+        "default": false,
+        "title": "Is Source",
+        "type": "boolean"
+      },
+      "backup_power_hours": {
+        "anyOf": [
+          {
+            "maximum": 720,
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Backup Power Hours"
+      },
+      "recovery_profile": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/RecoveryProfile"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "code",
+      "name",
+      "category",
+      "geometry",
+      "criticality"
+    ],
+    "title": "Asset",
+    "type": "object"
+  }
+}

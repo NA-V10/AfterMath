@@ -1,0 +1,2004 @@
+[
+  {
+    "code": "GSP-01",
+    "name": "North Grid Supply Point",
+    "category": "GRID_SUPPLY",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.03,
+        0.086
+      ]
+    },
+    "elevation_m": 62,
+    "physical_condition": "INTACT",
+    "criticality": 85,
+    "capacity": 240,
+    "capacity_unit": "MVA",
+    "utilization": 0.55,
+    "population_served": null,
+    "is_source": true,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 4,
+      "repair_minutes": 720,
+      "replace_minutes": 4320,
+      "parts": {
+        "hv_breaker": 1
+      },
+      "replace_parts": {
+        "power_transformer": 1
+      },
+      "cost": 400000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "External transmission in-feed (north)."
+    }
+  },
+  {
+    "code": "GSP-02",
+    "name": "South Grid Supply Point",
+    "category": "GRID_SUPPLY",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.096,
+        0.006
+      ]
+    },
+    "elevation_m": 48,
+    "physical_condition": "INTACT",
+    "criticality": 85,
+    "capacity": 240,
+    "capacity_unit": "MVA",
+    "utilization": 0.48,
+    "population_served": null,
+    "is_source": true,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 4,
+      "repair_minutes": 720,
+      "replace_minutes": 4320,
+      "parts": {
+        "hv_breaker": 1
+      },
+      "replace_parts": {
+        "power_transformer": 1
+      },
+      "cost": 400000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "External transmission in-feed (south)."
+    }
+  },
+  {
+    "code": "SOL-01",
+    "name": "Hillside Solar Microgrid",
+    "category": "POWER_GENERATION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.01,
+        0.022
+      ]
+    },
+    "elevation_m": 128,
+    "physical_condition": "INTACT",
+    "criticality": 55,
+    "capacity": 2.5,
+    "capacity_unit": "MW",
+    "utilization": 0.6,
+    "population_served": null,
+    "is_source": true,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 360,
+      "replace_minutes": 2880,
+      "parts": {
+        "inverter": 1
+      },
+      "replace_parts": {
+        "inverter": 2,
+        "battery_bank": 1
+      },
+      "cost": 60000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Islanded solar + battery microgrid serving Hillside Village; not grid-connected."
+    }
+  },
+  {
+    "code": "SUB-01",
+    "name": "Northgate Substation",
+    "category": "SUBSTATION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.036,
+        0.071
+      ]
+    },
+    "elevation_m": 38,
+    "physical_condition": "INTACT",
+    "criticality": 82,
+    "capacity": 90,
+    "capacity_unit": "MVA",
+    "utilization": 0.71,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 3,
+      "repair_minutes": 480,
+      "replace_minutes": 4320,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "power_transformer": 1
+      },
+      "cost": 180000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Primary substation for the north-west bank."
+    }
+  },
+  {
+    "code": "SUB-02",
+    "name": "Riverside Substation",
+    "category": "SUBSTATION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.067,
+        0.052
+      ]
+    },
+    "elevation_m": 3.1,
+    "physical_condition": "INTACT",
+    "criticality": 84,
+    "capacity": 80,
+    "capacity_unit": "MVA",
+    "utilization": 0.78,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 3,
+      "repair_minutes": 480,
+      "replace_minutes": 4320,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "power_transformer": 1
+      },
+      "cost": 180000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Sole primary supply to the east bank and the main water works.",
+      "risk": "Low-lying riverside site inside the 4 m floodplain."
+    }
+  },
+  {
+    "code": "SUB-03",
+    "name": "Southfield Substation",
+    "category": "SUBSTATION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.04,
+        0.018
+      ]
+    },
+    "elevation_m": 24,
+    "physical_condition": "INTACT",
+    "criticality": 78,
+    "capacity": 60,
+    "capacity_unit": "MVA",
+    "utilization": 0.52,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 3,
+      "repair_minutes": 480,
+      "replace_minutes": 4320,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "power_transformer": 1
+      },
+      "cost": 180000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Primary substation for the south-west bank; feeds the hospital ring."
+    }
+  },
+  {
+    "code": "SUB-04",
+    "name": "Eastridge Substation",
+    "category": "SUBSTATION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.104,
+        0.04
+      ]
+    },
+    "elevation_m": 52,
+    "physical_condition": "INTACT",
+    "criticality": 74,
+    "capacity": 45,
+    "capacity_unit": "MVA",
+    "utilization": 0.44,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 3,
+      "repair_minutes": 480,
+      "replace_minutes": 4320,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "power_transformer": 1
+      },
+      "cost": 180000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Primary substation for Eastridge heights."
+    }
+  },
+  {
+    "code": "PDN-01",
+    "name": "Northgate West Feeder",
+    "category": "POWER_DISTRIBUTION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.024,
+        0.062
+      ]
+    },
+    "elevation_m": 34,
+    "physical_condition": "INTACT",
+    "criticality": 60,
+    "capacity": 18,
+    "capacity_unit": "MVA",
+    "utilization": 0.66,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 180,
+      "replace_minutes": 720,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "distribution_transformer": 1
+      },
+      "cost": 25000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "PDN-02",
+    "name": "Old Town Feeder",
+    "category": "POWER_DISTRIBUTION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.046,
+        0.054
+      ]
+    },
+    "elevation_m": 26,
+    "physical_condition": "INTACT",
+    "criticality": 66,
+    "capacity": 22,
+    "capacity_unit": "MVA",
+    "utilization": 0.74,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 180,
+      "replace_minutes": 720,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "distribution_transformer": 1
+      },
+      "cost": 25000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "PDN-03",
+    "name": "Riverside East Feeder",
+    "category": "POWER_DISTRIBUTION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.076,
+        0.056
+      ]
+    },
+    "elevation_m": 6.5,
+    "physical_condition": "INTACT",
+    "criticality": 62,
+    "capacity": 20,
+    "capacity_unit": "MVA",
+    "utilization": 0.7,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 180,
+      "replace_minutes": 720,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "distribution_transformer": 1
+      },
+      "cost": 25000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "PDN-04",
+    "name": "Docklands Feeder",
+    "category": "POWER_DISTRIBUTION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.072,
+        0.036
+      ]
+    },
+    "elevation_m": 5.2,
+    "physical_condition": "INTACT",
+    "criticality": 58,
+    "capacity": 16,
+    "capacity_unit": "MVA",
+    "utilization": 0.62,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 180,
+      "replace_minutes": 720,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "distribution_transformer": 1
+      },
+      "cost": 25000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "PDN-05",
+    "name": "Southfield Feeder",
+    "category": "POWER_DISTRIBUTION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.034,
+        0.012
+      ]
+    },
+    "elevation_m": 22,
+    "physical_condition": "INTACT",
+    "criticality": 55,
+    "capacity": 14,
+    "capacity_unit": "MVA",
+    "utilization": 0.5,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 180,
+      "replace_minutes": 720,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "distribution_transformer": 1
+      },
+      "cost": 25000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "PDN-06",
+    "name": "Eastridge Feeder",
+    "category": "POWER_DISTRIBUTION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.099,
+        0.05
+      ]
+    },
+    "elevation_m": 48,
+    "physical_condition": "INTACT",
+    "criticality": 57,
+    "capacity": 15,
+    "capacity_unit": "MVA",
+    "utilization": 0.47,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 180,
+      "replace_minutes": 720,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "distribution_transformer": 1
+      },
+      "cost": 25000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "PDN-07",
+    "name": "Hospital Ring Feeder",
+    "category": "POWER_DISTRIBUTION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.049,
+        0.039
+      ]
+    },
+    "elevation_m": 21,
+    "physical_condition": "INTACT",
+    "criticality": 72,
+    "capacity": 10,
+    "capacity_unit": "MVA",
+    "utilization": 0.41,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 2,
+      "repair_minutes": 180,
+      "replace_minutes": 720,
+      "parts": {
+        "switchgear_kit": 1
+      },
+      "replace_parts": {
+        "distribution_transformer": 1
+      },
+      "cost": 25000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Dedicated alternate feed for Meridian General Hospital from the southern grid."
+    }
+  },
+  {
+    "code": "HOS-01",
+    "name": "Meridian General Hospital",
+    "category": "HOSPITAL",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.043,
+        0.045
+      ]
+    },
+    "elevation_m": 24,
+    "physical_condition": "INTACT",
+    "criticality": 98,
+    "capacity": 420,
+    "capacity_unit": "beds",
+    "utilization": 0.82,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 8,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 3,
+      "repair_minutes": 360,
+      "replace_minutes": 10080,
+      "parts": {
+        "plant_spares": 1
+      },
+      "replace_parts": {
+        "plant_spares": 4
+      },
+      "cost": 90000
+    },
+    "metadata": {
+      "synthetic": true,
+      "services": [
+        "trauma",
+        "ICU",
+        "maternity"
+      ]
+    }
+  },
+  {
+    "code": "HOS-02",
+    "name": "Riverside Community Hospital",
+    "category": "HOSPITAL",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.081,
+        0.046
+      ]
+    },
+    "elevation_m": 7.0,
+    "physical_condition": "INTACT",
+    "criticality": 90,
+    "capacity": 160,
+    "capacity_unit": "beds",
+    "utilization": 0.77,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 4,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 3,
+      "repair_minutes": 360,
+      "replace_minutes": 10080,
+      "parts": {
+        "plant_spares": 1
+      },
+      "replace_parts": {
+        "plant_spares": 4
+      },
+      "cost": 90000
+    },
+    "metadata": {
+      "synthetic": true,
+      "services": [
+        "emergency",
+        "dialysis"
+      ]
+    }
+  },
+  {
+    "code": "HOS-03",
+    "name": "Eastridge Clinic",
+    "category": "HOSPITAL",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.108,
+        0.031
+      ]
+    },
+    "elevation_m": 44,
+    "physical_condition": "INTACT",
+    "criticality": 74,
+    "capacity": 40,
+    "capacity_unit": "beds",
+    "utilization": 0.55,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 12,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 3,
+      "repair_minutes": 360,
+      "replace_minutes": 10080,
+      "parts": {
+        "plant_spares": 1
+      },
+      "replace_parts": {
+        "plant_spares": 4
+      },
+      "cost": 90000
+    },
+    "metadata": {
+      "synthetic": true,
+      "services": [
+        "urgent care"
+      ]
+    }
+  },
+  {
+    "code": "TEL-HUB",
+    "name": "Central Telephone Exchange",
+    "category": "TELECOM_HUB",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.051,
+        0.061
+      ]
+    },
+    "elevation_m": 27,
+    "physical_condition": "INTACT",
+    "criticality": 86,
+    "capacity": 120000,
+    "capacity_unit": "subscribers",
+    "utilization": 0.64,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 6,
+    "recovery_profile": {
+      "trade": "TELECOM",
+      "crew_size": 3,
+      "repair_minutes": 300,
+      "replace_minutes": 2880,
+      "parts": {
+        "telecom_module": 2
+      },
+      "replace_parts": {
+        "telecom_module": 8
+      },
+      "cost": 120000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Core switching and backhaul for every mast in the district."
+    }
+  },
+  {
+    "code": "TEL-01",
+    "name": "Northgate Mast",
+    "category": "TELECOM_TOWER",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.027,
+        0.074
+      ]
+    },
+    "elevation_m": 40,
+    "physical_condition": "INTACT",
+    "criticality": 58,
+    "capacity": 15000,
+    "capacity_unit": "subscribers",
+    "utilization": 0.6,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 3,
+    "recovery_profile": {
+      "trade": "TELECOM",
+      "crew_size": 2,
+      "repair_minutes": 150,
+      "replace_minutes": 1440,
+      "parts": {
+        "telecom_module": 1
+      },
+      "replace_parts": {
+        "mast_kit": 1
+      },
+      "cost": 18000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "TEL-02",
+    "name": "Old Town Mast",
+    "category": "TELECOM_TOWER",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.046,
+        0.049
+      ]
+    },
+    "elevation_m": 25,
+    "physical_condition": "INTACT",
+    "criticality": 64,
+    "capacity": 22000,
+    "capacity_unit": "subscribers",
+    "utilization": 0.7,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 3,
+    "recovery_profile": {
+      "trade": "TELECOM",
+      "crew_size": 2,
+      "repair_minutes": 150,
+      "replace_minutes": 1440,
+      "parts": {
+        "telecom_module": 1
+      },
+      "replace_parts": {
+        "mast_kit": 1
+      },
+      "cost": 18000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "TEL-03",
+    "name": "Riverside Mast",
+    "category": "TELECOM_TOWER",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.079,
+        0.059
+      ]
+    },
+    "elevation_m": 8.0,
+    "physical_condition": "INTACT",
+    "criticality": 60,
+    "capacity": 16000,
+    "capacity_unit": "subscribers",
+    "utilization": 0.66,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 2,
+    "recovery_profile": {
+      "trade": "TELECOM",
+      "crew_size": 2,
+      "repair_minutes": 150,
+      "replace_minutes": 1440,
+      "parts": {
+        "telecom_module": 1
+      },
+      "replace_parts": {
+        "mast_kit": 1
+      },
+      "cost": 18000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "TEL-04",
+    "name": "Docklands Mast",
+    "category": "TELECOM_TOWER",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.069,
+        0.029
+      ]
+    },
+    "elevation_m": 5.5,
+    "physical_condition": "INTACT",
+    "criticality": 55,
+    "capacity": 12000,
+    "capacity_unit": "subscribers",
+    "utilization": 0.58,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 2,
+    "recovery_profile": {
+      "trade": "TELECOM",
+      "crew_size": 2,
+      "repair_minutes": 150,
+      "replace_minutes": 1440,
+      "parts": {
+        "telecom_module": 1
+      },
+      "replace_parts": {
+        "mast_kit": 1
+      },
+      "cost": 18000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "TEL-05",
+    "name": "Eastridge Mast",
+    "category": "TELECOM_TOWER",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.101,
+        0.046
+      ]
+    },
+    "elevation_m": 50,
+    "physical_condition": "INTACT",
+    "criticality": 56,
+    "capacity": 13000,
+    "capacity_unit": "subscribers",
+    "utilization": 0.52,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 4,
+    "recovery_profile": {
+      "trade": "TELECOM",
+      "crew_size": 2,
+      "repair_minutes": 150,
+      "replace_minutes": 1440,
+      "parts": {
+        "telecom_module": 1
+      },
+      "replace_parts": {
+        "mast_kit": 1
+      },
+      "cost": 18000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "DC-01",
+    "name": "Civic Data Centre",
+    "category": "DATA_CENTER",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.038,
+        0.058
+      ]
+    },
+    "elevation_m": 31,
+    "physical_condition": "INTACT",
+    "criticality": 80,
+    "capacity": 1.2,
+    "capacity_unit": "MW IT",
+    "utilization": 0.58,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 24,
+    "recovery_profile": {
+      "trade": "ELECTRICAL",
+      "crew_size": 3,
+      "repair_minutes": 360,
+      "replace_minutes": 7200,
+      "parts": {
+        "ups_module": 1
+      },
+      "replace_parts": {
+        "ups_module": 4
+      },
+      "cost": 150000
+    },
+    "metadata": {
+      "synthetic": true,
+      "hosts": [
+        "computer-aided dispatch",
+        "health records"
+      ]
+    }
+  },
+  {
+    "code": "EOC-01",
+    "name": "Emergency Operations Centre",
+    "category": "EMERGENCY_OPS_CENTER",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.03,
+        0.064
+      ]
+    },
+    "elevation_m": 36,
+    "physical_condition": "INTACT",
+    "criticality": 93,
+    "capacity": 60,
+    "capacity_unit": "positions",
+    "utilization": 0.2,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 48,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 2,
+      "repair_minutes": 240,
+      "replace_minutes": 4320,
+      "parts": {
+        "plant_spares": 1
+      },
+      "replace_parts": {
+        "plant_spares": 3
+      },
+      "cost": 50000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "FIR-01",
+    "name": "West Fire Station",
+    "category": "FIRE_STATION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.039,
+        0.034
+      ]
+    },
+    "elevation_m": 22,
+    "physical_condition": "INTACT",
+    "criticality": 84,
+    "capacity": 6,
+    "capacity_unit": "appliances",
+    "utilization": 0.5,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 24,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 2,
+      "repair_minutes": 240,
+      "replace_minutes": 4320,
+      "parts": {
+        "plant_spares": 1
+      },
+      "replace_parts": {
+        "plant_spares": 3
+      },
+      "cost": 40000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "FIR-02",
+    "name": "East Fire Station",
+    "category": "FIRE_STATION",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.09,
+        0.051
+      ]
+    },
+    "elevation_m": 36,
+    "physical_condition": "INTACT",
+    "criticality": 84,
+    "capacity": 5,
+    "capacity_unit": "appliances",
+    "utilization": 0.5,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": 24,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 2,
+      "repair_minutes": 240,
+      "replace_minutes": 4320,
+      "parts": {
+        "plant_spares": 1
+      },
+      "replace_parts": {
+        "plant_spares": 3
+      },
+      "cost": 40000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "WIN-01",
+    "name": "River Intake",
+    "category": "WATER_INTAKE",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.064,
+        0.066
+      ]
+    },
+    "elevation_m": 2.0,
+    "physical_condition": "INTACT",
+    "criticality": 72,
+    "capacity": 160,
+    "capacity_unit": "ML/day",
+    "utilization": 0.7,
+    "population_served": null,
+    "is_source": true,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "WATER",
+      "crew_size": 2,
+      "repair_minutes": 300,
+      "replace_minutes": 2880,
+      "parts": {
+        "pump_set": 1
+      },
+      "replace_parts": {
+        "pump_set": 2
+      },
+      "cost": 45000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Raw-water source for the main treatment works."
+    }
+  },
+  {
+    "code": "WIN-02",
+    "name": "Hillside Spring Intake",
+    "category": "WATER_INTAKE",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.006,
+        0.03
+      ]
+    },
+    "elevation_m": 132,
+    "physical_condition": "INTACT",
+    "criticality": 60,
+    "capacity": 6,
+    "capacity_unit": "ML/day",
+    "utilization": 0.5,
+    "population_served": null,
+    "is_source": true,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "WATER",
+      "crew_size": 2,
+      "repair_minutes": 300,
+      "replace_minutes": 2880,
+      "parts": {
+        "pump_set": 1
+      },
+      "replace_parts": {
+        "pump_set": 2
+      },
+      "cost": 45000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "WTP-01",
+    "name": "Riverside Treatment Works",
+    "category": "WATER_TREATMENT",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.068,
+        0.062
+      ]
+    },
+    "elevation_m": 4.0,
+    "physical_condition": "INTACT",
+    "criticality": 90,
+    "capacity": 140,
+    "capacity_unit": "ML/day",
+    "utilization": 0.74,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "WATER",
+      "crew_size": 4,
+      "repair_minutes": 600,
+      "replace_minutes": 7200,
+      "parts": {
+        "pump_set": 1,
+        "filter_media": 2
+      },
+      "replace_parts": {
+        "pump_set": 3,
+        "filter_media": 6
+      },
+      "cost": 160000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Treats water for the whole grid-connected district."
+    }
+  },
+  {
+    "code": "WTP-02",
+    "name": "Hillside Treatment Works",
+    "category": "WATER_TREATMENT",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.012,
+        0.034
+      ]
+    },
+    "elevation_m": 118,
+    "physical_condition": "INTACT",
+    "criticality": 62,
+    "capacity": 5,
+    "capacity_unit": "ML/day",
+    "utilization": 0.55,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "WATER",
+      "crew_size": 4,
+      "repair_minutes": 600,
+      "replace_minutes": 7200,
+      "parts": {
+        "pump_set": 1,
+        "filter_media": 2
+      },
+      "replace_parts": {
+        "pump_set": 3,
+        "filter_media": 6
+      },
+      "cost": 160000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "WPS-01",
+    "name": "Hillside Pumping Station",
+    "category": "WATER_PUMPING",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.018,
+        0.028
+      ]
+    },
+    "elevation_m": 110,
+    "physical_condition": "INTACT",
+    "criticality": 58,
+    "capacity": 5,
+    "capacity_unit": "ML/day",
+    "utilization": 0.5,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "WATER",
+      "crew_size": 2,
+      "repair_minutes": 240,
+      "replace_minutes": 1440,
+      "parts": {
+        "pump_set": 1
+      },
+      "replace_parts": {
+        "pump_set": 2
+      },
+      "cost": 35000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "WPS-02",
+    "name": "West Pumping Station",
+    "category": "WATER_PUMPING",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.041,
+        0.056
+      ]
+    },
+    "elevation_m": 28,
+    "physical_condition": "INTACT",
+    "criticality": 74,
+    "capacity": 90,
+    "capacity_unit": "ML/day",
+    "utilization": 0.72,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "WATER",
+      "crew_size": 2,
+      "repair_minutes": 240,
+      "replace_minutes": 1440,
+      "parts": {
+        "pump_set": 1
+      },
+      "replace_parts": {
+        "pump_set": 2
+      },
+      "cost": 35000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "WPS-03",
+    "name": "East Pumping Station",
+    "category": "WATER_PUMPING",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.084,
+        0.039
+      ]
+    },
+    "elevation_m": 5.0,
+    "physical_condition": "INTACT",
+    "criticality": 72,
+    "capacity": 50,
+    "capacity_unit": "ML/day",
+    "utilization": 0.68,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "WATER",
+      "crew_size": 2,
+      "repair_minutes": 240,
+      "replace_minutes": 1440,
+      "parts": {
+        "pump_set": 1
+      },
+      "replace_parts": {
+        "pump_set": 2
+      },
+      "cost": 35000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "FUL-01",
+    "name": "North Fuel Depot",
+    "category": "FUEL_DEPOT",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.02,
+        0.078
+      ]
+    },
+    "elevation_m": 44,
+    "physical_condition": "INTACT",
+    "criticality": 62,
+    "capacity": 800,
+    "capacity_unit": "kL",
+    "utilization": 0.45,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 2,
+      "repair_minutes": 300,
+      "replace_minutes": 2880,
+      "parts": {
+        "fuel_pump": 1
+      },
+      "replace_parts": {
+        "fuel_pump": 3
+      },
+      "cost": 55000
+    },
+    "metadata": {
+      "synthetic": true,
+      "role": "Generator and fleet fuel for the west bank."
+    }
+  },
+  {
+    "code": "FUL-02",
+    "name": "Docklands Fuel Terminal",
+    "category": "FUEL_DEPOT",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        0.077,
+        0.027
+      ]
+    },
+    "elevation_m": 3.5,
+    "physical_condition": "INTACT",
+    "criticality": 64,
+    "capacity": 2500,
+    "capacity_unit": "kL",
+    "utilization": 0.58,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "MECHANICAL",
+      "crew_size": 2,
+      "repair_minutes": 300,
+      "replace_minutes": 2880,
+      "parts": {
+        "fuel_pump": 1
+      },
+      "replace_parts": {
+        "fuel_pump": 3
+      },
+      "cost": 55000
+    },
+    "metadata": {
+      "synthetic": true,
+      "risk": "Inside the 4 m floodplain."
+    }
+  },
+  {
+    "code": "RD-01",
+    "name": "Northern Ring Road",
+    "category": "ROAD_SEGMENT",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0.008,
+          0.072
+        ],
+        [
+          0.03,
+          0.068
+        ],
+        [
+          0.052,
+          0.068
+        ]
+      ]
+    },
+    "elevation_m": 36,
+    "physical_condition": "INTACT",
+    "criticality": 48,
+    "capacity": 1800,
+    "capacity_unit": "vehicles/h",
+    "utilization": 0.4,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "CIVIL",
+      "crew_size": 3,
+      "repair_minutes": 240,
+      "replace_minutes": 2880,
+      "parts": {},
+      "replace_parts": {
+        "road_materials": 2
+      },
+      "cost": 20000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "RD-02",
+    "name": "Central Avenue",
+    "category": "ROAD_SEGMENT",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0.015,
+          0.046
+        ],
+        [
+          0.035,
+          0.047
+        ],
+        [
+          0.056,
+          0.048
+        ]
+      ]
+    },
+    "elevation_m": 24,
+    "physical_condition": "INTACT",
+    "criticality": 55,
+    "capacity": 2200,
+    "capacity_unit": "vehicles/h",
+    "utilization": 0.55,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "CIVIL",
+      "crew_size": 3,
+      "repair_minutes": 240,
+      "replace_minutes": 2880,
+      "parts": {},
+      "replace_parts": {
+        "road_materials": 2
+      },
+      "cost": 20000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "RD-03",
+    "name": "Riverside Road",
+    "category": "ROAD_SEGMENT",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0.071,
+          0.064
+        ],
+        [
+          0.067,
+          0.048
+        ],
+        [
+          0.073,
+          0.03
+        ]
+      ]
+    },
+    "elevation_m": 3.2,
+    "physical_condition": "INTACT",
+    "criticality": 52,
+    "capacity": 1400,
+    "capacity_unit": "vehicles/h",
+    "utilization": 0.5,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "CIVIL",
+      "crew_size": 3,
+      "repair_minutes": 240,
+      "replace_minutes": 2880,
+      "parts": {},
+      "replace_parts": {
+        "road_materials": 2
+      },
+      "cost": 20000
+    },
+    "metadata": {
+      "synthetic": true,
+      "risk": "Runs along the floodplain."
+    }
+  },
+  {
+    "code": "RD-04",
+    "name": "Eastridge Road",
+    "category": "ROAD_SEGMENT",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0.067,
+          0.02
+        ],
+        [
+          0.09,
+          0.03
+        ],
+        [
+          0.112,
+          0.046
+        ]
+      ]
+    },
+    "elevation_m": 20,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 1600,
+    "capacity_unit": "vehicles/h",
+    "utilization": 0.35,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "CIVIL",
+      "crew_size": 3,
+      "repair_minutes": 240,
+      "replace_minutes": 2880,
+      "parts": {},
+      "replace_parts": {
+        "road_materials": 2
+      },
+      "cost": 20000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "RD-05",
+    "name": "Hillside Road",
+    "category": "ROAD_SEGMENT",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0.006,
+          0.008
+        ],
+        [
+          0.016,
+          0.02
+        ],
+        [
+          0.024,
+          0.032
+        ]
+      ]
+    },
+    "elevation_m": 110,
+    "physical_condition": "INTACT",
+    "criticality": 35,
+    "capacity": 400,
+    "capacity_unit": "vehicles/h",
+    "utilization": 0.2,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "CIVIL",
+      "crew_size": 3,
+      "repair_minutes": 240,
+      "replace_minutes": 2880,
+      "parts": {},
+      "replace_parts": {
+        "road_materials": 2
+      },
+      "cost": 20000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "BR-01",
+    "name": "Low Bridge",
+    "category": "BRIDGE",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0.056,
+          0.048
+        ],
+        [
+          0.066,
+          0.048
+        ]
+      ]
+    },
+    "elevation_m": 2.5,
+    "physical_condition": "INTACT",
+    "criticality": 60,
+    "capacity": 1200,
+    "capacity_unit": "vehicles/h",
+    "utilization": 0.6,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "CIVIL",
+      "crew_size": 4,
+      "repair_minutes": 720,
+      "replace_minutes": 20160,
+      "parts": {
+        "bridge_panel": 2
+      },
+      "replace_parts": {
+        "bridge_panel": 10
+      },
+      "cost": 250000
+    },
+    "metadata": {
+      "synthetic": true,
+      "risk": "Deck level below the 4 m flood line."
+    }
+  },
+  {
+    "code": "BR-02",
+    "name": "High Bridge",
+    "category": "BRIDGE",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [
+          0.057,
+          0.02
+        ],
+        [
+          0.067,
+          0.02
+        ]
+      ]
+    },
+    "elevation_m": 12,
+    "physical_condition": "INTACT",
+    "criticality": 62,
+    "capacity": 1600,
+    "capacity_unit": "vehicles/h",
+    "utilization": 0.45,
+    "population_served": null,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": {
+      "trade": "CIVIL",
+      "crew_size": 4,
+      "repair_minutes": 720,
+      "replace_minutes": 20160,
+      "parts": {
+        "bridge_panel": 2
+      },
+      "replace_parts": {
+        "bridge_panel": 10
+      },
+      "cost": 250000
+    },
+    "metadata": {
+      "synthetic": true
+    }
+  },
+  {
+    "code": "ZN-01",
+    "name": "Northgate (demand zone)",
+    "category": "DEMAND_ZONE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.026,
+            0.062
+          ],
+          [
+            0.057,
+            0.062
+          ],
+          [
+            0.057,
+            0.084
+          ],
+          [
+            0.026,
+            0.084
+          ],
+          [
+            0.026,
+            0.062
+          ]
+        ]
+      ]
+    },
+    "elevation_m": 36,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 42000,
+    "capacity_unit": "residents",
+    "utilization": null,
+    "population_served": 42000,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": null,
+    "metadata": {
+      "synthetic": true,
+      "note": "Synthetic neighbourhood modelled as a service sink; not infrastructure."
+    }
+  },
+  {
+    "code": "ZN-02",
+    "name": "Old Town (demand zone)",
+    "category": "DEMAND_ZONE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.026,
+            0.04
+          ],
+          [
+            0.057,
+            0.04
+          ],
+          [
+            0.057,
+            0.062
+          ],
+          [
+            0.026,
+            0.062
+          ],
+          [
+            0.026,
+            0.04
+          ]
+        ]
+      ]
+    },
+    "elevation_m": 25,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 38000,
+    "capacity_unit": "residents",
+    "utilization": null,
+    "population_served": 38000,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": null,
+    "metadata": {
+      "synthetic": true,
+      "note": "Synthetic neighbourhood modelled as a service sink; not infrastructure."
+    }
+  },
+  {
+    "code": "ZN-03",
+    "name": "Southfield (demand zone)",
+    "category": "DEMAND_ZONE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.026,
+            0.004
+          ],
+          [
+            0.057,
+            0.004
+          ],
+          [
+            0.057,
+            0.04
+          ],
+          [
+            0.026,
+            0.04
+          ],
+          [
+            0.026,
+            0.004
+          ]
+        ]
+      ]
+    },
+    "elevation_m": 20,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 31000,
+    "capacity_unit": "residents",
+    "utilization": null,
+    "population_served": 31000,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": null,
+    "metadata": {
+      "synthetic": true,
+      "note": "Synthetic neighbourhood modelled as a service sink; not infrastructure."
+    }
+  },
+  {
+    "code": "ZN-04",
+    "name": "Riverside (demand zone)",
+    "category": "DEMAND_ZONE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.066,
+            0.044
+          ],
+          [
+            0.092,
+            0.044
+          ],
+          [
+            0.092,
+            0.07
+          ],
+          [
+            0.066,
+            0.07
+          ],
+          [
+            0.066,
+            0.044
+          ]
+        ]
+      ]
+    },
+    "elevation_m": 7,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 27000,
+    "capacity_unit": "residents",
+    "utilization": null,
+    "population_served": 27000,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": null,
+    "metadata": {
+      "synthetic": true,
+      "note": "Synthetic neighbourhood modelled as a service sink; not infrastructure."
+    }
+  },
+  {
+    "code": "ZN-05",
+    "name": "Docklands (demand zone)",
+    "category": "DEMAND_ZONE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.066,
+            0.012
+          ],
+          [
+            0.092,
+            0.012
+          ],
+          [
+            0.092,
+            0.044
+          ],
+          [
+            0.066,
+            0.044
+          ],
+          [
+            0.066,
+            0.012
+          ]
+        ]
+      ]
+    },
+    "elevation_m": 5,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 18000,
+    "capacity_unit": "residents",
+    "utilization": null,
+    "population_served": 18000,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": null,
+    "metadata": {
+      "synthetic": true,
+      "note": "Synthetic neighbourhood modelled as a service sink; not infrastructure."
+    }
+  },
+  {
+    "code": "ZN-06",
+    "name": "Hillside Village (demand zone)",
+    "category": "DEMAND_ZONE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.002,
+            0.004
+          ],
+          [
+            0.024,
+            0.004
+          ],
+          [
+            0.024,
+            0.04
+          ],
+          [
+            0.002,
+            0.04
+          ],
+          [
+            0.002,
+            0.004
+          ]
+        ]
+      ]
+    },
+    "elevation_m": 115,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 4000,
+    "capacity_unit": "residents",
+    "utilization": null,
+    "population_served": 4000,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": null,
+    "metadata": {
+      "synthetic": true,
+      "note": "Synthetic neighbourhood modelled as a service sink; not infrastructure."
+    }
+  },
+  {
+    "code": "ZN-07",
+    "name": "Eastridge (demand zone)",
+    "category": "DEMAND_ZONE",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            0.092,
+            0.022
+          ],
+          [
+            0.116,
+            0.022
+          ],
+          [
+            0.116,
+            0.06
+          ],
+          [
+            0.092,
+            0.06
+          ],
+          [
+            0.092,
+            0.022
+          ]
+        ]
+      ]
+    },
+    "elevation_m": 46,
+    "physical_condition": "INTACT",
+    "criticality": 50,
+    "capacity": 20000,
+    "capacity_unit": "residents",
+    "utilization": null,
+    "population_served": 20000,
+    "is_source": false,
+    "backup_power_hours": null,
+    "recovery_profile": null,
+    "metadata": {
+      "synthetic": true,
+      "note": "Synthetic neighbourhood modelled as a service sink; not infrastructure."
+    }
+  }
+]

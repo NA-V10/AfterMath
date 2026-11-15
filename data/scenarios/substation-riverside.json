@@ -1,0 +1,15 @@
+{
+  "key": "substation-riverside",
+  "name": "Major substation failure — Riverside",
+  "synthetic": true,
+  "description": "Transformer fire destroys capacity at Riverside Substation (SUB-02), the sole primary supply to the east bank and the main water works.",
+  "horizon_minutes": 4320,
+  "initiating_events": [
+    {
+      "kind": "ASSET_FAILURE",
+      "t_minutes": 0,
+      "asset_code": "SUB-02",
+      "condition": "DAMAGED"
+    }
+  ]
+}

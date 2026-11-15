@@ -1,0 +1,654 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "synthetic": true
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "boundary",
+        "name": "Meridian Valley (fictional)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.12,
+              0.0
+            ],
+            [
+              0.12,
+              0.09
+            ],
+            [
+              0.0,
+              0.09
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "terrain",
+        "name": "Hillside"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.026,
+              0.0
+            ],
+            [
+              0.03,
+              0.02
+            ],
+            [
+              0.026,
+              0.042
+            ],
+            [
+              0.0,
+              0.046
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "terrain",
+        "name": "Eastridge Heights"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.094,
+              0.02
+            ],
+            [
+              0.12,
+              0.014
+            ],
+            [
+              0.12,
+              0.066
+            ],
+            [
+              0.096,
+              0.064
+            ],
+            [
+              0.094,
+              0.02
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "floodplain",
+        "name": "4 m floodplain"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.069599,
+              0.066756
+            ],
+            [
+              0.073,
+              0.066
+            ],
+            [
+              0.076,
+              0.05
+            ],
+            [
+              0.08,
+              0.024
+            ],
+            [
+              0.069328,
+              0.017901
+            ],
+            [
+              0.067537,
+              0.0
+            ],
+            [
+              0.05261,
+              0.0
+            ],
+            [
+              0.052537,
+              0.000746
+            ],
+            [
+              0.054426,
+              0.01963
+            ],
+            [
+              0.051646,
+              0.033529
+            ],
+            [
+              0.051692,
+              0.036686
+            ],
+            [
+              0.054469,
+              0.048722
+            ],
+            [
+              0.054005,
+              0.061732
+            ],
+            [
+              0.054049,
+              0.06286
+            ],
+            [
+              0.055414,
+              0.074687
+            ],
+            [
+              0.052646,
+              0.088529
+            ],
+            [
+              0.052644,
+              0.09
+            ],
+            [
+              0.067649,
+              0.09
+            ],
+            [
+              0.070354,
+              0.076471
+            ],
+            [
+              0.070451,
+              0.07414
+            ],
+            [
+              0.069599,
+              0.066756
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "water",
+        "name": "Meridian River"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0.065185,
+              0.074748
+            ],
+            [
+              0.063705,
+              0.061913
+            ],
+            [
+              0.064199,
+              0.048079
+            ],
+            [
+              0.064144,
+              0.047505
+            ],
+            [
+              0.06125,
+              0.034967
+            ],
+            [
+              0.064157,
+              0.020431
+            ],
+            [
+              0.064189,
+              0.019781
+            ],
+            [
+              0.062211,
+              0.0
+            ],
+            [
+              0.06,
+              0.0
+            ],
+            [
+              0.057811,
+              0.000219
+            ],
+            [
+              0.059778,
+              0.019891
+            ],
+            [
+              0.056843,
+              0.034569
+            ],
+            [
+              0.056856,
+              0.035495
+            ],
+            [
+              0.059791,
+              0.048212
+            ],
+            [
+              0.059301,
+              0.061921
+            ],
+            [
+              0.059315,
+              0.062252
+            ],
+            [
+              0.060775,
+              0.074908
+            ],
+            [
+              0.057843,
+              0.089569
+            ],
+            [
+              0.06,
+              0.09
+            ],
+            [
+              0.062244,
+              0.09
+            ],
+            [
+              0.065157,
+              0.075431
+            ],
+            [
+              0.065185,
+              0.074748
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.026,
+            0.056
+          ],
+          [
+            0.057,
+            0.056
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.026,
+            0.04
+          ],
+          [
+            0.057,
+            0.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.04,
+            0.004
+          ],
+          [
+            0.04,
+            0.084
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.03,
+            0.004
+          ],
+          [
+            0.03,
+            0.062
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.05,
+            0.01
+          ],
+          [
+            0.05,
+            0.084
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.026,
+            0.028
+          ],
+          [
+            0.057,
+            0.028
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.07,
+            0.012
+          ],
+          [
+            0.092,
+            0.012
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.08,
+            0.012
+          ],
+          [
+            0.08,
+            0.07
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.066,
+            0.04
+          ],
+          [
+            0.092,
+            0.04
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.092,
+            0.052
+          ],
+          [
+            0.116,
+            0.052
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.104,
+            0.022
+          ],
+          [
+            0.104,
+            0.06
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "street"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.026,
+            0.076
+          ],
+          [
+            0.057,
+            0.076
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "NORTHGATE"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.04,
+          0.08
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "OLD TOWN"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.034,
+          0.052
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "SOUTHFIELD"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.046,
+          0.01
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "RIVERSIDE"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.086,
+          0.066
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "DOCKLANDS"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.084,
+          0.016
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "HILLSIDE"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.012,
+          0.04
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "EASTRIDGE"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.11,
+          0.056
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "layer": "label",
+        "name": "Meridian River"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0585,
+          0.078
+        ]
+      }
+    }
+  ]
+}

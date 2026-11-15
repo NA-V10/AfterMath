@@ -34,3 +34,4 @@ Thumbs.db
 # Local data
 *.log
 /tmp/
+.uvicorn.log

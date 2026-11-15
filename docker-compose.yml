@@ -1,0 +1,31 @@
+# AFTERMATH — SIMULATION ENVIRONMENT — NOT CONNECTED TO LIVE INFRASTRUCTURE.
+#
+# Development (hybrid, ADR-0012):   docker compose up -d db
+# Full stack (demo / E2E):          docker compose --profile full up --build
+name: aftermath
+
+services:
+  db:
+    image: postgres:16.6-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aftermath}
+      POSTGRES_USER: ${POSTGRES_USER:-aftermath}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
+    ports:
+      - "127.0.0.1:5432:5432"   # localhost only
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/db/init-test-db.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40"]
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aftermath} -d ${POSTGRES_DB:-aftermath}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # backend and frontend containers are added under the "full" profile in Phase 7
+  # (the dev loop runs them natively — see docs/ENVIRONMENT.md).
+
+volumes:
+  pgdata:

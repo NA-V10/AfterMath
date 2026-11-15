@@ -1,0 +1,1386 @@
+[
+  {
+    "dependent": "DC-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-01",
+          "PDN-02"
+        ],
+        "description": "Dual feed from two Northgate feeders (both via SUB-01)."
+      },
+      {
+        "group": "network",
+        "service_type": "TELECOM",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "All external connectivity routes through the central exchange."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-01"
+        ],
+        "description": "Crews reach the site via RD-01."
+      }
+    ]
+  },
+  {
+    "dependent": "EOC-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-01"
+        ],
+        "description": "Powered from the Northgate west feeder."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "TEL-01",
+          "TEL-02"
+        ],
+        "description": "Needs at least one mast for field coordination."
+      },
+      {
+        "group": "dispatch",
+        "service_type": "DATA",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "DC-01"
+        ],
+        "description": "Computer-aided dispatch runs in the civic data centre."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-01"
+        ],
+        "description": "Crews reach the site via RD-01."
+      }
+    ]
+  },
+  {
+    "dependent": "FIR-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-07"
+        ],
+        "description": "Powered from the hospital ring feeder."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-02",
+          "TEL-01"
+        ],
+        "description": "Mobile coverage; radio fallback exists."
+      },
+      {
+        "group": "dispatch",
+        "service_type": "DATA",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "DC-01"
+        ],
+        "description": "Receives dispatches from CAD; manual dispatch possible."
+      },
+      {
+        "group": "fuel",
+        "service_type": "FUEL",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "FUL-01"
+        ],
+        "description": "Appliance fuel from the north depot."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-02"
+        ],
+        "description": "Crews reach the site via RD-02."
+      }
+    ]
+  },
+  {
+    "dependent": "FIR-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-06"
+        ],
+        "description": "Powered from the Eastridge feeder."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-05",
+          "TEL-03"
+        ],
+        "description": "Mobile coverage; radio fallback exists."
+      },
+      {
+        "group": "dispatch",
+        "service_type": "DATA",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "DC-01"
+        ],
+        "description": "Receives dispatches from CAD; manual dispatch possible."
+      },
+      {
+        "group": "fuel",
+        "service_type": "FUEL",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "FUL-02",
+          "FUL-01"
+        ],
+        "description": "Appliance fuel from either depot."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-04"
+        ],
+        "description": "Crews reach the site via RD-04."
+      }
+    ]
+  },
+  {
+    "dependent": "FUL-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "PDN-01"
+        ],
+        "description": "Electric dispensing pumps; manual hand-pumping fallback."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-01"
+        ],
+        "description": "Crews reach the site via RD-01."
+      }
+    ]
+  },
+  {
+    "dependent": "FUL-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "PDN-04"
+        ],
+        "description": "Electric dispensing pumps; manual fallback."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-03"
+        ],
+        "description": "Crews reach the site via RD-03."
+      }
+    ]
+  },
+  {
+    "dependent": "HOS-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-02",
+          "PDN-07"
+        ],
+        "description": "Dual feed: either the Old Town feeder or the hospital ring feeder suffices (N-1)."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-02"
+        ],
+        "description": "Mains water from the west pumping station; on-site storage covers short gaps."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-02",
+          "TEL-01"
+        ],
+        "description": "Mobile coverage from either nearby mast."
+      },
+      {
+        "group": "records",
+        "service_type": "DATA",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "DC-01"
+        ],
+        "description": "Electronic health records hosted in the civic data centre."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-02"
+        ],
+        "description": "Crews reach the site via RD-02."
+      }
+    ]
+  },
+  {
+    "dependent": "HOS-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-03"
+        ],
+        "description": "Single feed from the Riverside east feeder."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-03"
+        ],
+        "description": "Mains water from the east pumping station."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-03"
+        ],
+        "description": "Mobile coverage from the Riverside mast."
+      },
+      {
+        "group": "records",
+        "service_type": "DATA",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "DC-01"
+        ],
+        "description": "Electronic health records hosted in the civic data centre."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "BR-01",
+          "RD-03"
+        ],
+        "description": "Reached across the Low Bridge or along Riverside Road."
+      }
+    ]
+  },
+  {
+    "dependent": "HOS-03",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-06"
+        ],
+        "description": "Single feed from the Eastridge feeder."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-03"
+        ],
+        "description": "Mains water from the east pumping station."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-05"
+        ],
+        "description": "Mobile coverage from the Eastridge mast."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-04"
+        ],
+        "description": "Crews reach the site via RD-04."
+      }
+    ]
+  },
+  {
+    "dependent": "PDN-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SUB-01"
+        ],
+        "description": "Feeder out of Northgate substation."
+      }
+    ]
+  },
+  {
+    "dependent": "PDN-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SUB-01"
+        ],
+        "description": "Feeder out of Northgate substation."
+      }
+    ]
+  },
+  {
+    "dependent": "PDN-03",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SUB-02"
+        ],
+        "description": "Feeder out of Riverside substation; no alternate feed."
+      }
+    ]
+  },
+  {
+    "dependent": "PDN-04",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SUB-02"
+        ],
+        "description": "Feeder out of Riverside substation; no alternate feed."
+      }
+    ]
+  },
+  {
+    "dependent": "PDN-05",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SUB-03"
+        ],
+        "description": "Feeder out of Southfield substation."
+      }
+    ]
+  },
+  {
+    "dependent": "PDN-06",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SUB-04"
+        ],
+        "description": "Feeder out of Eastridge substation."
+      }
+    ]
+  },
+  {
+    "dependent": "PDN-07",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SUB-03"
+        ],
+        "description": "Dedicated hospital feeder out of Southfield substation."
+      }
+    ]
+  },
+  {
+    "dependent": "SUB-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "GSP-01"
+        ],
+        "description": "Fed from the north grid supply point."
+      },
+      {
+        "group": "scada",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Remote control (SCADA) via the central exchange; manual operation possible without it."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-01"
+        ],
+        "description": "Crews reach the site via RD-01."
+      }
+    ]
+  },
+  {
+    "dependent": "SUB-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "GSP-01"
+        ],
+        "description": "Fed from the north grid supply point via a river-crossing circuit."
+      },
+      {
+        "group": "scada",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Remote control (SCADA) via the central exchange; manual operation possible without it."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "BR-01",
+          "RD-03"
+        ],
+        "description": "Reached across the Low Bridge or along Riverside Road."
+      }
+    ]
+  },
+  {
+    "dependent": "SUB-03",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "GSP-02"
+        ],
+        "description": "Fed from the south grid supply point."
+      },
+      {
+        "group": "scada",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Remote control (SCADA) via the central exchange; manual operation possible without it."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "BR-02"
+        ],
+        "description": "Crews reach the site via BR-02."
+      }
+    ]
+  },
+  {
+    "dependent": "SUB-04",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "GSP-02"
+        ],
+        "description": "Fed from the south grid supply point."
+      },
+      {
+        "group": "scada",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Remote control (SCADA) via the central exchange; manual operation possible without it."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-04"
+        ],
+        "description": "Crews reach the site via RD-04."
+      }
+    ]
+  },
+  {
+    "dependent": "TEL-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-01"
+        ],
+        "description": "Mast powered from the Northgate west feeder."
+      },
+      {
+        "group": "backhaul",
+        "service_type": "TELECOM",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Mast traffic is backhauled through the central exchange."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-01"
+        ],
+        "description": "Crews reach the site via RD-01."
+      }
+    ]
+  },
+  {
+    "dependent": "TEL-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-02"
+        ],
+        "description": "Mast powered from the Old Town feeder."
+      },
+      {
+        "group": "backhaul",
+        "service_type": "TELECOM",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Mast traffic is backhauled through the central exchange."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-02"
+        ],
+        "description": "Crews reach the site via RD-02."
+      }
+    ]
+  },
+  {
+    "dependent": "TEL-03",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-03"
+        ],
+        "description": "Mast powered from the Riverside east feeder."
+      },
+      {
+        "group": "backhaul",
+        "service_type": "TELECOM",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Mast traffic is backhauled through the central exchange."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-03"
+        ],
+        "description": "Crews reach the site via RD-03."
+      }
+    ]
+  },
+  {
+    "dependent": "TEL-04",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-04"
+        ],
+        "description": "Mast powered from the Docklands feeder."
+      },
+      {
+        "group": "backhaul",
+        "service_type": "TELECOM",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Mast traffic is backhauled through the central exchange."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-03"
+        ],
+        "description": "Crews reach the site via RD-03."
+      }
+    ]
+  },
+  {
+    "dependent": "TEL-05",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-06"
+        ],
+        "description": "Mast powered from the Eastridge feeder."
+      },
+      {
+        "group": "backhaul",
+        "service_type": "TELECOM",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "TEL-HUB"
+        ],
+        "description": "Mast traffic is backhauled through the central exchange."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-04"
+        ],
+        "description": "Crews reach the site via RD-04."
+      }
+    ]
+  },
+  {
+    "dependent": "TEL-HUB",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-02"
+        ],
+        "description": "Exchange powered from the Old Town feeder."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-02"
+        ],
+        "description": "Crews reach the site via RD-02."
+      }
+    ]
+  },
+  {
+    "dependent": "WIN-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-03"
+        ],
+        "description": "Intake pumps powered from the Riverside east feeder."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-03"
+        ],
+        "description": "Crews reach the site via RD-03."
+      }
+    ]
+  },
+  {
+    "dependent": "WIN-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SOL-01"
+        ],
+        "description": "Powered by the hillside microgrid."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-05"
+        ],
+        "description": "Crews reach the site via RD-05."
+      }
+    ]
+  },
+  {
+    "dependent": "WPS-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SOL-01"
+        ],
+        "description": "Powered by the hillside microgrid."
+      },
+      {
+        "group": "treated-water",
+        "service_type": "WATER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "WTP-02"
+        ],
+        "description": "Treated spring water."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-05"
+        ],
+        "description": "Crews reach the site via RD-05."
+      }
+    ]
+  },
+  {
+    "dependent": "WPS-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-02"
+        ],
+        "description": "Pumps powered from the Old Town feeder."
+      },
+      {
+        "group": "treated-water",
+        "service_type": "WATER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "WTP-01"
+        ],
+        "description": "Treated water from Riverside works via the river main."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-02"
+        ],
+        "description": "Crews reach the site via RD-02."
+      }
+    ]
+  },
+  {
+    "dependent": "WPS-03",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-04"
+        ],
+        "description": "Pumps powered from the Docklands feeder."
+      },
+      {
+        "group": "treated-water",
+        "service_type": "WATER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "WTP-01"
+        ],
+        "description": "Treated water from Riverside works."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-03"
+        ],
+        "description": "Crews reach the site via RD-03."
+      }
+    ]
+  },
+  {
+    "dependent": "WTP-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-03"
+        ],
+        "description": "Treatment works powered from the Riverside east feeder; no standby generation."
+      },
+      {
+        "group": "raw-water",
+        "service_type": "WATER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "WIN-01"
+        ],
+        "description": "Raw water from the river intake."
+      },
+      {
+        "group": "scada",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-03"
+        ],
+        "description": "Telemetry via the Riverside mast."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-03"
+        ],
+        "description": "Crews reach the site via RD-03."
+      }
+    ]
+  },
+  {
+    "dependent": "WTP-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SOL-01"
+        ],
+        "description": "Powered by the hillside microgrid."
+      },
+      {
+        "group": "raw-water",
+        "service_type": "WATER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "WIN-02"
+        ],
+        "description": "Spring water."
+      },
+      {
+        "group": "access",
+        "service_type": "ACCESS",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "RD-05"
+        ],
+        "description": "Crews reach the site via RD-05."
+      }
+    ]
+  },
+  {
+    "dependent": "ZN-01",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-01"
+        ],
+        "description": "Residential supply."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-02"
+        ],
+        "description": "Mains water supply."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-01"
+        ],
+        "description": "Mobile coverage."
+      },
+      {
+        "group": "healthcare",
+        "service_type": "HEALTHCARE",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "HOS-01"
+        ],
+        "description": "Nearest hospital(s) with emergency capacity."
+      }
+    ]
+  },
+  {
+    "dependent": "ZN-02",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-02"
+        ],
+        "description": "Residential supply."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-02"
+        ],
+        "description": "Mains water supply."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-02",
+          "TEL-01"
+        ],
+        "description": "Mobile coverage."
+      },
+      {
+        "group": "healthcare",
+        "service_type": "HEALTHCARE",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "HOS-01",
+          "HOS-02"
+        ],
+        "description": "Nearest hospital(s) with emergency capacity."
+      }
+    ]
+  },
+  {
+    "dependent": "ZN-03",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-05"
+        ],
+        "description": "Residential supply."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-02"
+        ],
+        "description": "Mains water supply."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-02"
+        ],
+        "description": "Mobile coverage."
+      },
+      {
+        "group": "healthcare",
+        "service_type": "HEALTHCARE",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "HOS-01"
+        ],
+        "description": "Nearest hospital(s) with emergency capacity."
+      }
+    ]
+  },
+  {
+    "dependent": "ZN-04",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-03"
+        ],
+        "description": "Residential supply."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-03"
+        ],
+        "description": "Mains water supply."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-03"
+        ],
+        "description": "Mobile coverage."
+      },
+      {
+        "group": "healthcare",
+        "service_type": "HEALTHCARE",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "HOS-02",
+          "HOS-01"
+        ],
+        "description": "Nearest hospital(s) with emergency capacity."
+      }
+    ]
+  },
+  {
+    "dependent": "ZN-05",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-04"
+        ],
+        "description": "Residential supply."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-03"
+        ],
+        "description": "Mains water supply."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-04"
+        ],
+        "description": "Mobile coverage."
+      },
+      {
+        "group": "healthcare",
+        "service_type": "HEALTHCARE",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "HOS-02",
+          "HOS-03"
+        ],
+        "description": "Nearest hospital(s) with emergency capacity."
+      }
+    ]
+  },
+  {
+    "dependent": "ZN-06",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "SOL-01"
+        ],
+        "description": "Off-grid village on the hillside microgrid."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-01"
+        ],
+        "description": "Hillside water scheme."
+      }
+    ]
+  },
+  {
+    "dependent": "ZN-07",
+    "requirements": [
+      {
+        "group": "power",
+        "service_type": "POWER",
+        "mode": "HARD",
+        "min_required": 1,
+        "providers": [
+          "PDN-06"
+        ],
+        "description": "Residential supply."
+      },
+      {
+        "group": "water",
+        "service_type": "WATER",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "WPS-03"
+        ],
+        "description": "Mains water supply."
+      },
+      {
+        "group": "comms",
+        "service_type": "TELECOM",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "TEL-05"
+        ],
+        "description": "Mobile coverage."
+      },
+      {
+        "group": "healthcare",
+        "service_type": "HEALTHCARE",
+        "mode": "SOFT",
+        "min_required": 1,
+        "providers": [
+          "HOS-03",
+          "HOS-02"
+        ],
+        "description": "Nearest hospital(s) with emergency capacity."
+      }
+    ]
+  }
+]

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "$defs": {
+      "DependencyGroupRecord": {
+        "additionalProperties": false,
+        "description": "One requirement group of one dependent: needs `min_required` of `providers`.",
+        "properties": {
+          "group": {
+            "pattern": "^[a-z0-9][a-z0-9-]{0,40}$",
+            "title": "Group",
+            "type": "string"
+          },
+          "service_type": {
+            "$ref": "#/$defs/ServiceType"
+          },
+          "mode": {
+            "$ref": "#/$defs/DependencyMode"
+          },
+          "min_required": {
+            "default": 1,
+            "minimum": 1,
+            "title": "Min Required",
+            "type": "integer"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Providers",
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          }
+        },
+        "required": [
+          "group",
+          "service_type",
+          "mode",
+          "providers",
+          "description"
+        ],
+        "title": "DependencyGroupRecord",
+        "type": "object"
+      },
+      "DependencyMode": {
+        "enum": [
+          "HARD",
+          "SOFT"
+        ],
+        "title": "DependencyMode",
+        "type": "string"
+      },
+      "ServiceType": {
+        "enum": [
+          "POWER",
+          "TELECOM",
+          "WATER",
+          "FUEL",
+          "DATA",
+          "HEALTHCARE",
+          "ACCESS"
+        ],
+        "title": "ServiceType",
+        "type": "string"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "dependent": {
+        "pattern": "^[A-Z]{2,5}-\\d{2,3}$|^[A-Z]{2,5}-[A-Z]{2,5}$",
+        "title": "Dependent",
+        "type": "string"
+      },
+      "requirements": {
+        "items": {
+          "$ref": "#/$defs/DependencyGroupRecord"
+        },
+        "title": "Requirements",
+        "type": "array"
+      }
+    },
+    "required": [
+      "dependent",
+      "requirements"
+    ],
+    "title": "DependentRecord",
+    "type": "object"
+  }
+}
