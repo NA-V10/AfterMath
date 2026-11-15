@@ -207,6 +207,8 @@ class InfrastructureQueries:
                     condition=a.physical_condition,
                     criticality=a.criticality,
                     position=a.position,
+                    geometry=a.geometry.model_dump(mode="json"),
+                    population_served=a.population_served,
                     component=component_index[a.code],
                 )
                 for a in self.snapshot.assets

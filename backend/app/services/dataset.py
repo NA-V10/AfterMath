@@ -52,7 +52,8 @@ async def seed_dataset(
 
     existing = await repo.find_release(session, snapshot.dataset_name, snapshot.dataset_version)
     if existing is not None:
-        if existing.content_hash != snapshot.content_hash:
+        # The basemap is not part of the twin hash, so compare it explicitly.
+        if existing.content_hash != snapshot.content_hash or existing.basemap != basemap:
             raise ConflictError(
                 f"dataset {snapshot.dataset_name}@{snapshot.dataset_version} is already seeded "
                 "with different content; bump the version in manifest.json"

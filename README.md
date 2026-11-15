@@ -9,7 +9,50 @@ AFTERMATH is an infrastructure resilience and disaster-recovery decision-support
 
 ## Status
 
-**Phase 0: architecture foundation (complete, awaiting review).** No application code yet.
+| Phase | Scope | State |
+|---|---|---|
+| 0 | Architecture & documentation | ✅ complete |
+| 1 | Infrastructure digital twin | ✅ complete (see [docs/reports/PHASE_1_REPORT.md](docs/reports/PHASE_1_REPORT.md)) |
+| 2 | Deterministic simulation engine | next |
+
+## Quick start (Windows / PowerShell, hybrid dev mode)
+
+Prerequisites: Docker Desktop (running), [uv](https://docs.astral.sh/uv/), Node 20+ and pnpm.
+
+> On the current dev machine `uv` was installed with `pip install --user uv` and its folder
+> (`%APPDATA%\Python\Python314\Scripts`) is not on `PATH`. Either add that folder to `PATH`
+> or write `python -m uv` wherever this guide says `uv`.
+
+```powershell
+copy .env.example .env                 # local-only defaults
+docker compose up -d db                # PostgreSQL 16 (localhost only)
+
+cd backend
+uv sync                                # Python 3.13 venv + dependencies
+uv run alembic upgrade head            # create the schema
+uv run python -m app.cli seed          # load the synthetic Meridian Valley district (idempotent)
+uv run uvicorn app.main:app --port 8000   # API: http://localhost:8000/api/v1/docs
+
+cd ..\frontend
+pnpm install
+pnpm dev                               # UI: http://localhost:3000
+```
+
+### Tests
+
+```powershell
+cd backend
+uv run python -m pytest                # unit + Hypothesis property + integration (needs the db container)
+uv run python -m ruff check . ; uv run python -m mypy app
+uv run python -c "from importlinter.cli import lint_imports_command; lint_imports_command()"
+
+cd ..\frontend
+pnpm typecheck ; pnpm lint ; pnpm test ; pnpm build
+pnpm test:e2e                          # Playwright via installed Microsoft Edge
+```
+
+> On this machine Windows Application Control blocks some executable shims (e.g. `pytest.exe`),
+> so tools are invoked as `python -m <tool>`. See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md).
 
 ## Documentation
 
@@ -25,10 +68,16 @@ AFTERMATH is an infrastructure resilience and disaster-recovery decision-support
 | [docs/SECURITY.md](docs/SECURITY.md) | Safety boundary, threat model, governance |
 | [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md) | Test layers and required properties |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Phases and risk register |
-| [docs/PHASE_1_PLAN.md](docs/PHASE_1_PLAN.md) | Next phase task breakdown |
-| [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Dev environment assessment |
+| [docs/PHASE_1_PLAN.md](docs/PHASE_1_PLAN.md) | Phase 1 plan and acceptance criteria |
+| [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Dev environment assessment and constraints |
 | [docs/decisions/](docs/decisions/README.md) | Architecture Decision Records |
 
-## Stack (planned)
+## Repository layout
 
-Next.js · React · TypeScript · Tailwind · shadcn/ui · MapLibre · React Flow · Recharts — FastAPI · Pydantic · SQLAlchemy · Alembic · LangGraph · NetworkX · Shapely — PostgreSQL — Docker Compose.
+```
+backend/    FastAPI app (app/graph = pure domain core), Alembic migrations, tests
+frontend/   Next.js app (Twin, Command Center, Audit; other screens arrive with their phases)
+data/       Synthetic dataset, scenario definitions, generated JSON Schemas
+docs/       Product, architecture, ADRs, reports
+scripts/    Database init scripts
+```

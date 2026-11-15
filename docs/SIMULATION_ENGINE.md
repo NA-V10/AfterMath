@@ -47,6 +47,15 @@ Why this design:
 - **Cycles are handled correctly.** Substation SCADA depends softly on telecom, which depends on power. A naive BFS either loops or gives order-dependent answers. The greatest fixed point treats a mutually supporting cycle as alive unless something external kills it, which is the right semantics for "it was running before the incident".
 - **Waves are meaningful.** Wave *n* is the set of assets that changed on iteration *n*: the cascade depth. The UI animates waves, and the event timeline records `(t, wave)`.
 
+### 2.1 Refinement (Phase 1): supply level vs. displayed status
+
+While authoring the district we found that propagating `DEGRADED` caused by **SOFT** losses would wrongly brown out the whole grid. For example, every substation loses SCADA when the telecom exchange fails, but no customer loses power. The evaluator therefore separates two things:
+
+- **Supply level** `sup(a) ∈ {0,1,2}` is what propagates. `sup(a) = min(phys(a), min over HARD groups of the k-th largest provider supply)`. An asset ON_BACKUP supplies at full level (2) while its endurance lasts. Only **physical** degradation (`phys = 1`) reduces supply and propagates as reduced capacity.
+- **Displayed status** is derived and does not propagate: `FAILED` if `sup = 0`; `ON_BACKUP` if backup is in use; `DEGRADED` if `sup = 1` or any SOFT group is unmet (its k-th largest provider supply is 0); otherwise `OPERATIONAL`.
+
+The greatest-fixed-point argument applies unchanged to `sup` (it is monotone on a finite lattice). Status is a pure function of the fixed point.
+
 ## 3. Time: discrete-event simulation
 
 Within one instant, propagation is the fixed-point computation above. Across time, a **discrete-event loop** advances the simulated clock:

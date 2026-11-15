@@ -109,6 +109,8 @@ class GraphNode(_Out):
     condition: PhysicalCondition
     criticality: int
     position: tuple[float, float]
+    geometry: dict[str, Any] = Field(description="GeoJSON geometry (Point, LineString, Polygon)")
+    population_served: int | None
     component: int
 
 

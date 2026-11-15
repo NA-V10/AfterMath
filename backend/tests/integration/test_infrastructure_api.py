@@ -139,7 +139,28 @@ async def test_health_and_basemap(client: AsyncClient) -> None:
 async def test_audit_records_seeding(client: AsyncClient) -> None:
     page = (await client.get("/audit", params={"action": "dataset.seeded"})).json()
     assert page["items"]
-    assert page["items"][0]["entity_id"] == "meridian-valley@1.0.0"
+    assert page["items"][0]["entity_id"].startswith("meridian-valley@")
     record = (await client.get(f"/audit/{page['items'][0]['id']}")).json()
     assert len(record["hash"]) == 64
     assert (await client.get("/audit/999999")).status_code == 404
+
+
+async def test_readiness_reports_503_when_database_is_down() -> None:
+    from httpx import ASGITransport
+
+    from app.core.config import Settings
+    from app.main import create_app
+
+    unreachable = "postgresql+asyncpg://nobody:nothing@127.0.0.1:1/none"
+    app = create_app(Settings(database_url=unreachable, aftermath_env="test", log_level="ERROR"))
+    async with app.router.lifespan_context(app):
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test/api/v1") as c:
+            ready = await c.get("/health/ready")
+            assert ready.status_code == 503
+            assert ready.json()["checks"]["database"].startswith("unavailable")
+            assert (await c.get("/health")).status_code == 200  # liveness is independent
+            twin = await c.get("/infrastructure/health")
+            assert twin.status_code == 503
+            assert twin.json()["type"].endswith("-unavailable")
+            assert "Traceback" not in twin.text

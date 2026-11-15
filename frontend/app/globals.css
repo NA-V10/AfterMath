@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/*
+ * AFTERMATH design tokens — emergency operations aesthetic.
+ * Status colours carry meaning and are reserved: ok = operational, warn = warning,
+ * crit = critical failure, inactive = neutral/offline. Domain colours avoid those hues.
+ */
+@theme {
+  --color-bg: #0a0d11;
+  --color-panel: #10151b;
+  --color-panel-2: #151b23;
+  --color-raised: #1a212b;
+  --color-line: #222b36;
+  --color-line-strong: #2f3a47;
+
+  --color-fg: #d8dee6;
+  --color-muted: #8b97a6;
+  --color-dim: #5d6876;
+
+  --color-ok: #3fb950;
+  --color-warn: #d29922;
+  --color-crit: #f85149;
+  --color-inactive: #6e7681;
+
+  --color-focus: #58a6ff;
+  --color-upstream: #58a6ff;
+  --color-downstream: #c297ff;
+
+  --color-dom-power: #a371f7;
+  --color-dom-telecom: #39c5cf;
+  --color-dom-water: #4493f8;
+  --color-dom-health: #db61a2;
+  --color-dom-emergency: #e5739a;
+  --color-dom-data: #7d8cf5;
+  --color-dom-fuel: #b8a582;
+  --color-dom-transport: #8b949e;
+  --color-dom-zone: #6e7681;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-focus) 35%, transparent);
+}
+
+/* Scrollbars that don't shout */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+/* MapLibre overrides */
+.maplibregl-popup-content {
+  background: var(--color-raised);
+  color: var(--color-fg);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.5);
+}
+.maplibregl-popup-tip {
+  display: none;
+}
+.maplibregl-ctrl-group {
+  background: var(--color-panel-2) !important;
+  border: 1px solid var(--color-line-strong);
+}
+.maplibregl-ctrl-group button + button {
+  border-top-color: var(--color-line-strong) !important;
+}
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(0.85);
+}
+
+/* React Flow overrides */
+.react-flow {
+  --xy-background-color: var(--color-bg);
+  --xy-edge-stroke: #36414f;
+  --xy-controls-button-background-color: var(--color-panel-2);
+  --xy-controls-button-background-color-hover: var(--color-raised);
+  --xy-controls-button-color: var(--color-fg);
+  --xy-controls-button-border-color: var(--color-line-strong);
+  --xy-minimap-background-color: var(--color-panel);
+  --xy-minimap-mask-background-color: rgb(10 13 17 / 0.7);
+  --xy-attribution-background-color: transparent;
+}

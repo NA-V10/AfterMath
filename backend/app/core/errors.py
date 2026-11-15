@@ -104,4 +104,18 @@ def register_exception_handlers(app: FastAPI) -> None:
             "The database could not be reached. Try again shortly.",
         )
 
+    @app.exception_handler(ConnectionError)
+    @app.exception_handler(TimeoutError)
+    async def _dependency_down(request: Request, exc: Exception) -> JSONResponse:
+        # asyncpg raises raw OSErrors (e.g. ConnectionRefusedError) on connect, which
+        # SQLAlchemy does not wrap. Phase 1 has no other outbound connections.
+        log.error("dependency_unavailable", error_type=type(exc).__name__)
+        return problem(
+            request,
+            503,
+            "dependency-unavailable",
+            "Dependency unavailable",
+            "A required backing service (database) could not be reached. Try again shortly.",
+        )
+
     # Any other exception is handled by RequestContextMiddleware (generic 500 problem).

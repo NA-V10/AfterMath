@@ -36,13 +36,16 @@ erDiagram
 
 ## Entities
 
+### 0. `dataset_release` (added in Phase 1)
+`id, name, version, content_hash (SHA-256 of the canonical TwinSnapshot), asset_count, dependency_count, basemap jsonb, bounds jsonb, is_current (partial unique index), is_synthetic CHECK, created_at`. Unique `(name, version)`. Seeding is idempotent per version. Reusing a version with different assets **or** a different basemap is rejected. On load, the API recomputes the snapshot hash from the stored rows and refuses to serve them if it doesn't match the release (an integrity check against out-of-band edits).
+
 ### 1. `infrastructure_asset`
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid PK | |
 | code | text UNIQUE NOT NULL | e.g. `SUB-02`, matches `^[A-Z]{2,5}-\d{2,3}$` |
 | name | text NOT NULL | |
-| category | text NOT NULL | `SUBSTATION, GRID_SUPPLY, POWER_DISTRIBUTION, HOSPITAL, TELECOM_TOWER, TELECOM_HUB, WATER_INTAKE, WATER_TREATMENT, WATER_PUMPING, EMERGENCY_OPS_CENTER, FIRE_STATION, ROAD_SEGMENT, BRIDGE, FUEL_DEPOT, DATA_CENTER, DEMAND_ZONE` |
+| category | text NOT NULL | `GRID_SUPPLY, POWER_GENERATION, SUBSTATION, POWER_DISTRIBUTION, HOSPITAL, TELECOM_TOWER, TELECOM_HUB, WATER_INTAKE, WATER_TREATMENT, WATER_PUMPING, EMERGENCY_OPS_CENTER, FIRE_STATION, ROAD_SEGMENT, BRIDGE, FUEL_DEPOT, DATA_CENTER, DEMAND_ZONE` |
 | geometry | jsonb NOT NULL | GeoJSON |
 | elevation_m | numeric(6,2) | used by flood resolution |
 | physical_condition | text NOT NULL | baseline condition (`INTACT` for seed data) |
@@ -52,7 +55,7 @@ erDiagram
 | population_served | integer | DEMAND_ZONE: residents; others: optional |
 | is_source | boolean | needs no upstream supply |
 | backup_power_hours | numeric(5,2) NULL | generator/battery endurance |
-| recovery_profile | jsonb | `{trade, crew_size, repair_minutes, replace_minutes, parts:{kind:qty}, cost}` |
+| recovery_profile | jsonb | `{trade, crew_size, repair_minutes, replace_minutes, parts:{kind:qty}, replace_parts:{kind:qty}, cost}` |
 | metadata | jsonb | operator, year built, notes |
 | dataset_version | text NOT NULL | ties the row to a seeded dataset release |
 | is_synthetic | boolean CHECK (is_synthetic) | |
@@ -67,7 +70,7 @@ The baseline table is never mutated by simulation. Current runtime status lives 
 |---|---|---|
 | id | uuid PK | |
 | provider_id, dependent_id | uuid FK → asset, ON DELETE RESTRICT | CHECK provider ≠ dependent |
-| service_type | text | `POWER, TELECOM, WATER, FUEL, DATA, ACCESS` |
+| service_type | text | `POWER, TELECOM, WATER, FUEL, DATA, HEALTHCARE, ACCESS` (HEALTHCARE: demand zone → hospital) |
 | mode | text | `HARD, SOFT` |
 | redundancy_group | text NOT NULL | e.g. `power-main` |
 | min_required | smallint CHECK ≥ 1 | k for the group (consistency across the group is checked by the dataset validator) |
@@ -199,7 +202,7 @@ Append-only: a trigger rejects `UPDATE`/`DELETE`, and the application DB role ha
 
 | Phase | Tables introduced |
 |---|---|
-| 1 | infrastructure_asset, infrastructure_dependency, audit_log |
+| 1 | dataset_release, infrastructure_asset, infrastructure_dependency, audit_log (with append-only trigger) |
 | 2 | incident, incident_evidence, simulation_scenario, simulation_run, simulation_event |
 | 3 | workflow_run, agent_execution (+ LangGraph checkpoint tables via its own setup) |
 | 4 | resource_inventory, recovery_strategy, recovery_action |

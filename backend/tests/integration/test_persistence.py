@@ -33,6 +33,16 @@ async def test_same_version_with_different_content_is_rejected(
             await seed_dataset(s, changed, basemap, actor_id="test")
 
 
+async def test_same_version_with_different_basemap_is_rejected(
+    seeded: None, database: Database
+) -> None:
+    files, basemap = load_dataset_dir(DATASET_DIR)
+    changed = {**basemap, "features": basemap["features"][:-1]}
+    with pytest.raises(ConflictError):
+        async with database.sessionmaker() as s, s.begin():
+            await seed_dataset(s, files, changed, actor_id="test")
+
+
 async def test_invalid_dataset_is_rejected_before_any_write(
     seeded: None, database: Database
 ) -> None:

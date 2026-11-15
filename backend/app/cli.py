@@ -95,6 +95,16 @@ def _export_schemas(out: Path) -> int:
     return 0
 
 
+def _export_openapi(out: Path) -> int:
+    from app.main import create_app
+
+    spec = create_app().openapi()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(spec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"wrote {out}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     settings = get_settings()
     parser = argparse.ArgumentParser(prog="aftermath")
@@ -105,6 +115,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("export-schemas")
     p.add_argument("--out", type=Path, default=settings.data_dir / "schemas")
     sub.add_parser("verify-audit")
+    p = sub.add_parser("export-openapi")
+    p.add_argument(
+        "--out", type=Path, default=settings.data_dir.parent / "frontend" / "types" / "openapi.json"
+    )
     args = parser.parse_args(argv)
 
     match args.command:
@@ -116,6 +130,8 @@ def main(argv: list[str] | None = None) -> int:
             return _export_schemas(args.out)
         case "verify-audit":
             return asyncio.run(_verify_audit())
+        case "export-openapi":
+            return _export_openapi(args.out)
     return 2
 
 

@@ -53,15 +53,17 @@ Predefined scenarios (`data/scenarios/`):
 
 ## 3. Acceptance criteria
 
-- [ ] `scripts/seed.py` loads 40–50 assets; `validate_dataset()` reports zero errors; seeding twice is a no-op.
-- [ ] Every dependency is explained (`description`), with no random edges; the owner has reviewed the topology table.
-- [ ] `GET /infrastructure/assets` returns all assets; filters work; unknown asset code → 404 problem+json.
-- [ ] `GET …/dependencies?direction=downstream` for SUB-02 returns the hand-derived set from the dataset doc.
-- [ ] Map and graph render the same asset set; selecting in one selects in the other (E2E journey 1).
-- [ ] Simulation banner is visible on every screen.
-- [ ] `ruff`, `mypy` (strict on `app.graph`), `import-linter`, `tsc`, `eslint` are clean.
-- [ ] pytest unit + property + integration pass, with results reported verbatim.
-- [ ] `/health/ready` reports DB and migration status correctly when the DB is down (503) and up (200).
+Status after implementation (see [reports/PHASE_1_REPORT.md](reports/PHASE_1_REPORT.md)):
+
+- [x] The seed command (`python -m app.cli seed`) loads 50 assets (43 infrastructure + 7 demand zones); validation reports zero errors; seeding twice is a no-op.
+- [x] Every dependency has a `description`; the topology is hand-designed. **Owner review of the topology is still pending.**
+- [x] `GET /infrastructure/assets` returns all assets; filters work; unknown asset code → 404 problem+json.
+- [x] `GET …/dependencies?direction=downstream` for SUB-02 returns the 19-asset hand-derived set.
+- [x] Map and graph render the same asset set (both are driven by `/infrastructure/graph`); selection is shared (E2E).
+- [x] Simulation banner is visible on every screen (E2E).
+- [x] `ruff`, `mypy` (strict on `app.graph` and `app.core`), `import-linter`, `tsc`, `eslint` are clean.
+- [x] pytest unit + property + integration pass.
+- [x] `/health/ready` returns 200 when ready and 503 when the DB is unreachable; data endpoints return a 503 problem (no stack trace). Both are integration-tested.
 
 ## 4. Risks specific to Phase 1
 

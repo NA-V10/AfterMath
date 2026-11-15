@@ -157,15 +157,15 @@ Workflow progress, simulation playback and execution progress are pushed over **
 | Concern | Choice | Verdict / note |
 |---|---|---|
 | Frontend framework | Next.js (App Router) + React + TypeScript | ✅ Keep. The screens are client-heavy, so feature screens are client components; SSR isn't needed but is harmless. |
-| Styling/UI | Tailwind CSS + shadcn/ui | ✅ Good fit for a custom, dense EOC aesthetic (we own the components). |
+| Styling/UI | Tailwind CSS 4 + shadcn/ui-style primitives | ✅ Phase 1 uses a small set of hand-written primitives (`components/ui`) in the shadcn style. CLI-generated shadcn components are added when a screen needs them. |
 | Server state | **TanStack Query** (added) | Caching, retries, polling and loading/error states with no hand-rolled code. |
-| Map | MapLibre GL JS | ✅ Uses a **self-generated synthetic basemap** (GeoJSON layers) with no third-party tiles ([ADR-0009](decisions/ADR-0009-fictional-district-basemap.md)). |
+| Map | MapLibre GL JS | ✅ Uses a **self-generated synthetic basemap** (GeoJSON layers) with no third-party tiles or glyph server; labels are DOM markers ([ADR-0009](decisions/ADR-0009-fictional-district-basemap.md)). |
 | Graph viz | React Flow (`@xyflow/react`) + `elkjs` layered layout | ✅ ELK gives readable layouts for dependency DAG-like graphs. |
 | Charts | Recharts | ✅ |
 | Motion | Motion (formerly Framer Motion) | ✅ Used sparingly. |
 | API types | `openapi-typescript` generated from FastAPI's OpenAPI | Single source of truth, no duplicated DTOs ([ADR-0011](decisions/ADR-0011-openapi-generated-types.md)). |
 | Backend | Python 3.13, FastAPI, Pydantic v2, pydantic-settings | ✅ |
-| ORM / migrations | SQLAlchemy 2.0 (async) + **psycopg 3** + Alembic | One driver shared with the LangGraph Postgres checkpointer. |
+| ORM / migrations | SQLAlchemy 2.1 (async) + **asyncpg** + Alembic | psycopg 3 was planned, but its bundled libpq is blocked by Windows Application Control on the dev host ([ENVIRONMENT](ENVIRONMENT.md)). The checkpointer driver question moves to Phase 3. |
 | Graph | NetworkX | ✅ Ample for 50–5 000 nodes ([ADR-0002](decisions/ADR-0002-networkx-graph-engine.md)). |
 | Geometry | **Shapely** (added) | Flood-polygon intersection and distances; avoids PostGIS ([ADR-0007](decisions/ADR-0007-postgres-jsonb-geometry.md)). |
 | Orchestration | LangGraph + `langgraph-checkpoint-postgres` | ✅ Typed state, interrupts and checkpoints are exactly the HITL needs. |
