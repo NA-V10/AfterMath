@@ -15,6 +15,9 @@ dependencies = [
   "shapely>=2.0.6",
   "structlog>=24.4",
   "asyncpg>=0.30",
+  "langgraph>=0.6",
+  "anthropic>=1.0",
+  "httpx>=0.28",
 ]
 
 [dependency-groups]
@@ -48,6 +51,9 @@ ignore = ["S101"]   # assert is fine in tests
 
 [tool.ruff.lint.per-file-ignores]
 "migrations/**" = ["E501"]
+# SQL here is assembled only from constant fragments (table names, ON CONFLICT clauses);
+# every value is a bound parameter.
+"app/database/checkpointer.py" = ["S608"]
 
 [tool.mypy]
 python_version = "3.13"
@@ -78,6 +84,12 @@ source_modules = ["app.graph", "app.simulation"]
 forbidden_modules = ["app.api", "app.services", "app.database", "fastapi", "sqlalchemy", "app.core.config"]
 
 [[tool.importlinter.contracts]]
+name = "LLM layer is provider plumbing only (no domain, data or web access)"
+type = "forbidden"
+source_modules = ["app.llm"]
+forbidden_modules = ["app.api", "app.agents", "app.services", "app.database", "app.graph", "app.simulation"]
+
+[[tool.importlinter.contracts]]
 name = "Layers"
 type = "layers"
-layers = ["app.api", "app.services", "app.database", "app.simulation", "app.graph"]
+layers = ["app.api", "app.agents", "app.services", "app.database", "app.simulation", "app.graph"]

@@ -87,7 +87,9 @@ async def test_listing_and_unknown_run(client: AsyncClient) -> None:
     page = (await client.get("/simulations", params={"limit": 2})).json()
     assert len(page["items"]) == 2
     assert page["next_cursor"]
-    nxt = (await client.get("/simulations", params={"limit": 2, "cursor": page["next_cursor"]})).json()
+    nxt = (
+        await client.get("/simulations", params={"limit": 2, "cursor": page["next_cursor"]})
+    ).json()
     assert {i["id"] for i in nxt["items"]}.isdisjoint({i["id"] for i in page["items"]})
     missing = "00000000-0000-0000-0000-000000000000"
     assert (await client.get(f"/simulations/{missing}")).status_code == 404
@@ -145,13 +147,18 @@ async def test_structured_incident_can_be_simulated(client: AsyncClient) -> None
     assert sim["incident_id"] == incident["id"]
     listed = (await client.get("/simulations", params={"incident_id": incident["id"]})).json()
     assert [i["id"] for i in listed["items"]] == [sim["id"]]
-    assert (await client.get(f"/incidents/{incident['id']}")).json()["reference"] == incident["reference"]
+    assert (await client.get(f"/incidents/{incident['id']}")).json()["reference"] == incident[
+        "reference"
+    ]
 
 
 async def test_free_text_incident_is_stored_but_not_simulatable_yet(client: AsyncClient) -> None:
     r = await client.post(
         "/incidents",
-        json={"source": "FREE_TEXT", "raw_report": "Explosion at the Riverside substation, lights out."},
+        json={
+            "source": "FREE_TEXT",
+            "raw_report": "Explosion at the Riverside substation, lights out.",
+        },
     )
     incident = r.json()
     assert r.status_code == 201
@@ -163,7 +170,8 @@ async def test_free_text_incident_is_stored_but_not_simulatable_yet(client: Asyn
 
 async def test_invalid_incidents_are_rejected(client: AsyncClient) -> None:
     for body in (
-        {"source": "STRUCTURED", "title": "x" * 5, "incident_type": "POWER_FAILURE", "severity": "HIGH",
+        {"source": "STRUCTURED", "title": "x" * 5, "incident_type": "POWER_FAILURE",
+         "severity": "HIGH",
          "initiating_events": [{"kind": "ASSET_FAILURE", "asset_code": "NOPE-01"}]},
         {"source": "FREE_TEXT", "raw_report": "short"},
         {"source": "CARRIER_PIGEON", "raw_report": "a long enough report text"},
@@ -183,5 +191,5 @@ async def test_structural_criticality(client: AsyncClient) -> None:
 
 async def test_capabilities_report_simulation(client: AsyncClient) -> None:
     caps = (await client.get("/system/status")).json()["capabilities"]
-    assert caps["phase"] == 2
+    assert caps["phase"] >= 2
     assert caps["simulation"] is True

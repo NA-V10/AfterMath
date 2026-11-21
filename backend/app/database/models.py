@@ -177,8 +177,8 @@ INCIDENT_TYPES = [
 ]  # fmt: skip
 SEVERITIES = ["LOW", "MODERATE", "HIGH", "CRITICAL"]
 INCIDENT_STATUSES = [
-    "REPORTED", "ANALYZING", "ANALYSIS_FAILED", "AWAITING_APPROVAL", "RECOVERING", "RECOVERED",
-    "CLOSED",
+    "REPORTED", "ANALYZING", "ANALYSIS_FAILED", "ANALYZED", "AWAITING_APPROVAL", "RECOVERING",
+    "RECOVERED", "CLOSED",
 ]  # fmt: skip
 EVIDENCE_KINDS = [
     "REPORT_SPAN", "SENSOR_READING", "ASSET_MATCH", "GEOSPATIAL_MATCH", "OPERATOR_NOTE",
@@ -348,4 +348,78 @@ class OperationalPictureChange(Base):
         CheckConstraint(
             "(kind = 'APPLY') = (simulation_run_id IS NOT NULL)", name="apply_references_run"
         ),
+    )
+
+
+# ============================================================ Phase 3
+WORKFLOW_STATUSES = ["RUNNING", "AWAITING_CLARIFICATION", "COMPLETED", "FAILED"]
+AGENTS = ["SENTINEL", "CARTOGRAPHER", "ORACLE", "STRATEGIST", "GUARDIAN"]
+EXECUTION_STATUSES = ["RUNNING", "SUCCEEDED", "FELL_BACK", "FAILED"]
+
+
+class WorkflowRun(Base):
+    __tablename__ = "workflow_run"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    incident_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("incident.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    current_node: Mapped[str | None] = mapped_column(String(32))
+    llm_mode: Mapped[str] = mapped_column(String(16), nullable=False)
+    llm_provider: Mapped[str] = mapped_column(String(120), nullable=False)
+    requested_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    pending_question: Mapped[dict[str, Any] | None] = mapped_column()
+    result: Mapped[dict[str, Any] | None] = mapped_column()
+    error: Mapped[dict[str, Any] | None] = mapped_column()
+    started_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = updated_at_col()
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint(_enum_check("status", WORKFLOW_STATUSES), name="status_valid"),
+        CheckConstraint("llm_mode IN ('DETERMINISTIC', 'LLM')", name="llm_mode_valid"),
+        # At most one active analysis per incident.
+        Index(
+            "uq_workflow_run_active_incident",
+            "incident_id",
+            unique=True,
+            postgresql_where=text("status IN ('RUNNING', 'AWAITING_CLARIFICATION')"),
+        ),
+    )
+
+
+class AgentExecution(Base):
+    """One agent step. Stores structured outputs, tool calls and user-facing explanations;
+    never chain-of-thought (docs/AGENT_DESIGN.md §1)."""
+
+    __tablename__ = "agent_execution"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    workflow_run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workflow_run.id", ondelete="CASCADE"), nullable=False
+    )
+    agent: Mapped[str] = mapped_column(String(16), nullable=False)
+    attempt: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    summary: Mapped[str | None] = mapped_column(Text)
+    input_summary: Mapped[dict[str, Any]] = mapped_column(nullable=False, default=dict)
+    output: Mapped[dict[str, Any] | None] = mapped_column()
+    tool_calls: Mapped[list[Any]] = mapped_column(nullable=False, default=list)
+    llm_calls: Mapped[list[Any]] = mapped_column(nullable=False, default=list)
+    grounding: Mapped[dict[str, Any] | None] = mapped_column()
+    tokens_in: Mapped[int | None] = mapped_column(Integer)
+    tokens_out: Mapped[int | None] = mapped_column(Integer)
+    latency_ms: Mapped[float | None] = mapped_column(Float)
+    error: Mapped[dict[str, Any] | None] = mapped_column()
+    started_at: Mapped[datetime] = created_at_col()
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint(_enum_check("agent", AGENTS), name="agent_valid"),
+        CheckConstraint(_enum_check("status", EXECUTION_STATUSES), name="status_valid"),
+        Index("ix_agent_execution_run_started", "workflow_run_id", "started_at"),
     )

@@ -63,7 +63,16 @@ def _alembic(*args: str) -> None:
 @pytest.fixture(scope="session")
 def migrated_db() -> str:
     """Fresh schema for the session (sync fixture: Alembic runs its own event loop)."""
-    _alembic("downgrade", "base")
+
+    async def reset() -> None:
+        conn = await asyncpg.connect(TEST_DATABASE_URL.replace("+asyncpg", ""))
+        try:
+            await conn.execute("DROP SCHEMA public CASCADE")
+            await conn.execute("CREATE SCHEMA public")
+        finally:
+            await conn.close()
+
+    asyncio.run(reset())
     _alembic("upgrade", "head")
     return TEST_DATABASE_URL
 

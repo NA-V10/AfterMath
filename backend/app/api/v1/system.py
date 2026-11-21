@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import text
 
 from app.api.deps import SessionDep
@@ -41,6 +41,7 @@ class Capabilities(BaseModel):
 
 class SystemStatus(BaseModel):
     app_version: str
+    llm: str = Field(description="'deterministic' or provider:model; deterministic is the fallback")
     environment: str
     simulation_notice: str
     database_revision: str | None
@@ -49,7 +50,7 @@ class SystemStatus(BaseModel):
 
 
 CAPABILITIES = Capabilities(
-    phase=2, digital_twin=True, simulation=True, agents=False, recovery=False, governance=False
+    phase=3, digital_twin=True, simulation=True, agents=True, recovery=False, governance=False
 )
 
 
@@ -81,7 +82,7 @@ async def readiness(request: Request, session: SessionDep) -> JSONResponse:
 
 
 @router.get("/system/status", response_model=SystemStatus)
-async def system_status(session: SessionDep) -> SystemStatus:
+async def system_status(request: Request, session: SessionDep) -> SystemStatus:
     revision = await session.scalar(text("SELECT version_num FROM alembic_version"))
     release = await repo.current_release(session)
     return SystemStatus(
@@ -99,4 +100,5 @@ async def system_status(session: SessionDep) -> SystemStatus:
         if release
         else None,
         capabilities=CAPABILITIES,
+        llm=request.app.state.llm.description,
     )
