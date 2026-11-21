@@ -21,6 +21,14 @@ if config.config_file_name is not None and config.attributes.get("configure_logg
 target_metadata = Base.metadata
 
 
+def include_object(
+    obj: object, name: str | None, type_: str, reflected: bool, compare_to: object
+) -> bool:
+    """LangGraph checkpoint tables (lg_*) are managed by migration 0003 DDL, not the ORM, so
+    autogenerate must never propose dropping them."""
+    return not (type_ == "table" and name is not None and name.startswith("lg_"))
+
+
 def _url() -> str:
     url: str = config.attributes.get("database_url") or get_settings().database_url
     return url
@@ -33,7 +41,9 @@ def run_migrations_offline() -> None:
 
 
 def _run(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection, target_metadata=target_metadata, include_object=include_object
+    )
     with context.begin_transaction():
         context.run_migrations()
 

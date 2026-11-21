@@ -423,3 +423,116 @@ class AgentExecution(Base):
         CheckConstraint(_enum_check("status", EXECUTION_STATUSES), name="status_valid"),
         Index("ix_agent_execution_run_started", "workflow_run_id", "started_at"),
     )
+
+
+# ============================================================ Phase 4
+STRATEGY_STATUSES = [
+    "DRAFT", "VALIDATED", "VALIDATION_FAILED", "APPROVED", "REJECTED", "SUPERSEDED", "EXECUTING",
+    "EXECUTED", "EXECUTION_FAILED", "VERIFIED",
+]  # fmt: skip
+POLICIES = ["CRITICAL_FIRST", "MAX_RESTORATION", "BALANCED"]
+ACTION_TYPES = ["REPAIR", "REPLACE", "DEPLOY_MOBILE_GENERATOR", "REFUEL_BACKUP"]
+
+
+class ResourceInventory(Base):
+    """Versioned inventory snapshots: strategies reference the exact version they were planned
+    against, so later changes are detectable (V-010 at execution time)."""
+
+    __tablename__ = "resource_inventory"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    version: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
+    renewables: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    consumables: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    reason: Mapped[str | None] = mapped_column(String(300))
+    created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    is_current: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_synthetic: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=true())
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (
+        CheckConstraint("is_synthetic", name="synthetic_only"),
+        Index(
+            "uq_resource_inventory_current",
+            "is_current",
+            unique=True,
+            postgresql_where=text("is_current"),
+        ),
+    )
+
+
+class RecoveryStrategy(Base):
+    __tablename__ = "recovery_strategy"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    incident_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("incident.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    planning_round: Mapped[int] = mapped_column(Integer, nullable=False)
+    policy: Mapped[str] = mapped_column(String(24), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="DRAFT")
+    inventory_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    incident_events: Mapped[list[Any]] = mapped_column(nullable=False)
+    horizon_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    objective: Mapped[str] = mapped_column(Text, nullable=False)
+    rationale: Mapped[str | None] = mapped_column(Text)
+    rationale_source: Mapped[str | None] = mapped_column(String(64))
+    metrics: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    risk_score: Mapped[float] = mapped_column(Float, nullable=False)
+    risk_components: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    benefits: Mapped[list[Any]] = mapped_column(nullable=False, default=list)
+    limitations: Mapped[list[Any]] = mapped_column(nullable=False, default=list)
+    unschedulable: Mapped[list[Any]] = mapped_column(nullable=False, default=list)
+    expected_result_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    recommended: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    validation_report: Mapped[dict[str, Any] | None] = mapped_column()
+    validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = updated_at_col()
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        CheckConstraint(_enum_check("status", STRATEGY_STATUSES), name="status_valid"),
+        CheckConstraint(_enum_check("policy", POLICIES), name="policy_valid"),
+        CheckConstraint("risk_score BETWEEN 0 AND 100", name="risk_range"),
+        UniqueConstraint(
+            "incident_id", "planning_round", "policy", name="uq_strategy_round_policy"
+        ),
+    )
+
+
+class RecoveryAction(Base):
+    __tablename__ = "recovery_action"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    strategy_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recovery_strategy.id", ondelete="CASCADE"), nullable=False
+    )
+    seq: Mapped[int] = mapped_column(Integer, nullable=False)
+    key: Mapped[str] = mapped_column(String(64), nullable=False)
+    action_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    target_asset_code: Mapped[str] = mapped_column(String(16), nullable=False)
+    start_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    end_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    trade: Mapped[str | None] = mapped_column(String(16))
+    crew_size: Mapped[int | None] = mapped_column(Integer)
+    resources: Mapped[list[Any]] = mapped_column(nullable=False)
+    consumables: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    cost: Mapped[int] = mapped_column(Integer, nullable=False)
+    supplies_minutes: Mapped[int | None] = mapped_column(Integer)
+    prerequisite_seqs: Mapped[list[Any]] = mapped_column(nullable=False, default=list)
+    rationale: Mapped[str] = mapped_column(Text, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("strategy_id", "seq", name="uq_recovery_action_seq"),
+        CheckConstraint(_enum_check("action_type", ACTION_TYPES), name="type_valid"),
+        CheckConstraint(
+            "end_minutes > start_minutes AND start_minutes >= 0", name="interval_valid"
+        ),
+    )

@@ -111,6 +111,10 @@ class ReplayResult(BaseModel):
     replay_hash: str
     hash_matches: bool
     snapshot_matches: bool = Field(description="False if the twin changed since the original run")
+    engine_matches: bool = Field(
+        description="False if the engine version changed since the original run (hashes then "
+        "differ by construction even when results are identical)"
+    )
 
 
 class OperationalPicture(BaseModel):

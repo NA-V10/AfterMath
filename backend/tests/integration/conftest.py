@@ -21,6 +21,7 @@ from app.database.session import Database
 from app.graph.dataset import load_dataset_dir, to_snapshot
 from app.main import BACKEND_ROOT, create_app
 from app.services.dataset import seed_dataset
+from app.services.recovery import seed_inventory
 from app.services.scenarios import load_scenario_files, sync_scenarios
 from tests.conftest import DATASET_DIR, SCENARIOS_DIR
 
@@ -92,6 +93,7 @@ async def seeded(database: Database) -> None:
         await sync_scenarios(
             session, to_snapshot(files), load_scenario_files(SCENARIOS_DIR), actor_id="test:seed"
         )
+        await seed_inventory(session, DATASET_DIR / "inventory.json")
 
 
 @pytest.fixture

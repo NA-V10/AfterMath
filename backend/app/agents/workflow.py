@@ -1,10 +1,11 @@
 """LangGraph orchestration of the incident-analysis workflow and its background runner.
 
-    START -> SENTINEL -(confident)-> CARTOGRAPHER -> ORACLE -> END
+    START -> SENTINEL -(confident)-> CARTOGRAPHER -> ORACLE -> STRATEGIST -> GUARDIAN -> END
                      \\-(unsure)-> clarify (interrupt: human) -> SENTINEL
 
-STRATEGIST and GUARDIAN join after ORACLE in Phase 4, when the recovery engine they depend on
-exists. Runs survive restarts: state is checkpointed in PostgreSQL after every node.
+A completed run leaves the incident AWAITING_APPROVAL when GUARDIAN validated at least one
+strategy; approval and execution are human actions (Phase 5). Runs survive restarts: state
+is checkpointed in PostgreSQL after every node.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, RetryPolicy
 
 from app.agents.nodes import Deps, cartographer, clarify, oracle, route_after_sentinel, sentinel
+from app.agents.planning_nodes import guardian, strategist
 from app.core.logging import get_logger
 from app.database.checkpointer import AsyncpgCheckpointSaver
 from app.database.models import WorkflowRun
@@ -35,6 +37,8 @@ class WorkflowState(TypedDict, total=False):
     clarification: dict[str, Any] | None
     dependency_analysis: dict[str, Any]
     simulation_summary: dict[str, Any]
+    strategy_proposal: dict[str, Any]
+    governance_report: dict[str, Any]
 
 
 def build_graph(deps: Deps, checkpointer: AsyncpgCheckpointSaver) -> Any:
@@ -48,7 +52,11 @@ def build_graph(deps: Deps, checkpointer: AsyncpgCheckpointSaver) -> Any:
     g.add_conditional_edges("sentinel", route_after_sentinel, ["clarify", "cartographer"])
     g.add_edge("clarify", "sentinel")
     g.add_edge("cartographer", "oracle")
-    g.add_edge("oracle", END)
+    g.add_node("strategist", functools.partial(strategist, deps=deps), retry_policy=TRANSIENT)
+    g.add_node("guardian", functools.partial(guardian, deps=deps), retry_policy=TRANSIENT)
+    g.add_edge("oracle", "strategist")
+    g.add_edge("strategist", "guardian")
+    g.add_edge("guardian", END)
     return g.compile(checkpointer=checkpointer)
 
 
@@ -115,12 +123,17 @@ class WorkflowRunner:
                     )  # fmt: skip
                 else:
                     values = snapshot.values
+                    governance = values.get("governance_report") or {}
+                    # Human approval (Phase 5) is required before anything executes.
+                    next_status = "AWAITING_APPROVAL" if governance.get("any_valid") else "ANALYZED"
                     await wf.finish_run(
-                        s, run_id, status="COMPLETED", incident_status="ANALYZED",
+                        s, run_id, status="COMPLETED", incident_status=next_status,
                         result={
                             "assessment": values.get("assessment"),
                             "dependency_analysis": values.get("dependency_analysis"),
                             "simulation_summary": values.get("simulation_summary"),
+                            "strategy_proposal": values.get("strategy_proposal"),
+                            "governance_report": governance or None,
                         },
                     )  # fmt: skip
         except Exception as exc:  # recorded, never silently discarded

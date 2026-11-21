@@ -1,0 +1,33 @@
+{
+  "synthetic": true,
+  "description": "Synthetic recovery resources for Meridian Valley: deliberately scarce (one crew per trade, one mobile generator) because recovery decisions only matter under contention. Renewable resources are units available at any time; consumables are used up.",
+  "version": 1,
+  "renewables": {
+    "crew:ELECTRICAL": 1,
+    "crew:TELECOM": 1,
+    "crew:WATER": 1,
+    "crew:CIVIL": 1,
+    "crew:MECHANICAL": 1,
+    "mobile_generator": 1,
+    "fuel_truck": 1
+  },
+  "consumables": {
+    "switchgear_kit": 4,
+    "power_transformer": 1,
+    "distribution_transformer": 2,
+    "hv_breaker": 1,
+    "telecom_module": 6,
+    "mast_kit": 1,
+    "pump_set": 3,
+    "filter_media": 4,
+    "plant_spares": 3,
+    "inverter": 1,
+    "battery_bank": 0,
+    "ups_module": 2,
+    "fuel_pump": 1,
+    "road_materials": 4,
+    "bridge_panel": 2,
+    "fuel_l": 30000,
+    "budget": 900000
+  }
+}

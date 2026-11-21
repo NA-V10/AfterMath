@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from app.agents.schemas import Briefing, IncidentExtraction, Narrative
+from app.agents.schemas import Briefing, IncidentExtraction
 from app.core.config import Settings
 from app.llm.base import LLMTimeoutError, ProviderResponse, TokenUsage
 from app.llm.chain import LLMClient
@@ -61,7 +61,7 @@ async def test_structured_incident_full_workflow(client: AsyncClient) -> None:
     assert run["status"] == "COMPLETED", run["error"]
     assert run["llm_mode"] == "DETERMINISTIC"
     agents = by_agent(run)
-    assert list(agents) == ["SENTINEL", "CARTOGRAPHER", "ORACLE"]
+    assert list(agents) == ["SENTINEL", "CARTOGRAPHER", "ORACLE", "STRATEGIST", "GUARDIAN"]
     assert all(e["status"] == "SUCCEEDED" for e in run["executions"])
 
     sentinel = agents["SENTINEL"][0]["output"]
@@ -98,7 +98,18 @@ async def test_structured_incident_full_workflow(client: AsyncClient) -> None:
     assert hos02["chain"] == ["HOS-02", "PDN-03", "SUB-02"]
 
     incident = (await client.get(f"/incidents/{incident_id}")).json()
-    assert incident["status"] == "ANALYZED"
+    assert incident["status"] == "AWAITING_APPROVAL"
+    governance = agents["GUARDIAN"][0]["output"]
+    assert governance["any_valid"] is True
+    assert [v["status"] for v in governance["verdicts"]] == ["VALIDATED"] * 3
+    proposal = agents["STRATEGIST"][0]["output"]
+    assert len(proposal["comparison"]) == 3
+    assert agents["STRATEGIST"][0]["grounding"]["ok"] is True
+    assert {t["name"] for t in agents["GUARDIAN"][0]["tool_calls"]} == {
+        "validate_strategy",
+        "recommend_strategy",
+    }
+    assert agents["GUARDIAN"][0]["llm_calls"] == []  # no LLM in governance decisions
     picture = (await client.get("/operational-picture")).json()
     assert picture["simulation_id"] == oracle["simulation_id"]
     audit = (await client.get("/audit", params={"entity_id": run["id"]})).json()["items"]
@@ -185,7 +196,7 @@ async def test_agent_registry_and_activity(client: AsyncClient) -> None:
         "STRATEGIST",
         "GUARDIAN",
     ]
-    assert [a["available"] for a in agents] == [True, True, True, False, False]
+    assert all(a["available"] for a in agents)
     page = (await client.get("/agents/activity", params={"agent": "ORACLE", "limit": 1})).json()
     assert page["items"][0]["agent"] == "ORACLE"
     detail = (await client.get(f"/agents/executions/{page['items'][0]['id']}")).json()
@@ -215,8 +226,8 @@ class Hallucinator:
             )
         elif request.schema is Briefing:
             value = Briefing(text="SUB-99 also failed, affecting 98,765 people.")
-        else:
-            value = Narrative(text="Impact 87.65 with XYZ-01 destroyed.")
+        else:  # Narrative or Rationale: same shape
+            value = request.schema(text="Impact 87.65 with XYZ-01 destroyed.")
         return ProviderResponse(value=value, model=self.model, usage=TokenUsage(100, 20))
 
 
@@ -246,9 +257,14 @@ async def test_provider_outage_falls_back_to_deterministic(client_with_llm: Asyn
     assert run["status"] == "COMPLETED"
     assert run["llm_mode"] == "LLM"
     for e in run["executions"]:
+        if e["agent"] == "GUARDIAN":  # makes no LLM calls at all
+            assert e["status"] == "SUCCEEDED"
+            assert e["llm_calls"] == []
+            continue
         assert e["status"] == "FELL_BACK", e["agent"]
-        attempts = [a["outcome"] for call in e["llm_calls"] for a in call.get("attempts", [])]
-        assert attempts.count("LLMTimeoutError") == 2
+        for call in e["llm_calls"]:  # STRATEGIST makes one call per strategy
+            outcomes = [a["outcome"] for a in call["attempts"]]
+            assert outcomes == ["LLMTimeoutError", "LLMTimeoutError", "ok"], e["agent"]
     damaged = [
         m["code"] for m in run["result"]["assessment"]["affected_assets"] if m["role"] == "damaged"
     ]

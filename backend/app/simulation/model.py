@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.graph.model import ASSET_CODE_PATTERN, PhysicalCondition, PolygonGeometry, ServiceType
 
-ENGINE_VERSION = "1.0.0"
+ENGINE_VERSION = "1.1.0"  # 1.1: BACKUP_SUPPLIED events (results for 1.0 inputs unchanged)
 SCORING_VERSION = "1.0"
 MAX_HORIZON_MINUTES = 14 * 24 * 60
 MAX_POLYGON_VERTICES = 500
@@ -72,8 +72,20 @@ class AssetRestoredEvent(BaseModel):
     asset_code: str = Field(pattern=ASSET_CODE_PATTERN)
 
 
+class BackupSuppliedEvent(BaseModel):
+    """Temporary power for an asset (mobile generator or refuelling of its own backup): adds
+    `minutes` of backup endurance. Used by recovery plans."""
+
+    model_config = _FROZEN
+    kind: Literal["BACKUP_SUPPLIED"] = "BACKUP_SUPPLIED"
+    t_minutes: int = Field(default=0, ge=0)
+    asset_code: str = Field(pattern=ASSET_CODE_PATTERN)
+    minutes: int = Field(gt=0, le=MAX_HORIZON_MINUTES)
+
+
 InitiatingEvent = Annotated[
-    AssetFailureEvent | AreaFloodEvent | AssetRestoredEvent, Field(discriminator="kind")
+    AssetFailureEvent | AreaFloodEvent | AssetRestoredEvent | BackupSuppliedEvent,
+    Field(discriminator="kind"),
 ]
 
 
@@ -151,6 +163,7 @@ class EventKind(StrEnum):
     BACKUP_ENGAGED = "BACKUP_ENGAGED"
     BACKUP_DISENGAGED = "BACKUP_DISENGAGED"
     BACKUP_EXHAUSTED = "BACKUP_EXHAUSTED"
+    BACKUP_SUPPLIED = "BACKUP_SUPPLIED"
     ISOLATION_DETECTED = "ISOLATION_DETECTED"
     ISOLATION_RESOLVED = "ISOLATION_RESOLVED"
     HORIZON_REACHED = "HORIZON_REACHED"

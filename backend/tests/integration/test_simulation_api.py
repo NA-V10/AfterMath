@@ -18,7 +18,7 @@ async def run(client: AsyncClient, **body: object) -> dict:  # type: ignore[type
 
 async def test_scenarios_are_listed(client: AsyncClient) -> None:
     keys = [s["key"] for s in (await client.get("/scenarios")).json()]
-    assert keys == ["power-telecom-combined", "river-flood", "substation-riverside"]
+    assert keys == ["power-telecom-combined", "river-flood", "severe-storm", "substation-riverside"]
     assert (await client.get("/scenarios/nope")).status_code == 404
 
 

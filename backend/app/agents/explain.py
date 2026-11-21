@@ -9,7 +9,7 @@ from typing import Any
 from app.agents.grounding import check_grounding
 from app.agents.recorder import ExecutionContext
 from app.agents.resolver import rule_based_extraction
-from app.agents.schemas import Briefing, Grounding, IncidentExtraction, Narrative
+from app.agents.schemas import Briefing, Grounding, IncidentExtraction, Narrative, Rationale
 from app.llm.base import LLMRequest
 from app.llm.chain import LLMClient
 from app.llm.deterministic import deterministic_task
@@ -35,6 +35,13 @@ ORACLE_SYSTEM = (
     "most 6 sentences: the overall impact, the most important failure chains, and the backup "
     "power deadlines. Use only asset codes and numbers that appear in the facts; never compute "
     "new figures."
+)
+
+
+STRATEGIST_SYSTEM = (
+    "You are STRATEGIST. Explain, in at most 5 sentences for an incident commander, why this "
+    "recovery strategy orders its actions as it does and what it trades off against the other "
+    "strategies. Use only asset codes, times and figures in the facts; do not propose changes."
 )
 
 
@@ -116,13 +123,33 @@ def _oracle_template(context: dict[str, Any]) -> Narrative:
     return Narrative(text=" ".join(parts))
 
 
+@deterministic_task("strategist.rationale")
+def _strategist_template(context: dict[str, Any]) -> Rationale:
+    f = context["facts"]
+    order = " -> ".join(a["asset"] for a in f["actions"] if a["type"] in ("REPAIR", "REPLACE"))
+    temp = [a for a in f["actions"] if a["type"] not in ("REPAIR", "REPLACE")]
+    parts = [f"{f['objective']} Repair order: {order or 'no repairs'}."]
+    if temp:
+        parts.append(
+            "Temporary power: "
+            + ", ".join(f"{a['type'].lower().replace('_', ' ')} at {a['asset']}" for a in temp)
+            + "."
+        )
+    parts.append(
+        f"Total impact {f['impact_hours']:.1f} impact-hours; all repairs finish at "
+        f"T+{f['makespan_minutes']} min; risk {f['risk_score']:.1f}."
+    )
+    parts += f["benefits"][:2] + f["limitations"][:2]
+    return Rationale(text=" ".join(parts))
+
+
 # ------------------------------------------------------------------ grounded explanation
 async def explain(
     llm: LLMClient,
     ctx: ExecutionContext,
     *,
     task: str,
-    schema: type[Briefing] | type[Narrative],
+    schema: type[Briefing] | type[Narrative] | type[Rationale],
     system: str,
     facts: dict[str, Any],
     allowed_codes: set[str],

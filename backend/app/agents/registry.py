@@ -74,7 +74,7 @@ AGENTS: list[AgentDefinition] = [
         deterministic_tools=["generate_strategies", "compare_strategies"],
         llm_role="Explains trade-offs; cannot alter actions or numbers.",
         output="StrategyProposal",
-        available=False,
+        available=True,
         available_from_phase=4,
     ),
     AgentDefinition(
@@ -82,12 +82,12 @@ AGENTS: list[AgentDefinition] = [
         role="Governance & verification",
         responsibilities=[
             "Validate strategies against rules V-001..V-012",
-            "Verify recovery outcomes after execution",
+            "Recommend by a fixed rule; verify outcomes after execution (Phase 5)",
         ],
-        deterministic_tools=["validate_strategy", "verify_execution"],
+        deterministic_tools=["validate_strategy", "recommend_strategy"],
         llm_role="None for decisions; optional plain-language summary.",
         output="GovernanceReport",
-        available=False,
+        available=True,
         available_from_phase=4,
     ),
 ]

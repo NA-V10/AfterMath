@@ -1,0 +1,1 @@
+"""Governance (pure rules + services)."""

@@ -29,6 +29,7 @@ from app.simulation.model import (
     AssetFailureEvent,
     AssetRestoredEvent,
     AssetState,
+    BackupSuppliedEvent,
     EventKind,
     FunctionalStatus,
     ImpactMetrics,
@@ -68,7 +69,7 @@ def validate_events(
             raise InvalidScenarioError(
                 f"event at t={e.t_minutes} is beyond the horizon ({config.horizon_minutes})"
             )
-        if isinstance(e, AssetFailureEvent | AssetRestoredEvent):
+        if isinstance(e, AssetFailureEvent | AssetRestoredEvent | BackupSuppliedEvent):
             snapshot.asset(e.asset_code)  # raises UnknownAssetError
 
 
@@ -162,6 +163,19 @@ class _Run:
                 return False  # stale: the asset left backup before exhaustion
             self.backup_left[payload.code] = 0
             self.emit(t, 0, EventKind.BACKUP_EXHAUSTED, payload.code)
+            return True
+        if isinstance(payload, BackupSuppliedEvent):
+            code = payload.asset_code
+            self.backup_left[code] += payload.minutes
+            if code in self.backup_since:  # already on backup: move its exhaustion later
+                self.backup_token[code] = self.backup_token.get(code, 0) + 1
+                self.push(
+                    t + self.backup_left[code], _BackupExhaustion(code, self.backup_token[code])
+                )
+            self.emit(
+                t, 0, EventKind.BACKUP_SUPPLIED, code,
+                details={"minutes": payload.minutes, "remaining_minutes": self.backup_left[code]},
+            )  # fmt: skip
             return True
         targets: list[tuple[str, PhysicalCondition, dict[str, Any]]] = []
         if isinstance(payload, AssetFailureEvent):

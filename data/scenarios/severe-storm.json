@@ -1,0 +1,15 @@
+{
+  "key": "severe-storm",
+  "name": "Severe storm — multi-site damage",
+  "synthetic": true,
+  "description": "A storm front damages two primary substations (Riverside and Eastridge), the Northgate west feeder, the Eastridge mast and the West Pumping Station, and blocks Eastridge Road. Repairs compete for the same crews, so the order of recovery matters.",
+  "horizon_minutes": 4320,
+  "initiating_events": [
+    { "kind": "ASSET_FAILURE", "t_minutes": 0, "asset_code": "SUB-02", "condition": "DAMAGED" },
+    { "kind": "ASSET_FAILURE", "t_minutes": 0, "asset_code": "SUB-04", "condition": "DAMAGED" },
+    { "kind": "ASSET_FAILURE", "t_minutes": 0, "asset_code": "PDN-01", "condition": "DAMAGED" },
+    { "kind": "ASSET_FAILURE", "t_minutes": 0, "asset_code": "TEL-05", "condition": "DAMAGED" },
+    { "kind": "ASSET_FAILURE", "t_minutes": 0, "asset_code": "WPS-02", "condition": "DAMAGED" },
+    { "kind": "ASSET_FAILURE", "t_minutes": 0, "asset_code": "RD-04", "condition": "DAMAGED" }
+  ]
+}

@@ -171,3 +171,45 @@ class SimulationSummary(BaseModel):
     narrative: str
     narrative_source: str
     grounding: Grounding
+
+
+class Rationale(BaseModel):
+    model_config = _F
+    text: str = Field(max_length=1200)
+
+
+class StrategyComparisonRow(BaseModel):
+    model_config = _F
+    strategy_id: str
+    policy: str
+    impact_hours: float
+    time_to_critical_services_minutes: int | None
+    makespan_minutes: int
+    total_cost: int
+    risk_score: float
+    actions: int
+
+
+class StrategyProposal(BaseModel):
+    model_config = _F
+    planning_round: int
+    comparison: list[StrategyComparisonRow]
+    rationale: dict[str, str]
+    rationale_sources: dict[str, str]
+    grounding: dict[str, Grounding]
+
+
+class StrategyVerdict(BaseModel):
+    model_config = _F
+    strategy_id: str
+    policy: str
+    status: str
+    failed_rules: list[str]
+
+
+class GovernanceReport(BaseModel):
+    model_config = _F
+    verdicts: list[StrategyVerdict]
+    recommended_strategy_id: str | None
+    recommendation_rule: str
+    any_valid: bool

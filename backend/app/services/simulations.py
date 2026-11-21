@@ -307,6 +307,7 @@ async def replay_run(session: AsyncSession, twin: LoadedTwin, run_id: uuid.UUID)
         replay_hash=result.result_hash,
         hash_matches=result.result_hash == run.result_hash,
         snapshot_matches=run.snapshot_hash == twin.snapshot.content_hash,
+        engine_matches=run.engine_version == result.engine_version,
     )
 
 
