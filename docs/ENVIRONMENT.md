@@ -57,3 +57,7 @@ Not blocked: pydantic-core, shapely, asyncpg, Next.js SWC, lightningcss, Microso
   ```
   Run tools as modules: `python -m uv run --no-sync python -m pytest | alembic | app.cli`.
 - The venv is disposable; nothing project-specific lives in it.
+
+## Phase 3 note (2026-11-21)
+
+The LangGraph checkpointer question is resolved with a custom asyncpg saver (ADR-0013); psycopg is not needed. The `anthropic` SDK and LangGraph's native dependencies (orjson, ormsgpack) load under Application Control.

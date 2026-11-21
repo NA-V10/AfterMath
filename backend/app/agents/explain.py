@@ -71,11 +71,18 @@ def _cartographer_template(context: dict[str, Any]) -> Briefing:
         )
         parts.append(f"Single points of failure among them: {spofs}.")
     lost = [r for r in f["redundancy_effects"] if r["effect"] == "REQUIREMENT_LOST"]
+    support = [r for r in f["redundancy_effects"] if r["effect"] == "SUPPORT_LOST"]
     reduced = [r for r in f["redundancy_effects"] if r["effect"] == "REDUNDANCY_REDUCED"]
     if lost:
         parts.append(
-            "Requirements lost: "
+            "Required supply lost: "
             + ", ".join(f"{r['dependent']} ({r['service_type'].lower()})" for r in lost[:8])
+            + "."
+        )
+    if support:
+        parts.append(
+            "Supporting service lost (degraded, still operating): "
+            + ", ".join(f"{r['dependent']} ({r['service_type'].lower()})" for r in support[:8])
             + "."
         )
     if reduced:

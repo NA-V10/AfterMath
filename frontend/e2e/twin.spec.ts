@@ -72,9 +72,19 @@ test("twin: category filter narrows the asset list", async ({ page }) => {
   await expect(page.getByTestId("graph-node-SUB-01")).toHaveAttribute("data-role", "hidden");
 });
 
-test("audit screen lists the dataset seeding record", async ({ page }) => {
+test("audit screen lists hash-chained records newest first and pages back", async ({ page }) => {
   await page.goto("/audit");
-  await expect(page.getByRole("cell", { name: "dataset.seeded" }).first()).toBeVisible();
+  const rows = page.locator("tbody tr");
+  await expect(rows.first()).toBeVisible();
+  const ids = await rows.locator("td:first-child").allTextContents();
+  const numeric = ids.map(Number);
+  expect(numeric).toEqual([...numeric].sort((a, b) => b - a)); // newest first
+  await expect(rows.first().locator("td").last()).toHaveText(/^[0-9a-f]{12}…$/);
+  const older = page.getByRole("button", { name: "Older" });
+  if (await older.isEnabled()) {
+    await older.click();
+    await expect(rows.first().locator("td:first-child")).not.toHaveText(String(numeric[0]));
+  }
 });
 
 test.afterEach(async ({ page }) => {

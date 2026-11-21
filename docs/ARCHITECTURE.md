@@ -51,8 +51,8 @@ flowchart TB
 | Layer | May import | Must not import |
 |---|---|---|
 | `app.graph`, `app.simulation`, `app.recovery`, `app.governance.rules` | each other (downward), stdlib, networkx, shapely, pydantic | `app.api`, `app.services`, `app.database`, `app.agents`, `app.llm`, `fastapi`, `sqlalchemy` |
-| `app.llm` | pydantic, httpx/SDKs | domain, database, api |
-| `app.agents` | `app.services` (read-only tool facade), `app.llm`, schemas | `app.database`, `app.api` |
+| `app.llm` | pydantic, httpx/SDKs, `app.core` | domain, database, api, agents, services (import-linter contract) |
+| `app.agents` | `app.services`, `app.llm`, schemas, the DB session factory and checkpointer (as implemented: agents sit between `app.api` and `app.services` in the layers contract) | `app.api` |
 | `app.services` | domain core, database, agents | `app.api` |
 | `app.api` | services, schemas, core | domain internals directly, database directly |
 

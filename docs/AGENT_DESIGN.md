@@ -104,3 +104,21 @@ Implementations:
 - Golden workflow tests in deterministic mode: the full workflow for each predefined scenario gives exactly the expected strategy IDs, validation outcomes and hashes.
 - Fault-injection tests: provider timeout, malformed JSON, schema violation, hallucinated asset code (grounding failure), tool exception. Each must produce the documented retry, fallback or failure record and never a silent success.
 - Optional live-LLM eval (not in CI by default): SENTINEL corpus accuracy and grounding rate, recorded in `docs/reports/`.
+
+## 6. As implemented (Phase 3)
+
+Code: `app/llm/*` (providers, fallback chain), `app/agents/*` (schemas, resolver, assessment, grounding, explain, recorder, nodes, workflow, registry), `app/database/checkpointer.py`, `app/services/workflows.py`, `app/api/v1/workflows.py`.
+
+**Workflow:** `START → sentinel → (cartographer | clarify→sentinel) → cartographer → oracle → END`. STRATEGIST and GUARDIAN are defined in the registry (`GET /agents`, `available: false`) and join after ORACLE in Phase 4, when their deterministic tools exist. Until then the workflow ends with the incident in the new status `ANALYZED`.
+
+Differences from §1–§5, each covered by tests:
+
+- **SENTINEL never lets an LLM choose assets.** The LLM output schema (`IncidentExtraction`) carries quotes, a damaged/affected role, type and severity. The deterministic resolver maps quotes to codes, rejects quotes that are not in the report, and penalises ambiguous matches. Only facilities reported as **damaged** become initiating events; facilities reported as *affected* (for example "hospital running on generator") are kept as evidence. Structured incidents skip the LLM entirely.
+- **Confidence** is the lowest match score among damaged facilities, capped at 0.5 when the incident type is unknown. Below 0.6, or with no initiating events, the workflow **interrupts** (`AWAITING_CLARIFICATION`) until an operator confirms the damaged assets (`POST /workflows/{id}/clarify`, validated against the twin).
+- **Grounding failure ⇒ immediate deterministic fallback** (no second LLM attempt). Ungrounded prose is never stored as the output or shown; the rejected codes and figures are recorded in `agent_execution.grounding`. Decimals, separated thousands, 4+ digit integers and percentages are checked; small integers are too ambiguous to check.
+- **Fallback chain:** at most `LLM_MAX_ATTEMPTS` (default 2) for transient errors (timeout, 429, 5xx, connection); one extra repair attempt for schema-invalid output; refusals and configuration errors are not retried. Then the deterministic implementation runs (`status = FELL_BACK`). SDK-level retries are disabled so the chain owns retry policy.
+- **Anthropic provider:** official SDK, `beta.messages.parse(output_format=...)`, default model `claude-opus-5-5`, server-side refusal fallbacks (`fallbacks="default"`) enabled.
+- **CARTOGRAPHER** distinguishes *required supply lost* (HARD), *supporting service lost* (SOFT: degraded, still operating) and *redundancy reduced* (still supplied, no spare).
+- **ORACLE** runs the persisted, immutable simulation for the incident and applies it to the operational picture. Agents may create these analysis records but have no tool that approves, executes, or alters stored results.
+- **Durability:** state is checkpointed after every node by `AsyncpgCheckpointSaver` (ADR-0013). On startup, `RUNNING` workflows resume from their last checkpoint. The checkpointer is tested through a real interrupt/resume across a fresh saver instance.
+- **Measurement:** the deterministic SENTINEL scores 10/10 on the labelled corpus (`data/synthetic/meridian-valley/reports/corpus.json`). The rules were developed against this same corpus, so this proves the rules behave as designed, **not** that they generalise; a held-out corpus is needed before quoting accuracy.

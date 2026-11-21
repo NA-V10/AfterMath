@@ -126,7 +126,8 @@ class RedundancyEffect(BaseModel):
     providers_lost: list[str]
     providers_remaining: int
     required: int
-    effect: Literal["REDUNDANCY_REDUCED", "REQUIREMENT_LOST"]
+    mode: Literal["HARD", "SOFT"]
+    effect: Literal["REDUNDANCY_REDUCED", "REQUIREMENT_LOST", "SUPPORT_LOST"]
 
 
 class DependencyAnalysis(BaseModel):

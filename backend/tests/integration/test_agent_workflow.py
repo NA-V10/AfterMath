@@ -77,6 +77,13 @@ async def test_structured_incident_full_workflow(client: AsyncClient) -> None:
         if r["effect"] == "REQUIREMENT_LOST"
     }
     assert {"PDN-03", "PDN-04"} <= lost
+    support = {
+        r["dependent"]
+        for r in carto["output"]["redundancy_effects"]
+        if r["effect"] == "SUPPORT_LOST"
+    }
+    assert "HOS-02" not in lost  # its power group lost, but only via PDN-03 (not SUB-02 directly)
+    assert support.isdisjoint(lost)
     assert [t["name"] for t in carto["tool_calls"]] == [
         "structural_criticality",
         "dependency_analysis",

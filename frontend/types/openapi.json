@@ -1,6 +1,79 @@
 {
   "components": {
     "schemas": {
+      "AgentDefinition": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "available_from_phase": {
+            "title": "Available From Phase",
+            "type": "integer"
+          },
+          "deterministic_tools": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Deterministic Tools",
+            "type": "array"
+          },
+          "llm_role": {
+            "title": "Llm Role",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "output": {
+            "title": "Output",
+            "type": "string"
+          },
+          "responsibilities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Responsibilities",
+            "type": "array"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "role",
+          "responsibilities",
+          "deterministic_tools",
+          "llm_role",
+          "output",
+          "available",
+          "available_from_phase"
+        ],
+        "title": "AgentDefinition",
+        "type": "object"
+      },
+      "AnalyzeAccepted": {
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "workflow_run_id": {
+            "format": "uuid",
+            "title": "Workflow Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workflow_run_id",
+          "status"
+        ],
+        "title": "AnalyzeAccepted",
+        "type": "object"
+      },
       "AreaFloodEvent": {
         "additionalProperties": false,
         "description": "Assets intersecting the polygon whose elevation is below the water level are inundated\n(DAMAGED; roads and bridges become impassable). Demand zones are not damaged by floods.",
@@ -765,6 +838,71 @@
         "title": "CauseKind",
         "type": "string"
       },
+      "ClarificationIn": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_codes": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Asset Codes",
+            "type": "array"
+          },
+          "condition": {
+            "default": "DAMAGED",
+            "enum": [
+              "DEGRADED",
+              "DAMAGED",
+              "DESTROYED"
+            ],
+            "title": "Condition",
+            "type": "string"
+          },
+          "incident_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "POWER_FAILURE",
+                  "FLOODING",
+                  "TELECOM_OUTAGE",
+                  "WATER_DISRUPTION",
+                  "EQUIPMENT_FAILURE",
+                  "COMBINED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Type"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "enum": [
+                  "LOW",
+                  "MODERATE",
+                  "HIGH",
+                  "CRITICAL"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
+          }
+        },
+        "required": [
+          "asset_codes"
+        ],
+        "title": "ClarificationIn",
+        "type": "object"
+      },
       "CriticalityEntry": {
         "properties": {
           "affected_population": {
@@ -984,6 +1122,165 @@
         ],
         "title": "EventKind",
         "type": "string"
+      },
+      "ExecutionOut": {
+        "properties": {
+          "agent": {
+            "title": "Agent",
+            "type": "string"
+          },
+          "attempt": {
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "grounding": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grounding"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "input_summary": {
+            "additionalProperties": true,
+            "title": "Input Summary",
+            "type": "object"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "llm_calls": {
+            "items": {},
+            "title": "Llm Calls",
+            "type": "array"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "tokens_in": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens In"
+          },
+          "tokens_out": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tokens Out"
+          },
+          "tool_calls": {
+            "items": {},
+            "title": "Tool Calls",
+            "type": "array"
+          },
+          "workflow_run_id": {
+            "format": "uuid",
+            "title": "Workflow Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workflow_run_id",
+          "agent",
+          "attempt",
+          "status",
+          "summary",
+          "input_summary",
+          "output",
+          "tool_calls",
+          "llm_calls",
+          "grounding",
+          "tokens_in",
+          "tokens_out",
+          "latency_ms",
+          "error",
+          "started_at",
+          "completed_at"
+        ],
+        "title": "ExecutionOut",
+        "type": "object"
       },
       "FreeTextIncidentCreate": {
         "additionalProperties": false,
@@ -1606,6 +1903,34 @@
           "next_cursor"
         ],
         "title": "Page[AuditRecord]",
+        "type": "object"
+      },
+      "Page_ExecutionOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExecutionOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "Page[ExecutionOut]",
         "type": "object"
       },
       "Page_IncidentOut_": {
@@ -2761,6 +3086,11 @@
             "title": "Environment",
             "type": "string"
           },
+          "llm": {
+            "description": "'deterministic' or provider:model; deterministic is the fallback",
+            "title": "Llm",
+            "type": "string"
+          },
           "simulation_notice": {
             "title": "Simulation Notice",
             "type": "string"
@@ -2768,6 +3098,7 @@
         },
         "required": [
           "app_version",
+          "llm",
           "environment",
           "simulation_notice",
           "database_revision",
@@ -2931,6 +3262,124 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "WorkflowOut": {
+        "properties": {
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "current_node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Node"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "executions": {
+            "items": {
+              "$ref": "#/components/schemas/ExecutionOut"
+            },
+            "title": "Executions",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "incident_id": {
+            "format": "uuid",
+            "title": "Incident Id",
+            "type": "string"
+          },
+          "incident_reference": {
+            "title": "Incident Reference",
+            "type": "string"
+          },
+          "llm_mode": {
+            "title": "Llm Mode",
+            "type": "string"
+          },
+          "llm_provider": {
+            "title": "Llm Provider",
+            "type": "string"
+          },
+          "pending_question": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pending Question"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "incident_id",
+          "incident_reference",
+          "status",
+          "current_node",
+          "llm_mode",
+          "llm_provider",
+          "pending_question",
+          "result",
+          "error",
+          "started_at",
+          "completed_at",
+          "executions"
+        ],
+        "title": "WorkflowOut",
+        "type": "object"
       }
     }
   },
@@ -2941,6 +3390,170 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/agents": {
+      "get": {
+        "operationId": "list_agents_api_v1_agents_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AgentDefinition"
+                  },
+                  "title": "Response List Agents Api V1 Agents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Agents",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/api/v1/agents/activity": {
+      "get": {
+        "operationId": "agent_activity_api_v1_agents_activity_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agent",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Z]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workflow_run_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Workflow Run Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ExecutionOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Agent Activity",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/api/v1/agents/executions/{execution_id}": {
+      "get": {
+        "operationId": "get_execution_api_v1_agents_executions__execution_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "execution_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Execution Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Execution",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
     "/api/v1/audit": {
       "get": {
         "operationId": "list_audit_api_v1_audit_get",
@@ -3298,6 +3911,50 @@
         "summary": "Get Incident",
         "tags": [
           "incidents"
+        ]
+      }
+    },
+    "/api/v1/incidents/{incident_id}/analyze": {
+      "post": {
+        "description": "Start the agent workflow (SENTINEL -> CARTOGRAPHER -> ORACLE) in the background.",
+        "operationId": "analyze_incident_api_v1_incidents__incident_id__analyze_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "incident_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Incident Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeAccepted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analyze Incident",
+        "tags": [
+          "agents"
         ]
       }
     },
@@ -4205,6 +4862,211 @@
         "summary": "System Status",
         "tags": [
           "system"
+        ]
+      }
+    },
+    "/api/v1/workflows": {
+      "get": {
+        "operationId": "list_workflows_api_v1_workflows_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "incident_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Incident Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowOut"
+                  },
+                  "title": "Response List Workflows Api V1 Workflows Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Workflows",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/api/v1/workflows/{run_id}": {
+      "get": {
+        "operationId": "get_workflow_api_v1_workflows__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Workflow",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/api/v1/workflows/{run_id}/clarify": {
+      "post": {
+        "description": "Answer SENTINEL's question: confirm the damaged facilities (validated against the twin).",
+        "operationId": "clarify_workflow_api_v1_workflows__run_id__clarify_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClarificationIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeAccepted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clarify Workflow",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/api/v1/workflows/{run_id}/events": {
+      "get": {
+        "description": "Server-Sent Events: a `workflow` snapshot on connect and after every change; the stream\nends after a terminal status. Clients may fall back to polling GET /workflows/{id}.",
+        "operationId": "workflow_events_api_v1_workflows__run_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Workflow Events",
+        "tags": [
+          "agents"
         ]
       }
     }

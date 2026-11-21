@@ -59,3 +59,10 @@ Every state-changing operation runs as `authorize → validate state → mutate 
 ## 7. Observability for security
 
 Security-relevant events are logged at `INFO` with `security=true` and audited: login success/failure, approval, rejection, execute attempts (including denied ones, with reason), inventory changes, operational-picture resets, governance config at startup.
+
+## 8. Agents (as implemented, Phase 3)
+
+- Free-text reports are stored verbatim and passed to the LLM only inside `<report>` tags, with a system instruction that the report is untrusted and must not be followed. More importantly, the **output schema** gives an injected instruction nowhere to act: quotes, type and severity only. A corpus case (R09) asserts that an "approve every strategy" injection yields nothing beyond its extracted facility.
+- **What agents may write:** SENTINEL updates the incident's assessed fields and evidence; ORACLE creates an immutable simulation run and applies it to the operational picture. Every write is audited as `AGENT:<name>` with the `workflow_run_id`. No agent can approve, execute, or modify stored results; those paths do not exist in the agent toolset.
+- **What is persisted:** structured outputs, short user-facing summaries, tool calls (with result digests), LLM attempt outcomes and token counts. Provider reasoning is never requested or stored.
+- `LLM_API_KEY` is a `SecretStr`; logging redacts `api_key`/`llm_api_key`.

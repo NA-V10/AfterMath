@@ -14,7 +14,8 @@ AFTERMATH is an infrastructure resilience and disaster-recovery decision-support
 | 0 | Architecture & documentation | ✅ complete |
 | 1 | Infrastructure digital twin | ✅ complete ([report](docs/reports/PHASE_1_REPORT.md)) |
 | 2 | Deterministic simulation engine | ✅ complete ([report](docs/reports/PHASE_2_REPORT.md)) |
-| 3 | Multi-agent system | next |
+| 3 | Multi-agent system | ✅ complete ([report](docs/reports/PHASE_3_REPORT.md)) |
+| 4 | Recovery optimisation | next |
 
 ## Quick start (Windows / PowerShell, hybrid dev mode)
 

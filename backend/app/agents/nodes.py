@@ -203,7 +203,14 @@ def dependency_facts(twin: LoadedTwin, focus: list[str], criticality: list[Any])
                 RedundancyEffect(
                     dependent=dependent, group=g.name, service_type=g.service_type.value,
                     providers_lost=lost, providers_remaining=remaining, required=g.k,
-                    effect="REQUIREMENT_LOST" if remaining < g.k else "REDUNDANCY_REDUCED",
+                    mode=g.mode.value,
+                    effect=(
+                        "REDUNDANCY_REDUCED"
+                        if remaining >= g.k
+                        else "REQUIREMENT_LOST"
+                        if g.mode.value == "HARD"
+                        else "SUPPORT_LOST"
+                    ),
                 )
             )  # fmt: skip
     return {

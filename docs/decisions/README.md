@@ -14,3 +14,4 @@
 | [ADR-0010](ADR-0010-sse-for-realtime.md) | Server-Sent Events for progress streams | Proposed |
 | [ADR-0011](ADR-0011-openapi-generated-types.md) | OpenAPI as the single API contract; generated TypeScript types | Proposed |
 | [ADR-0012](ADR-0012-local-dev-topology.md) | Hybrid local development topology | Proposed |
+| [ADR-0013](ADR-0013-asyncpg-langgraph-checkpointer.md) | LangGraph checkpointer on asyncpg | Accepted |

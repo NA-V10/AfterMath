@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+    "/api/v1/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Agents */
+        get: operations["list_agents_api_v1_agents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agents/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Agent Activity */
+        get: operations["agent_activity_api_v1_agents_activity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agents/executions/{execution_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Execution */
+        get: operations["get_execution_api_v1_agents_executions__execution_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/audit": {
         parameters: {
             query?: never;
@@ -105,6 +156,26 @@ export interface paths {
         get: operations["get_incident_api_v1_incidents__incident_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/incidents/{incident_id}/analyze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Analyze Incident
+         * @description Start the agent workflow (SENTINEL -> CARTOGRAPHER -> ORACLE) in the background.
+         */
+        post: operations["analyze_incident_api_v1_incidents__incident_id__analyze_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -433,10 +504,114 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Workflows */
+        get: operations["list_workflows_api_v1_workflows_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workflow */
+        get: operations["get_workflow_api_v1_workflows__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{run_id}/clarify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Clarify Workflow
+         * @description Answer SENTINEL's question: confirm the damaged facilities (validated against the twin).
+         */
+        post: operations["clarify_workflow_api_v1_workflows__run_id__clarify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Workflow Events
+         * @description Server-Sent Events: a `workflow` snapshot on connect and after every change; the stream
+         *     ends after a terminal status. Clients may fall back to polling GET /workflows/{id}.
+         */
+        get: operations["workflow_events_api_v1_workflows__run_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AgentDefinition */
+        AgentDefinition: {
+            /** Available */
+            available: boolean;
+            /** Available From Phase */
+            available_from_phase: number;
+            /** Deterministic Tools */
+            deterministic_tools: string[];
+            /** Llm Role */
+            llm_role: string;
+            /** Name */
+            name: string;
+            /** Output */
+            output: string;
+            /** Responsibilities */
+            responsibilities: string[];
+            /** Role */
+            role: string;
+        };
+        /** AnalyzeAccepted */
+        AnalyzeAccepted: {
+            /** Status */
+            status: string;
+            /**
+             * Workflow Run Id
+             * Format: uuid
+             */
+            workflow_run_id: string;
+        };
         /**
          * AreaFloodEvent
          * @description Assets intersecting the polygon whose elevation is below the water level are inundated
@@ -725,6 +900,21 @@ export interface components {
          * @enum {string}
          */
         CauseKind: "PHYSICAL" | "DEPENDENCY" | "SOFT_DEPENDENCY" | "BACKUP";
+        /** ClarificationIn */
+        ClarificationIn: {
+            /** Asset Codes */
+            asset_codes: string[];
+            /**
+             * Condition
+             * @default DAMAGED
+             * @enum {string}
+             */
+            condition: "DEGRADED" | "DAMAGED" | "DESTROYED";
+            /** Incident Type */
+            incident_type?: ("POWER_FAILURE" | "FLOODING" | "TELECOM_OUTAGE" | "WATER_DISRUPTION" | "EQUIPMENT_FAILURE" | "COMBINED") | null;
+            /** Severity */
+            severity?: ("LOW" | "MODERATE" | "HIGH" | "CRITICAL") | null;
+        };
         /** CriticalityEntry */
         CriticalityEntry: {
             /** Affected Population */
@@ -812,6 +1002,60 @@ export interface components {
          * @enum {string}
          */
         EventKind: "CONDITION_CHANGED" | "STATUS_CHANGED" | "BACKUP_ENGAGED" | "BACKUP_DISENGAGED" | "BACKUP_EXHAUSTED" | "ISOLATION_DETECTED" | "ISOLATION_RESOLVED" | "HORIZON_REACHED";
+        /** ExecutionOut */
+        ExecutionOut: {
+            /** Agent */
+            agent: string;
+            /** Attempt */
+            attempt: number;
+            /** Completed At */
+            completed_at: string | null;
+            /** Error */
+            error: {
+                [key: string]: unknown;
+            } | null;
+            /** Grounding */
+            grounding: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Input Summary */
+            input_summary: {
+                [key: string]: unknown;
+            };
+            /** Latency Ms */
+            latency_ms: number | null;
+            /** Llm Calls */
+            llm_calls: unknown[];
+            /** Output */
+            output: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Status */
+            status: string;
+            /** Summary */
+            summary: string | null;
+            /** Tokens In */
+            tokens_in: number | null;
+            /** Tokens Out */
+            tokens_out: number | null;
+            /** Tool Calls */
+            tool_calls: unknown[];
+            /**
+             * Workflow Run Id
+             * Format: uuid
+             */
+            workflow_run_id: string;
+        };
         /** FreeTextIncidentCreate */
         FreeTextIncidentCreate: {
             /** Occurred At */
@@ -1025,6 +1269,13 @@ export interface components {
         Page_AuditRecord_: {
             /** Items */
             items: components["schemas"]["AuditRecord"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** Page[ExecutionOut] */
+        Page_ExecutionOut_: {
+            /** Items */
+            items: components["schemas"]["ExecutionOut"][];
             /** Next Cursor */
             next_cursor: string | null;
         };
@@ -1395,6 +1646,11 @@ export interface components {
             dataset: components["schemas"]["DatasetInfo"] | null;
             /** Environment */
             environment: string;
+            /**
+             * Llm
+             * @description 'deterministic' or provider:model; deterministic is the fallback
+             */
+            llm: string;
             /** Simulation Notice */
             simulation_notice: string;
         };
@@ -1449,6 +1705,50 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** WorkflowOut */
+        WorkflowOut: {
+            /** Completed At */
+            completed_at: string | null;
+            /** Current Node */
+            current_node: string | null;
+            /** Error */
+            error: {
+                [key: string]: unknown;
+            } | null;
+            /** Executions */
+            executions: components["schemas"]["ExecutionOut"][];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Incident Id
+             * Format: uuid
+             */
+            incident_id: string;
+            /** Incident Reference */
+            incident_reference: string;
+            /** Llm Mode */
+            llm_mode: string;
+            /** Llm Provider */
+            llm_provider: string;
+            /** Pending Question */
+            pending_question: {
+                [key: string]: unknown;
+            } | null;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Status */
+            status: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -1458,6 +1758,91 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_agents_api_v1_agents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentDefinition"][];
+                };
+            };
+        };
+    };
+    agent_activity_api_v1_agents_activity_get: {
+        parameters: {
+            query?: {
+                agent?: string | null;
+                workflow_run_id?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ExecutionOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_execution_api_v1_agents_executions__execution_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_audit_api_v1_audit_get: {
         parameters: {
             query?: {
@@ -1655,6 +2040,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IncidentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    analyze_incident_api_v1_incidents__incident_id__analyze_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyzeAccepted"];
                 };
             };
             /** @description Validation Error */
@@ -2200,6 +2616,135 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SystemStatus"];
+                };
+            };
+        };
+    };
+    list_workflows_api_v1_workflows_get: {
+        parameters: {
+            query?: {
+                incident_id?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_workflow_api_v1_workflows__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clarify_workflow_api_v1_workflows__run_id__clarify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClarificationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalyzeAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    workflow_events_api_v1_workflows__run_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -223,3 +223,82 @@ export function useCriticality() {
     ...STATIC,
   });
 }
+
+// ------------------------------------------------------------------ Phase 3: agents
+export type Workflow = Schemas["WorkflowOut"];
+export type AgentExecution = Schemas["ExecutionOut"];
+const ACTIVE = new Set(["RUNNING"]);
+
+export function useAgents() {
+  return useQuery({
+    queryKey: ["agents"],
+    queryFn: () => unwrap(api.GET("/api/v1/agents")),
+    ...STATIC,
+  });
+}
+
+export function useIncidents() {
+  return useQuery({
+    queryKey: ["incidents"],
+    queryFn: () => unwrap(api.GET("/api/v1/incidents", { params: { query: { limit: 50 } } })),
+  });
+}
+
+export function useWorkflows(incidentId: string | null) {
+  return useQuery({
+    queryKey: ["workflows", "list", incidentId],
+    queryFn: () =>
+      unwrap(api.GET("/api/v1/workflows", { params: { query: { incident_id: incidentId!, limit: 10 } } })),
+    enabled: incidentId !== null,
+  });
+}
+
+/** Workflow detail; polls while running (SSE pushes updates too, see useWorkflowStream). */
+export function useWorkflow(id: string | null) {
+  return useQuery({
+    queryKey: ["workflows", "detail", id],
+    queryFn: () =>
+      unwrap(api.GET("/api/v1/workflows/{run_id}", { params: { path: { run_id: id! } } })),
+    enabled: id !== null,
+    refetchInterval: (q) => (q.state.data && ACTIVE.has(q.state.data.status) ? 2000 : false),
+  });
+}
+
+export function useCreateIncident() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Schemas["StructuredIncidentCreate"] | Schemas["FreeTextIncidentCreate"]) =>
+      unwrap(api.POST("/api/v1/incidents", { body })),
+    onSuccess: () => void client.invalidateQueries({ queryKey: ["incidents"] }),
+  });
+}
+
+export function useAnalyze() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (incidentId: string) =>
+      unwrap(
+        api.POST("/api/v1/incidents/{incident_id}/analyze", {
+          params: { path: { incident_id: incidentId } },
+        }),
+      ),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["incidents"] });
+      void client.invalidateQueries({ queryKey: ["workflows", "list"] });
+    },
+  });
+}
+
+export function useClarify(runId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Schemas["ClarificationIn"]) =>
+      unwrap(
+        api.POST("/api/v1/workflows/{run_id}/clarify", {
+          params: { path: { run_id: runId } },
+          body,
+        }),
+      ),
+    onSuccess: () => void client.invalidateQueries({ queryKey: ["workflows", "detail", runId] }),
+  });
+}
