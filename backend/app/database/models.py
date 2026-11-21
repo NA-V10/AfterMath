@@ -167,3 +167,185 @@ class AuditLog(Base):
         Index("ix_audit_log_entity", "entity_type", "entity_id"),
         Index("ix_audit_log_occurred_at", "occurred_at"),
     )
+
+
+# ============================================================ Phase 2
+INCIDENT_SOURCES = ["MANUAL", "STRUCTURED", "FREE_TEXT", "SENSOR", "SCENARIO"]
+INCIDENT_TYPES = [
+    "POWER_FAILURE", "FLOODING", "TELECOM_OUTAGE", "WATER_DISRUPTION", "EQUIPMENT_FAILURE",
+    "COMBINED",
+]  # fmt: skip
+SEVERITIES = ["LOW", "MODERATE", "HIGH", "CRITICAL"]
+INCIDENT_STATUSES = [
+    "REPORTED", "ANALYZING", "ANALYSIS_FAILED", "AWAITING_APPROVAL", "RECOVERING", "RECOVERED",
+    "CLOSED",
+]  # fmt: skip
+EVIDENCE_KINDS = [
+    "REPORT_SPAN", "SENSOR_READING", "ASSET_MATCH", "GEOSPATIAL_MATCH", "OPERATOR_NOTE",
+]  # fmt: skip
+
+
+class SimulationScenario(Base):
+    __tablename__ = "simulation_scenario"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    key: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    initiating_events: Mapped[list[Any]] = mapped_column(nullable=False)
+    horizon_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    is_predefined: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_synthetic: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=true())
+    created_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = updated_at_col()
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (CheckConstraint("is_synthetic", name="synthetic_only"),)
+
+
+class Incident(Base):
+    __tablename__ = "incident"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    reference: Mapped[str] = mapped_column(String(24), nullable=False, unique=True)
+    source: Mapped[str] = mapped_column(String(16), nullable=False)
+    raw_report: Mapped[str | None] = mapped_column(Text)
+    title: Mapped[str | None] = mapped_column(String(160))
+    incident_type: Mapped[str | None] = mapped_column(String(32))
+    severity: Mapped[str | None] = mapped_column(String(16))
+    occurred_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    location: Mapped[dict[str, Any] | None] = mapped_column()
+    initiating_events: Mapped[list[Any] | None] = mapped_column()
+    confidence: Mapped[float | None] = mapped_column(Float)
+    missing_information: Mapped[list[Any]] = mapped_column(nullable=False, default=list)
+    scenario_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("simulation_scenario.id", ondelete="RESTRICT")
+    )
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="REPORTED")
+    is_synthetic: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=true())
+    created_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = updated_at_col()
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        CheckConstraint(_enum_check("source", INCIDENT_SOURCES), name="source_valid"),
+        CheckConstraint(
+            "incident_type IS NULL OR " + _enum_check("incident_type", INCIDENT_TYPES),
+            name="type_valid",
+        ),
+        CheckConstraint(
+            "severity IS NULL OR " + _enum_check("severity", SEVERITIES), name="severity_valid"
+        ),
+        CheckConstraint(_enum_check("status", INCIDENT_STATUSES), name="status_valid"),
+        CheckConstraint(
+            "confidence IS NULL OR confidence BETWEEN 0 AND 1", name="confidence_range"
+        ),
+        CheckConstraint(
+            "source <> 'FREE_TEXT' OR raw_report IS NOT NULL", name="free_text_has_report"
+        ),
+        CheckConstraint("is_synthetic", name="synthetic_only"),
+        Index("ix_incident_created_at", "created_at"),
+    )
+
+
+class IncidentEvidence(Base):
+    __tablename__ = "incident_evidence"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    incident_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("incident.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    kind: Mapped[str] = mapped_column(String(24), nullable=False)
+    content: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    source_agent_execution_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    confidence: Mapped[float | None] = mapped_column(Float)
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (CheckConstraint(_enum_check("kind", EVIDENCE_KINDS), name="kind_valid"),)
+
+
+class SimulationRun(Base):
+    __tablename__ = "simulation_run"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    label: Mapped[str | None] = mapped_column(String(120))
+    kind: Mapped[str] = mapped_column(String(16), nullable=False, default="IMPACT")
+    incident_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("incident.id", ondelete="RESTRICT"), index=True
+    )
+    scenario_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("simulation_scenario.id", ondelete="RESTRICT")
+    )
+    inputs: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    dataset_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    engine_version: Mapped[str] = mapped_column(String(16), nullable=False)
+    scoring_version: Mapped[str] = mapped_column(String(16), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    final_state: Mapped[list[Any] | None] = mapped_column()
+    metrics: Mapped[dict[str, Any] | None] = mapped_column()
+    result_hash: Mapped[str | None] = mapped_column(String(64))
+    error: Mapped[dict[str, Any] | None] = mapped_column()
+    requested_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    duration_ms: Mapped[float | None] = mapped_column(Float)
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (
+        CheckConstraint("kind IN ('IMPACT', 'RECOVERY')", name="kind_valid"),
+        CheckConstraint("status IN ('COMPLETED', 'FAILED')", name="status_valid"),
+        CheckConstraint(
+            "status <> 'COMPLETED' OR (result_hash IS NOT NULL AND final_state IS NOT NULL)",
+            name="completed_has_result",
+        ),
+        Index("ix_simulation_run_created_at", "created_at"),
+    )
+
+
+class SimulationEventRow(Base):
+    """One engine event of a run (append-only, ordered by seq)."""
+
+    __tablename__ = "simulation_event"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("simulation_run.id", ondelete="CASCADE"), nullable=False
+    )
+    seq: Mapped[int] = mapped_column(Integer, nullable=False)
+    t_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    wave: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    asset_code: Mapped[str | None] = mapped_column(String(16))
+    from_status: Mapped[str | None] = mapped_column(String(16))
+    to_status: Mapped[str | None] = mapped_column(String(16))
+    details: Mapped[dict[str, Any]] = mapped_column(nullable=False, default=dict)
+
+    __table_args__ = (
+        UniqueConstraint("run_id", "seq", name="uq_simulation_event_run_seq"),
+        Index("ix_simulation_event_run_time", "run_id", "t_minutes", "wave"),
+    )
+
+
+class OperationalPictureChange(Base):
+    """Append-only history of what the operational picture shows (baseline or a run)."""
+
+    __tablename__ = "operational_picture_change"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)
+    simulation_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("simulation_run.id", ondelete="RESTRICT")
+    )
+    actor_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    reason: Mapped[str | None] = mapped_column(String(300))
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (
+        CheckConstraint("kind IN ('APPLY', 'RESET')", name="kind_valid"),
+        CheckConstraint(
+            "(kind = 'APPLY') = (simulation_run_id IS NOT NULL)", name="apply_references_run"
+        ),
+    )

@@ -29,6 +29,9 @@ async def get_twin(
     return await store.current(session)
 
 
+TwinDep = Annotated[LoadedTwin, Depends(get_twin)]
+
+
 async def get_queries(twin: Annotated[LoadedTwin, Depends(get_twin)]) -> InfrastructureQueries:
     return InfrastructureQueries(twin)
 

@@ -31,7 +31,7 @@ async def test_system_status_reports_capabilities_honestly(client: AsyncClient) 
     assert body["simulation_notice"].startswith("SIMULATION ENVIRONMENT")
     assert body["dataset"]["asset_count"] == 50
     assert body["capabilities"]["digital_twin"] is True
-    assert body["capabilities"]["simulation"] is False
+    assert body["capabilities"]["agents"] is False  # Phase 3
 
 
 async def test_list_assets_and_filters(client: AsyncClient) -> None:

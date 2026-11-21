@@ -56,7 +56,7 @@ warn_unused_ignores = true
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["app.graph.*", "app.core.*"]
+module = ["app.graph.*", "app.core.*", "app.simulation.*"]
 strict = true
 
 [tool.pytest.ini_options]
@@ -74,10 +74,10 @@ include_external_packages = true
 [[tool.importlinter.contracts]]
 name = "Domain core is pure (no web, DB, agents, services)"
 type = "forbidden"
-source_modules = ["app.graph"]
+source_modules = ["app.graph", "app.simulation"]
 forbidden_modules = ["app.api", "app.services", "app.database", "fastapi", "sqlalchemy", "app.core.config"]
 
 [[tool.importlinter.contracts]]
 name = "Layers"
 type = "layers"
-layers = ["app.api", "app.services", "app.database", "app.graph"]
+layers = ["app.api", "app.services", "app.database", "app.simulation", "app.graph"]

@@ -49,7 +49,7 @@ class SystemStatus(BaseModel):
 
 
 CAPABILITIES = Capabilities(
-    phase=1, digital_twin=True, simulation=False, agents=False, recovery=False, governance=False
+    phase=2, digital_twin=True, simulation=True, agents=False, recovery=False, governance=False
 )
 
 

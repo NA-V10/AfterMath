@@ -17,16 +17,21 @@ from pathlib import Path
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.database.session import Database
-from app.graph.dataset import DatasetFiles, DatasetManifest, DependentRecord, load_dataset_dir
+from app.graph.dataset import (
+    DatasetFiles,
+    DatasetManifest,
+    DependentRecord,
+    load_dataset_dir,
+    to_snapshot,
+)
 from app.graph.model import Asset
 from app.graph.validation import Severity, validate_snapshot
 from app.services.audit import verify_chain
 from app.services.dataset import seed_dataset
+from app.services.scenarios import load_scenario_files, sync_scenarios
 
 
 def _validate(directory: Path) -> int:
-    from app.graph.dataset import to_snapshot
-
     files, _ = load_dataset_dir(directory)
     snapshot = to_snapshot(files)
     issues = validate_snapshot(snapshot)
@@ -48,6 +53,12 @@ async def _seed(directory: Path) -> int:
     try:
         async with db.sessionmaker() as session, session.begin():
             result = await seed_dataset(session, files, basemap, actor_id="cli:seed")
+            synced = await sync_scenarios(
+                session,
+                to_snapshot(files),
+                load_scenario_files(settings.scenarios_dir),
+                actor_id="cli:seed",
+            )
     except AppError as exc:
         print(f"seed failed: {exc.detail}", file=sys.stderr)
         for issue in exc.extra.get("issues", []):
@@ -59,6 +70,10 @@ async def _seed(directory: Path) -> int:
         f"{result.status}: {result.name}@{result.version} "
         f"({result.asset_count} assets, {result.dependency_count} dependencies, "
         f"hash {result.content_hash[:16]})"
+    )
+    print(
+        f"scenarios: created={synced.created} updated={synced.updated} "
+        f"unchanged={len(synced.unchanged)}"
     )
     return 0
 

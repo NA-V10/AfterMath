@@ -4,7 +4,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Query
 
-from app.api.deps import QueriesDep
+from app.api.deps import QueriesDep, TwinDep
 from app.core.errors import InvalidInputError
 from app.graph.model import AssetCategory, PhysicalCondition, ServiceType
 from app.graph.twin_graph import Direction
@@ -16,6 +16,8 @@ from app.schemas.infrastructure import (
     Page,
     TraversalResult,
 )
+from app.schemas.simulation import CriticalityReport
+from app.services import analysis_cache
 from app.services.infrastructure import AssetFilter
 
 router = APIRouter(prefix="/infrastructure", tags=["infrastructure"])
@@ -91,3 +93,13 @@ async def get_health(queries: QueriesDep) -> InfrastructureHealth:
 async def get_basemap(queries: QueriesDep) -> dict[str, Any]:
     """Synthetic basemap (GeoJSON FeatureCollection) for the fictional district."""
     return queries.twin.basemap
+
+
+@router.get("/criticality", response_model=CriticalityReport)
+async def get_criticality(twin: TwinDep) -> CriticalityReport:
+    """Structural criticality by exact N-1 simulation; single points of failure flagged."""
+    return CriticalityReport(
+        dataset_version=twin.snapshot.dataset_version,
+        horizon_minutes=analysis_cache.CRITICALITY_HORIZON_MINUTES,
+        entries=await analysis_cache.criticality(twin.snapshot),
+    )
