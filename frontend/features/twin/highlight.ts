@@ -11,6 +11,8 @@ export interface Highlight {
   downstream: ReadonlySet<string>;
   /** Assets matching the active filters; null when no filter is active. */
   visible: ReadonlySet<string> | null;
+  /** Dim assets outside the selection's chain (default true; the Lab keeps them visible). */
+  dimUnrelated?: boolean;
 }
 
 export const NO_HIGHLIGHT: Highlight = {
@@ -29,7 +31,7 @@ export function roleOf(code: string, h: Highlight): NodeRole {
   if (h.upstream.has(code)) return "upstream";
   if (h.downstream.has(code)) return "downstream";
   if (h.visible && !h.visible.has(code)) return "hidden";
-  return h.selected === null ? "normal" : "dimmed";
+  return h.selected === null || h.dimUnrelated === false ? "normal" : "dimmed";
 }
 
 /** Edges are emphasised when both ends are in the selection's dependency chain. */

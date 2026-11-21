@@ -23,6 +23,7 @@
     "openapi-fetch": "^0.14.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "recharts": "^3.11.0",
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {

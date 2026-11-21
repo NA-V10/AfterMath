@@ -7,6 +7,7 @@ import maplibregl, { type GeoJSONSource, type LngLatBoundsLike } from "maplibre-
 import { useEffect, useRef } from "react";
 
 import type { Schemas } from "@/lib/api";
+import type { FunctionalStatus } from "@/lib/queries";
 
 import type { Highlight } from "./highlight";
 import {
@@ -24,13 +25,23 @@ interface Props {
   highlight: Highlight;
   showAccess: boolean;
   onSelect: (code: string | null) => void;
+  /** Optional functional-status overlay (simulation or operational picture). */
+  statuses?: ReadonlyMap<string, FunctionalStatus> | null;
 }
 
 function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-export default function TwinMap({ graph, basemap, bounds, highlight, showAccess, onSelect }: Props) {
+export default function TwinMap({
+  graph,
+  basemap,
+  bounds,
+  highlight,
+  showAccess,
+  onSelect,
+  statuses = null,
+}: Props) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const loaded = useRef(false);
@@ -118,13 +129,13 @@ export default function TwinMap({ graph, basemap, bounds, highlight, showAccess,
       (map.getSource("links") as GeoJSONSource | undefined)?.setData(
         selectionLinks(graph.nodes, graph.edges, highlight.selected, showAccess),
       );
-      for (const [code, state] of featureStates(graph.nodes, highlight)) {
+      for (const [code, state] of featureStates(graph.nodes, highlight, statuses)) {
         map.setFeatureState({ source: "assets", id: code }, state);
       }
     };
     if (loaded.current) apply();
     else map.once("aftermath:ready", apply);
-  }, [graph, highlight, showAccess]);
+  }, [graph, highlight, showAccess, statuses]);
 
   // ---- bring the selection into view when it is outside the viewport
   useEffect(() => {

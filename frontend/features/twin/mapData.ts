@@ -6,7 +6,8 @@ import type { FeatureCollection, Geometry, LineString } from "geojson";
 import type { ExpressionSpecification, StyleSpecification } from "maplibre-gl";
 
 import type { Schemas } from "@/lib/api";
-import { CATEGORY, CONDITION, categoryColor } from "@/lib/domain";
+import { CATEGORY, CONDITION, STATUS, categoryColor } from "@/lib/domain";
+import type { FunctionalStatus } from "@/lib/queries";
 
 import { type Highlight, isAccessEdge, roleOf } from "./highlight";
 
@@ -60,12 +61,17 @@ export function selectionLinks(
   return { type: "FeatureCollection", features };
 }
 
-/** Feature-state for each asset, derived from the shared highlight. */
-export function featureStates(nodes: GraphNode[], h: Highlight): Map<string, Record<string, boolean>> {
-  const states = new Map<string, Record<string, boolean>>();
+/** Feature-state for each asset, derived from the shared highlight and optional status overlay. */
+export function featureStates(
+  nodes: GraphNode[],
+  h: Highlight,
+  statuses: ReadonlyMap<string, FunctionalStatus> | null = null,
+): Map<string, Record<string, boolean | string>> {
+  const states = new Map<string, Record<string, boolean | string>>();
   for (const n of nodes) {
     const role = roleOf(n.code, h);
     states.set(n.code, {
+      status: statuses?.get(n.code) ?? "NONE",
       sel: role === "selected",
       up: role === "upstream",
       down: role === "downstream",
@@ -91,6 +97,16 @@ const strokeColor: ExpressionSpecification = [
 ];
 
 const geom = (type: string): ExpressionSpecification => ["==", ["geometry-type"], type];
+
+/** Functional-status colour when an overlay is active, otherwise `fallback`. */
+const byStatus = (fallback: ExpressionSpecification | string): ExpressionSpecification => [
+  "match",
+  ["to-string", ["coalesce", ["feature-state", "status"], "NONE"]],
+  "FAILED", STATUS.FAILED.color,
+  "ON_BACKUP", STATUS.ON_BACKUP.color,
+  "DEGRADED", STATUS.DEGRADED.color,
+  fallback,
+];
 
 export function buildStyle(basemap: FeatureCollection): StyleSpecification {
   const empty: FeatureCollection = { type: "FeatureCollection", features: [] };
@@ -121,8 +137,12 @@ export function buildStyle(basemap: FeatureCollection): StyleSpecification {
       // demand zones
       { id: "asset-zones", type: "fill", source: "assets", filter: geom("Polygon"),
         paint: {
-          "fill-color": ["case", fs("sel"), SELECTED_COLOR, fs("up"), UPSTREAM_COLOR, fs("down"), DOWNSTREAM_COLOR, "#8b949e"],
-          "fill-opacity": ["case", fs("hidden"), 0, fs("sel"), 0.16, fs("up"), 0.1, fs("down"), 0.1, fs("dim"), 0.02, 0.05],
+          "fill-color": ["case", fs("sel"), SELECTED_COLOR, fs("up"), UPSTREAM_COLOR, fs("down"), DOWNSTREAM_COLOR, byStatus("#8b949e")],
+          "fill-opacity": [
+            "case", fs("hidden"), 0, fs("sel"), 0.16, fs("up"), 0.1, fs("down"), 0.1, fs("dim"), 0.02,
+            ["match", ["to-string", ["coalesce", ["feature-state", "status"], "NONE"]],
+              "FAILED", 0.22, "DEGRADED", 0.12, "ON_BACKUP", 0.12, 0.05],
+          ],
         } },
       { id: "asset-zones-edge", type: "line", source: "assets", filter: geom("Polygon"),
         paint: {
@@ -137,7 +157,7 @@ export function buildStyle(basemap: FeatureCollection): StyleSpecification {
       { id: "asset-lines", type: "line", source: "assets", filter: geom("LineString"),
         layout: { "line-cap": "round" },
         paint: {
-          "line-color": ["case", fs("sel"), SELECTED_COLOR, fs("up"), UPSTREAM_COLOR, fs("down"), DOWNSTREAM_COLOR, "#6b7684"],
+          "line-color": ["case", fs("sel"), SELECTED_COLOR, fs("up"), UPSTREAM_COLOR, fs("down"), DOWNSTREAM_COLOR, byStatus("#6b7684")],
           "line-width": ["case", fs("sel"), 5, 3],
           "line-opacity": opacity(1),
         } },
@@ -152,7 +172,7 @@ export function buildStyle(basemap: FeatureCollection): StyleSpecification {
       // facility markers
       { id: "asset-points", type: "circle", source: "assets", filter: geom("Point"),
         paint: {
-          "circle-color": ["get", "color"],
+          "circle-color": byStatus(["get", "color"]),
           "circle-radius": [
             "case", fs("sel"), 11,
             ["interpolate", ["linear"], ["get", "criticality"], 40, 4.5, 100, 9],

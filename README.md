@@ -12,8 +12,9 @@ AFTERMATH is an infrastructure resilience and disaster-recovery decision-support
 | Phase | Scope | State |
 |---|---|---|
 | 0 | Architecture & documentation | ✅ complete |
-| 1 | Infrastructure digital twin | ✅ complete (see [docs/reports/PHASE_1_REPORT.md](docs/reports/PHASE_1_REPORT.md)) |
-| 2 | Deterministic simulation engine | next |
+| 1 | Infrastructure digital twin | ✅ complete ([report](docs/reports/PHASE_1_REPORT.md)) |
+| 2 | Deterministic simulation engine | ✅ complete ([report](docs/reports/PHASE_2_REPORT.md)) |
+| 3 | Multi-agent system | next |
 
 ## Quick start (Windows / PowerShell, hybrid dev mode)
 
@@ -29,9 +30,9 @@ docker compose up -d db                # PostgreSQL 16 (localhost only)
 
 cd backend
 uv sync                                # Python 3.13 venv + dependencies
-uv run alembic upgrade head            # create the schema
-uv run python -m app.cli seed          # load the synthetic Meridian Valley district (idempotent)
-uv run uvicorn app.main:app --port 8000   # API: http://localhost:8000/api/v1/docs
+uv run python -m alembic upgrade head  # create the schema
+uv run python -m app.cli seed          # load the synthetic district + scenarios (idempotent)
+uv run python -m uvicorn app.main:app --port 8000   # API: http://localhost:8000/api/v1/docs
 
 cd ..\frontend
 pnpm install

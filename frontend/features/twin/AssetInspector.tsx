@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { Badge, ErrorState, Loading, SectionLabel, Stat } from "@/components/ui/primitives";
 import type { Schemas } from "@/lib/api";
 import { CATEGORY, CONDITION, SERVICE_LABEL, categoryColor, formatNumber } from "@/lib/domain";
-import { useAsset, useTraversal } from "@/lib/queries";
+import { useAsset, useCriticality, useTraversal } from "@/lib/queries";
 
 import { DOWNSTREAM_COLOR, UPSTREAM_COLOR } from "./mapData";
 
@@ -30,6 +30,38 @@ function Section({ title, children }: { title: ReactNode; children: ReactNode })
       <SectionLabel>{title}</SectionLabel>
       {children}
     </section>
+  );
+}
+
+function StructuralCriticality({ code, onSelect }: { code: string; onSelect: (c: string) => void }) {
+  const q = useCriticality();
+  if (q.isPending) return <div className="text-dim">Running N-1 analysis…</div>;
+  if (q.isError) return <div className="text-crit">Could not load structural criticality.</div>;
+  const entry = q.data.entries.find((e) => e.code === code);
+  if (!entry) return <div className="text-dim">Not applicable to demand zones.</div>;
+  const rank = q.data.entries.findIndex((e) => e.code === code) + 1;
+  return (
+    <div className="flex flex-col gap-1.5" data-testid="structural-criticality">
+      <div className="flex flex-wrap items-center gap-2">
+        <span>
+          Impact if lost: <span className="font-mono">{entry.impact_score.toFixed(2)}</span>{" "}
+          <span className="text-dim">(rank {rank} of {q.data.entries.length})</span>
+        </span>
+        {entry.single_point_of_failure && <Badge color="#f85149">single point of failure</Badge>}
+      </div>
+      {entry.critical_failed.length > 0 && (
+        <div className="text-[11px] text-muted">
+          Losing it alone fails critical assets:{" "}
+          {entry.critical_failed.map((c) => (
+            <button key={c} type="button" onClick={() => onSelect(c)} className="mr-1 font-mono hover:underline">{c}</button>
+          ))}
+        </div>
+      )}
+      <div className="text-[11px] text-dim">
+        {entry.failed_assets.length} other asset(s) fail within {q.data.horizon_minutes / 60} h ·{" "}
+        {formatNumber(entry.affected_population)} people affected · exact N-1 simulation
+      </div>
+    </div>
   );
 }
 
@@ -193,9 +225,13 @@ export function AssetInspector({
       >
         <Reach code={a.code} direction="downstream" onSelect={onSelect} />
         <p className="mt-2 text-[11px] text-dim">
-          Structural reach only: redundancy determines what actually fails. Failure impact is
-          computed by the simulation engine (Phase 2).
+          Structural reach only: redundancy and backup power determine what actually fails (see
+          structural criticality below).
         </p>
+      </Section>
+
+      <Section title="Structural criticality">
+        <StructuralCriticality code={a.code} onSelect={onSelect} />
       </Section>
 
       {a.recovery_profile && (

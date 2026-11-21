@@ -13,6 +13,7 @@ import {
   useAssets,
   useBasemap,
   useGraph,
+  usePicture,
   useTraversal,
 } from "@/lib/queries";
 
@@ -59,6 +60,8 @@ export function TwinWorkspace() {
   const [filters, setFilters] = useState<AssetFilters>(EMPTY_FILTERS);
   const [view, setView] = useState<View>("split");
   const [showAccess, setShowAccess] = useState(false);
+  const [overlay, setOverlay] = useState(true);
+  const picture = usePicture();
 
   const graph = useGraph();
   const basemap = useBasemap();
@@ -101,6 +104,15 @@ export function TwinWorkspace() {
 
   const select = useCallback((code: string | null) => setSelected(code), []);
 
+  // Overlay the operational picture only when it differs from the baseline.
+  const pictureStatuses = useMemo(
+    () =>
+      overlay && picture.data?.source === "simulation"
+        ? new Map(picture.data.states.map((s) => [s.code, s.status]))
+        : null,
+    [overlay, picture.data],
+  );
+
   const loading = graph.isPending || basemap.isPending;
   const error = graph.error ?? basemap.error;
 
@@ -122,6 +134,7 @@ export function TwinWorkspace() {
           highlight={highlight}
           showAccess={showAccess}
           onSelect={select}
+          statuses={pictureStatuses}
         />
       ) : (
         <ErrorState error={new Error("The basemap has no district boundary.")} />
@@ -144,7 +157,13 @@ export function TwinWorkspace() {
       ) : error ? (
         <ErrorState error={error} onRetry={() => graph.refetch()} />
       ) : (
-        <DependencyGraph graph={graph.data!} highlight={highlight} showAccess={showAccess} onSelect={select} />
+        <DependencyGraph
+          graph={graph.data!}
+          highlight={highlight}
+          showAccess={showAccess}
+          onSelect={select}
+          statuses={pictureStatuses}
+        />
       )}
     </Panel>
   );
@@ -165,7 +184,16 @@ export function TwinWorkspace() {
             ]}
           />
         </div>
-        <Legend />
+        <div className="flex flex-wrap items-center gap-3">
+          {picture.data?.source === "simulation" && (
+            <label className="flex cursor-pointer items-center gap-1.5 text-[11px] text-muted" data-testid="picture-overlay-toggle">
+              <input type="checkbox" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} className="accent-[#58a6ff]" />
+              Overlay operational picture
+              <span className="text-dim">({picture.data.label ?? "simulation"})</span>
+            </label>
+          )}
+          <Legend />
+        </div>
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[220px_minmax(0,1fr)_340px]">
         <Panel className="max-h-[40dvh] border-0 lg:max-h-none" title="Filter & find">

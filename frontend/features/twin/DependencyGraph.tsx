@@ -19,7 +19,8 @@ import { memo, useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/components/ui/primitives";
 import type { Schemas } from "@/lib/api";
-import { CATEGORY, CONDITION, categoryColor } from "@/lib/domain";
+import { CATEGORY, CONDITION, STATUS, categoryColor } from "@/lib/domain";
+import type { FunctionalStatus } from "@/lib/queries";
 
 import { NODE_HEIGHT, NODE_WIDTH, layoutGraph } from "./graphLayout";
 import { type Highlight, type NodeRole, edgeIsInChain, isAccessEdge, roleOf } from "./highlight";
@@ -31,6 +32,7 @@ type AssetNodeData = {
   category: Schemas["GraphNode"]["category"];
   condition: Schemas["GraphNode"]["condition"];
   role: NodeRole;
+  status: FunctionalStatus | null;
 };
 type AssetNode = Node<AssetNodeData, "asset">;
 
@@ -46,6 +48,7 @@ const AssetNodeView = memo(function AssetNodeView({ data }: NodeProps<AssetNode>
     <div
       data-testid={`graph-node-${data.code}`}
       data-role={data.role}
+      data-status={data.status ?? undefined}
       title={`${data.code} — ${data.name}`}
       className={cn(
         "flex items-center gap-1.5 rounded-sm border bg-panel-2 px-1.5 text-[11px] transition-opacity",
@@ -56,6 +59,10 @@ const AssetNodeView = memo(function AssetNodeView({ data }: NodeProps<AssetNode>
         width: NODE_WIDTH,
         height: NODE_HEIGHT,
         borderColor: border ?? "var(--color-line-strong)",
+        background:
+          data.status && data.status !== "OPERATIONAL"
+            ? `color-mix(in srgb, ${STATUS[data.status].color} 18%, var(--color-panel-2))`
+            : undefined,
         boxShadow: data.role === "selected" ? `0 0 0 1px ${SELECTED_COLOR}` : undefined,
       }}
     >
@@ -72,9 +79,9 @@ const AssetNodeView = memo(function AssetNodeView({ data }: NodeProps<AssetNode>
         <span className="block truncate text-[10px] text-muted">{data.name}</span>
       </span>
       <span
-        aria-label={CONDITION[data.condition].label}
+        aria-label={data.status ? STATUS[data.status].label : CONDITION[data.condition].label}
         className="size-1.5 shrink-0 rounded-full"
-        style={{ background: CONDITION[data.condition].color }}
+        style={{ background: data.status ? STATUS[data.status].color : CONDITION[data.condition].color }}
       />
       <Handle type="source" position={Position.Right} className="!size-1 !min-h-0 !min-w-0 !border-0 !bg-transparent" />
     </div>
@@ -88,9 +95,10 @@ interface Props {
   highlight: Highlight;
   showAccess: boolean;
   onSelect: (code: string | null) => void;
+  statuses?: ReadonlyMap<string, FunctionalStatus> | null;
 }
 
-function GraphCanvas({ graph, highlight, showAccess, onSelect }: Props) {
+function GraphCanvas({ graph, highlight, showAccess, onSelect, statuses = null }: Props) {
   const [positions, setPositions] = useState<Map<string, { x: number; y: number }> | null>(null);
   const [layoutError, setLayoutError] = useState<string | null>(null);
   const { fitView } = useReactFlow();
@@ -118,12 +126,13 @@ function GraphCanvas({ graph, highlight, showAccess, onSelect }: Props) {
               category: n.category,
               condition: n.condition,
               role: roleOf(n.code, highlight),
+              status: statuses?.get(n.code) ?? null,
             },
             ariaLabel: `${n.code} ${n.name}`,
             selected: n.code === highlight.selected,
           }))
         : [],
-    [graph.nodes, positions, highlight],
+    [graph.nodes, positions, highlight, statuses],
   );
 
   const edges: Edge[] = useMemo(

@@ -47,3 +47,13 @@ Not blocked: pydantic-core, shapely, asyncpg, Next.js SWC, lightningcss, Microso
 **Phase 3 risk:** `langgraph-checkpoint-postgres` requires psycopg 3. On this host that means either psycopg's pure-Python mode with a signed `libpq` from a PostgreSQL install, running the backend in Docker, or a custom asyncpg-based checkpointer. To be decided at the start of Phase 3.
 
 **Other changes:** `uv` was installed with `pip install --user uv` (winget was not used). Python 3.13.16 is managed by uv. Docker Desktop's VM reports about 6 GB of memory. The Postgres container is capped at 512 MB.
+
+## Findings during Phase 2 (2026-11-21)
+
+- Application Control started blocking the **uv-created venv launcher** (`.venv/Scripts/python.exe`), including a freshly created one, and the `alembic.exe` shim. The uv-managed base interpreter is still allowed. **Workaround:** create the venv with the standard library from that base interpreter, then let uv sync into it:
+  ```powershell
+  & "$env:APPDATA\uv\python\cpython-3.13-windows-x86_64-none\python.exe" -m venv .venv
+  python -m uv sync
+  ```
+  Run tools as modules: `python -m uv run --no-sync python -m pytest | alembic | app.cli`.
+- The venv is disposable; nothing project-specific lives in it.

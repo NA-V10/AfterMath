@@ -1,6 +1,6 @@
 "use client";
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "@/lib/api";
 
@@ -108,5 +108,118 @@ export function useAuditLog(cursor: string | null) {
         }),
       ),
     placeholderData: keepPreviousData,
+  });
+}
+
+// ------------------------------------------------------------------ Phase 2: simulation
+export type FunctionalStatus = Schemas["AssetState"]["status"];
+export type SimulationRequest = Schemas["SimulationRequest"];
+
+export function useScenarios() {
+  return useQuery({
+    queryKey: ["scenarios"],
+    queryFn: () => unwrap(api.GET("/api/v1/scenarios")),
+    ...STATIC,
+  });
+}
+
+export function useSimulations() {
+  return useQuery({
+    queryKey: ["simulations", "list"],
+    queryFn: () => unwrap(api.GET("/api/v1/simulations", { params: { query: { limit: 50 } } })),
+  });
+}
+
+export function useSimulation(id: string | null) {
+  return useQuery({
+    queryKey: ["simulations", "detail", id],
+    queryFn: () =>
+      unwrap(api.GET("/api/v1/simulations/{simulation_id}", { params: { path: { simulation_id: id! } } })),
+    enabled: id !== null,
+    staleTime: Infinity, // runs are immutable
+  });
+}
+
+export function useSimulationEvents(id: string | null) {
+  return useQuery({
+    queryKey: ["simulations", "events", id],
+    queryFn: () =>
+      unwrap(
+        api.GET("/api/v1/simulations/{simulation_id}/events", {
+          params: { path: { simulation_id: id! } },
+        }),
+      ),
+    enabled: id !== null,
+    staleTime: Infinity,
+  });
+}
+
+export function useComparison(a: string | null, b: string | null) {
+  return useQuery({
+    queryKey: ["simulations", "compare", a, b],
+    queryFn: () =>
+      unwrap(api.GET("/api/v1/simulations/compare", { params: { query: { ids: `${a},${b}` } } })),
+    enabled: a !== null && b !== null,
+    staleTime: Infinity,
+  });
+}
+
+export function useRunSimulation() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: SimulationRequest) => unwrap(api.POST("/api/v1/simulations", { body })),
+    onSuccess: (detail) => {
+      client.setQueryData(["simulations", "detail", detail.id], detail);
+      void client.invalidateQueries({ queryKey: ["simulations", "list"] });
+      void client.invalidateQueries({ queryKey: ["picture"] }); // the run may have been applied
+    },
+  });
+}
+
+export function useReplay() {
+  return useMutation({
+    mutationFn: (id: string) =>
+      unwrap(
+        api.POST("/api/v1/simulations/{simulation_id}/replay", {
+          params: { path: { simulation_id: id } },
+        }),
+      ),
+  });
+}
+
+export function usePicture() {
+  return useQuery({
+    queryKey: ["picture"],
+    queryFn: () => unwrap(api.GET("/api/v1/operational-picture")),
+  });
+}
+
+export function useApplyPicture() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      unwrap(
+        api.POST("/api/v1/operational-picture/apply/{simulation_id}", {
+          params: { path: { simulation_id: id } },
+        }),
+      ),
+    onSuccess: (picture) => client.setQueryData(["picture"], picture),
+  });
+}
+
+export function useResetPicture() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (reason: string | null) =>
+      unwrap(api.POST("/api/v1/operational-picture/reset", { body: { reason } })),
+    onSuccess: (picture) => client.setQueryData(["picture"], picture),
+  });
+}
+
+export function useCriticality() {
+  return useQuery({
+    queryKey: ["infrastructure", "criticality"],
+    queryFn: () => unwrap(api.GET("/api/v1/infrastructure/criticality")),
+    ...STATIC,
   });
 }

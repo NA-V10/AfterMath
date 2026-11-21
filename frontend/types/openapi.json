@@ -1,6 +1,39 @@
 {
   "components": {
     "schemas": {
+      "AreaFloodEvent": {
+        "additionalProperties": false,
+        "description": "Assets intersecting the polygon whose elevation is below the water level are inundated\n(DAMAGED; roads and bridges become impassable). Demand zones are not damaged by floods.",
+        "properties": {
+          "kind": {
+            "const": "AREA_FLOOD",
+            "default": "AREA_FLOOD",
+            "title": "Kind",
+            "type": "string"
+          },
+          "polygon": {
+            "$ref": "#/components/schemas/PolygonGeometry"
+          },
+          "t_minutes": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "T Minutes",
+            "type": "integer"
+          },
+          "water_level_m": {
+            "maximum": 9000.0,
+            "minimum": -100.0,
+            "title": "Water Level M",
+            "type": "number"
+          }
+        },
+        "required": [
+          "polygon",
+          "water_level_m"
+        ],
+        "title": "AreaFloodEvent",
+        "type": "object"
+      },
       "AssetCategory": {
         "enum": [
           "GRID_SUPPLY",
@@ -215,6 +248,43 @@
         "title": "AssetDetail",
         "type": "object"
       },
+      "AssetFailureEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_code": {
+            "pattern": "^[A-Z]{2,5}-\\d{2,3}$|^[A-Z]{2,5}-[A-Z]{2,5}$",
+            "title": "Asset Code",
+            "type": "string"
+          },
+          "condition": {
+            "default": "DAMAGED",
+            "enum": [
+              "DEGRADED",
+              "DAMAGED",
+              "DESTROYED"
+            ],
+            "title": "Condition",
+            "type": "string"
+          },
+          "kind": {
+            "const": "ASSET_FAILURE",
+            "default": "ASSET_FAILURE",
+            "title": "Kind",
+            "type": "string"
+          },
+          "t_minutes": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "T Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "asset_code"
+        ],
+        "title": "AssetFailureEvent",
+        "type": "object"
+      },
       "AssetRef": {
         "properties": {
           "category": {
@@ -235,6 +305,87 @@
           "category"
         ],
         "title": "AssetRef",
+        "type": "object"
+      },
+      "AssetRestoredEvent": {
+        "additionalProperties": false,
+        "description": "A completed repair: the asset's physical condition returns to INTACT.",
+        "properties": {
+          "asset_code": {
+            "pattern": "^[A-Z]{2,5}-\\d{2,3}$|^[A-Z]{2,5}-[A-Z]{2,5}$",
+            "title": "Asset Code",
+            "type": "string"
+          },
+          "kind": {
+            "const": "ASSET_RESTORED",
+            "default": "ASSET_RESTORED",
+            "title": "Kind",
+            "type": "string"
+          },
+          "t_minutes": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "T Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "asset_code"
+        ],
+        "title": "AssetRestoredEvent",
+        "type": "object"
+      },
+      "AssetState": {
+        "additionalProperties": false,
+        "properties": {
+          "backup_remaining_minutes": {
+            "title": "Backup Remaining Minutes",
+            "type": "integer"
+          },
+          "causes": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Cause"
+            },
+            "title": "Causes",
+            "type": "array"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/PhysicalCondition"
+          },
+          "isolated": {
+            "title": "Isolated",
+            "type": "boolean"
+          },
+          "on_backup": {
+            "title": "On Backup",
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FunctionalStatus"
+          },
+          "supply": {
+            "description": "0 none, 1 reduced, 2 full",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Supply",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "condition",
+          "supply",
+          "status",
+          "on_backup",
+          "backup_remaining_minutes",
+          "isolated"
+        ],
+        "title": "AssetState",
         "type": "object"
       },
       "AssetSummary": {
@@ -562,6 +713,139 @@
         "title": "CategoryHealth",
         "type": "object"
       },
+      "Cause": {
+        "additionalProperties": false,
+        "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CauseKind"
+          },
+          "providers": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Providers",
+            "type": "array"
+          },
+          "service_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ServiceType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "Cause",
+        "type": "object"
+      },
+      "CauseKind": {
+        "enum": [
+          "PHYSICAL",
+          "DEPENDENCY",
+          "SOFT_DEPENDENCY",
+          "BACKUP"
+        ],
+        "title": "CauseKind",
+        "type": "string"
+      },
+      "CriticalityEntry": {
+        "properties": {
+          "affected_population": {
+            "title": "Affected Population",
+            "type": "integer"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "critical_failed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Critical Failed",
+            "type": "array"
+          },
+          "failed_assets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed Assets",
+            "type": "array"
+          },
+          "impact_score": {
+            "title": "Impact Score",
+            "type": "number"
+          },
+          "single_point_of_failure": {
+            "title": "Single Point Of Failure",
+            "type": "boolean"
+          },
+          "static_criticality": {
+            "title": "Static Criticality",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "static_criticality",
+          "impact_score",
+          "failed_assets",
+          "critical_failed",
+          "affected_population",
+          "single_point_of_failure"
+        ],
+        "title": "CriticalityEntry",
+        "type": "object"
+      },
+      "CriticalityReport": {
+        "properties": {
+          "dataset_version": {
+            "title": "Dataset Version",
+            "type": "string"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/CriticalityEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "horizon_minutes": {
+            "title": "Horizon Minutes",
+            "type": "integer"
+          },
+          "method": {
+            "const": "N-1 simulation",
+            "default": "N-1 simulation",
+            "title": "Method",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_version",
+          "horizon_minutes",
+          "entries"
+        ],
+        "title": "CriticalityReport",
+        "type": "object"
+      },
       "DatasetInfo": {
         "properties": {
           "asset_count": {
@@ -687,6 +971,64 @@
         "title": "Direction",
         "type": "string"
       },
+      "EventKind": {
+        "enum": [
+          "CONDITION_CHANGED",
+          "STATUS_CHANGED",
+          "BACKUP_ENGAGED",
+          "BACKUP_DISENGAGED",
+          "BACKUP_EXHAUSTED",
+          "ISOLATION_DETECTED",
+          "ISOLATION_RESOLVED",
+          "HORIZON_REACHED"
+        ],
+        "title": "EventKind",
+        "type": "string"
+      },
+      "FreeTextIncidentCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "occurred_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "raw_report": {
+            "maxLength": 10000,
+            "minLength": 10,
+            "title": "Raw Report",
+            "type": "string"
+          },
+          "source": {
+            "const": "FREE_TEXT",
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "raw_report"
+        ],
+        "title": "FreeTextIncidentCreate",
+        "type": "object"
+      },
+      "FunctionalStatus": {
+        "enum": [
+          "OPERATIONAL",
+          "DEGRADED",
+          "ON_BACKUP",
+          "FAILED"
+        ],
+        "title": "FunctionalStatus",
+        "type": "string"
+      },
       "GraphNode": {
         "properties": {
           "category": {
@@ -804,6 +1146,244 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "ImpactMetrics": {
+        "additionalProperties": false,
+        "properties": {
+          "affected_population": {
+            "title": "Affected Population",
+            "type": "integer"
+          },
+          "asset_count_loss": {
+            "title": "Asset Count Loss",
+            "type": "number"
+          },
+          "criticality_loss": {
+            "title": "Criticality Loss",
+            "type": "number"
+          },
+          "impact_score": {
+            "title": "Impact Score",
+            "type": "number"
+          },
+          "isolated_assets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Isolated Assets",
+            "type": "array"
+          },
+          "population_by_service": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/ServiceType"
+            },
+            "title": "Population By Service",
+            "type": "object"
+          },
+          "population_loss": {
+            "title": "Population Loss",
+            "type": "number"
+          },
+          "service_availability": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceAvailability"
+            },
+            "title": "Service Availability",
+            "type": "array"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/FunctionalStatus"
+            },
+            "title": "Status Counts",
+            "type": "object"
+          },
+          "t_minutes": {
+            "title": "T Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "t_minutes",
+          "impact_score",
+          "criticality_loss",
+          "population_loss",
+          "asset_count_loss",
+          "status_counts",
+          "affected_population",
+          "population_by_service",
+          "service_availability",
+          "isolated_assets"
+        ],
+        "title": "ImpactMetrics",
+        "type": "object"
+      },
+      "IncidentOut": {
+        "properties": {
+          "analysis_available": {
+            "description": "Free-text incidents need SENTINEL analysis (Phase 3) before simulation.",
+            "title": "Analysis Available",
+            "type": "boolean"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "incident_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Type"
+          },
+          "initiating_events": {
+            "anyOf": [
+              {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
+                      "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
+                      "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                    },
+                    "propertyName": "kind"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AssetFailureEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AreaFloodEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AssetRestoredEvent"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initiating Events"
+          },
+          "missing_information": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Information",
+            "type": "array"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "raw_report": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Report"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "source",
+          "status",
+          "title",
+          "incident_type",
+          "severity",
+          "occurred_at",
+          "raw_report",
+          "initiating_events",
+          "confidence",
+          "missing_information",
+          "created_at",
+          "analysis_available"
+        ],
+        "title": "IncidentOut",
+        "type": "object"
+      },
       "InfrastructureHealth": {
         "properties": {
           "asset_count": {
@@ -893,6 +1473,85 @@
         "title": "Liveness",
         "type": "object"
       },
+      "OperationalPicture": {
+        "properties": {
+          "as_of_minutes": {
+            "description": "Simulated time the picture reflects",
+            "title": "As Of Minutes",
+            "type": "integer"
+          },
+          "changed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Changed At"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/ImpactMetrics"
+          },
+          "simulation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulation Id"
+          },
+          "source": {
+            "enum": [
+              "baseline",
+              "simulation"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "stale": {
+            "description": "True if the twin changed after this picture was applied",
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "states": {
+            "items": {
+              "$ref": "#/components/schemas/AssetState"
+            },
+            "title": "States",
+            "type": "array"
+          }
+        },
+        "required": [
+          "source",
+          "simulation_id",
+          "label",
+          "changed_at",
+          "as_of_minutes",
+          "stale",
+          "states",
+          "metrics"
+        ],
+        "title": "OperationalPicture",
+        "type": "object"
+      },
       "Page_AssetSummary_": {
         "properties": {
           "items": {
@@ -949,6 +1608,62 @@
         "title": "Page[AuditRecord]",
         "type": "object"
       },
+      "Page_IncidentOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/IncidentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "Page[IncidentOut]",
+        "type": "object"
+      },
+      "Page_SimulationSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SimulationSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "Page[SimulationSummary]",
+        "type": "object"
+      },
       "PhysicalCondition": {
         "enum": [
           "INTACT",
@@ -958,6 +1673,66 @@
         ],
         "title": "PhysicalCondition",
         "type": "string"
+      },
+      "PictureResetRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "PictureResetRequest",
+        "type": "object"
+      },
+      "PolygonGeometry": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinates": {
+            "items": {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "maximum": 180.0,
+                    "minimum": -180.0,
+                    "type": "number"
+                  },
+                  {
+                    "maximum": 90.0,
+                    "minimum": -90.0,
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "minItems": 1,
+            "title": "Coordinates",
+            "type": "array"
+          },
+          "type": {
+            "const": "Polygon",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "PolygonGeometry",
+        "type": "object"
       },
       "RecoveryProfile": {
         "additionalProperties": false,
@@ -1015,6 +1790,41 @@
         "title": "RecoveryProfile",
         "type": "object"
       },
+      "ReplayResult": {
+        "properties": {
+          "hash_matches": {
+            "title": "Hash Matches",
+            "type": "boolean"
+          },
+          "original_hash": {
+            "title": "Original Hash",
+            "type": "string"
+          },
+          "replay_hash": {
+            "title": "Replay Hash",
+            "type": "string"
+          },
+          "simulation_id": {
+            "format": "uuid",
+            "title": "Simulation Id",
+            "type": "string"
+          },
+          "snapshot_matches": {
+            "description": "False if the twin changed since the original run",
+            "title": "Snapshot Matches",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "simulation_id",
+          "original_hash",
+          "replay_hash",
+          "hash_matches",
+          "snapshot_matches"
+        ],
+        "title": "ReplayResult",
+        "type": "object"
+      },
       "RequirementGroup": {
         "description": "A k-of-n requirement of an asset.",
         "properties": {
@@ -1061,6 +1871,106 @@
         "title": "RequirementGroup",
         "type": "object"
       },
+      "ScenarioOut": {
+        "properties": {
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "horizon_minutes": {
+            "title": "Horizon Minutes",
+            "type": "integer"
+          },
+          "initiating_events": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
+                  "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
+                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AssetFailureEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/AreaFloodEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetRestoredEvent"
+                }
+              ]
+            },
+            "title": "Initiating Events",
+            "type": "array"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "description",
+          "horizon_minutes",
+          "initiating_events",
+          "content_hash",
+          "version"
+        ],
+        "title": "ScenarioOut",
+        "type": "object"
+      },
+      "ServiceAvailability": {
+        "additionalProperties": false,
+        "properties": {
+          "assets_impaired": {
+            "title": "Assets Impaired",
+            "type": "integer"
+          },
+          "assets_total": {
+            "title": "Assets Total",
+            "type": "integer"
+          },
+          "availability": {
+            "description": "criticality-weighted share of full service, 0..1",
+            "title": "Availability",
+            "type": "number"
+          },
+          "service": {
+            "title": "Service",
+            "type": "string"
+          }
+        },
+        "required": [
+          "service",
+          "availability",
+          "assets_total",
+          "assets_impaired"
+        ],
+        "title": "ServiceAvailability",
+        "type": "object"
+      },
       "ServiceType": {
         "enum": [
           "POWER",
@@ -1073,6 +1983,749 @@
         ],
         "title": "ServiceType",
         "type": "string"
+      },
+      "SimEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Code"
+          },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "from_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FunctionalStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "$ref": "#/components/schemas/EventKind"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          },
+          "t_minutes": {
+            "title": "T Minutes",
+            "type": "integer"
+          },
+          "to_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FunctionalStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "wave": {
+            "title": "Wave",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "seq",
+          "t_minutes",
+          "wave",
+          "kind"
+        ],
+        "title": "SimEvent",
+        "type": "object"
+      },
+      "SimulationComparison": {
+        "properties": {
+          "a": {
+            "$ref": "#/components/schemas/SimulationSummary"
+          },
+          "affected_population_delta": {
+            "title": "Affected Population Delta",
+            "type": "integer"
+          },
+          "b": {
+            "$ref": "#/components/schemas/SimulationSummary"
+          },
+          "failed_in_both": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed In Both",
+            "type": "array"
+          },
+          "failed_only_in_a": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed Only In A",
+            "type": "array"
+          },
+          "failed_only_in_b": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed Only In B",
+            "type": "array"
+          },
+          "impact_delta": {
+            "description": "b - a, final impact score",
+            "title": "Impact Delta",
+            "type": "number"
+          },
+          "status_differences": {
+            "items": {
+              "$ref": "#/components/schemas/StatusDifference"
+            },
+            "title": "Status Differences",
+            "type": "array"
+          }
+        },
+        "required": [
+          "a",
+          "b",
+          "impact_delta",
+          "affected_population_delta",
+          "failed_only_in_a",
+          "failed_only_in_b",
+          "failed_in_both",
+          "status_differences"
+        ],
+        "title": "SimulationComparison",
+        "type": "object"
+      },
+      "SimulationDetail": {
+        "properties": {
+          "affected_population": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affected Population"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "dataset_version": {
+            "title": "Dataset Version",
+            "type": "string"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "engine_version": {
+            "title": "Engine Version",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "failed_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed Count"
+          },
+          "final_metrics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImpactMetrics"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "final_state": {
+            "items": {
+              "$ref": "#/components/schemas/AssetState"
+            },
+            "title": "Final State",
+            "type": "array"
+          },
+          "horizon_minutes": {
+            "title": "Horizon Minutes",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "impact_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact Score"
+          },
+          "incident_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Id"
+          },
+          "initiating_events": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
+                  "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
+                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AssetFailureEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/AreaFloodEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetRestoredEvent"
+                }
+              ]
+            },
+            "title": "Initiating Events",
+            "type": "array"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "peak_impact_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak Impact Score"
+          },
+          "peak_metrics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImpactMetrics"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Hash"
+          },
+          "scenario_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Key"
+          },
+          "scoring_version": {
+            "title": "Scoring Version",
+            "type": "string"
+          },
+          "snapshot_hash": {
+            "title": "Snapshot Hash",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "COMPLETED",
+              "FAILED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelinePoint"
+            },
+            "title": "Timeline",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "label",
+          "kind",
+          "status",
+          "scenario_key",
+          "incident_id",
+          "horizon_minutes",
+          "impact_score",
+          "peak_impact_score",
+          "failed_count",
+          "affected_population",
+          "result_hash",
+          "dataset_version",
+          "engine_version",
+          "duration_ms",
+          "initiating_events",
+          "snapshot_hash",
+          "scoring_version",
+          "final_state",
+          "final_metrics",
+          "peak_metrics",
+          "timeline",
+          "error"
+        ],
+        "title": "SimulationDetail",
+        "type": "object"
+      },
+      "SimulationRequest": {
+        "additionalProperties": false,
+        "description": "Exactly one source of initiating events: a scenario, an incident, or explicit events.",
+        "properties": {
+          "apply_to_picture": {
+            "default": false,
+            "title": "Apply To Picture",
+            "type": "boolean"
+          },
+          "horizon_minutes": {
+            "anyOf": [
+              {
+                "maximum": 20160.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Horizon Minutes"
+          },
+          "incident_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Id"
+          },
+          "initiating_events": {
+            "anyOf": [
+              {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
+                      "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
+                      "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                    },
+                    "propertyName": "kind"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AssetFailureEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AreaFloodEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/AssetRestoredEvent"
+                    }
+                  ]
+                },
+                "maxItems": 50,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initiating Events"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "scenario_key": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Key"
+          }
+        },
+        "title": "SimulationRequest",
+        "type": "object"
+      },
+      "SimulationSummary": {
+        "properties": {
+          "affected_population": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affected Population"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "dataset_version": {
+            "title": "Dataset Version",
+            "type": "string"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "engine_version": {
+            "title": "Engine Version",
+            "type": "string"
+          },
+          "failed_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed Count"
+          },
+          "horizon_minutes": {
+            "title": "Horizon Minutes",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "impact_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact Score"
+          },
+          "incident_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Id"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "peak_impact_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak Impact Score"
+          },
+          "result_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Hash"
+          },
+          "scenario_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Key"
+          },
+          "status": {
+            "enum": [
+              "COMPLETED",
+              "FAILED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "label",
+          "kind",
+          "status",
+          "scenario_key",
+          "incident_id",
+          "horizon_minutes",
+          "impact_score",
+          "peak_impact_score",
+          "failed_count",
+          "affected_population",
+          "result_hash",
+          "dataset_version",
+          "engine_version",
+          "duration_ms"
+        ],
+        "title": "SimulationSummary",
+        "type": "object"
+      },
+      "StatusDifference": {
+        "properties": {
+          "a": {
+            "$ref": "#/components/schemas/FunctionalStatus"
+          },
+          "b": {
+            "$ref": "#/components/schemas/FunctionalStatus"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "a",
+          "b"
+        ],
+        "title": "StatusDifference",
+        "type": "object"
+      },
+      "StructuredIncidentCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "incident_type": {
+            "enum": [
+              "POWER_FAILURE",
+              "FLOODING",
+              "TELECOM_OUTAGE",
+              "WATER_DISRUPTION",
+              "EQUIPMENT_FAILURE",
+              "COMBINED"
+            ],
+            "title": "Incident Type",
+            "type": "string"
+          },
+          "initiating_events": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
+                  "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
+                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AssetFailureEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/AreaFloodEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetRestoredEvent"
+                }
+              ]
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Initiating Events",
+            "type": "array"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "severity": {
+            "enum": [
+              "LOW",
+              "MODERATE",
+              "HIGH",
+              "CRITICAL"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "source": {
+            "const": "STRUCTURED",
+            "title": "Source",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 3,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "title",
+          "incident_type",
+          "severity",
+          "initiating_events"
+        ],
+        "title": "StructuredIncidentCreate",
+        "type": "object"
       },
       "SystemStatus": {
         "properties": {
@@ -1122,6 +2775,40 @@
           "capabilities"
         ],
         "title": "SystemStatus",
+        "type": "object"
+      },
+      "TimelinePoint": {
+        "additionalProperties": false,
+        "properties": {
+          "affected_population": {
+            "title": "Affected Population",
+            "type": "integer"
+          },
+          "failed": {
+            "title": "Failed",
+            "type": "integer"
+          },
+          "impact_score": {
+            "title": "Impact Score",
+            "type": "number"
+          },
+          "impaired": {
+            "title": "Impaired",
+            "type": "integer"
+          },
+          "t_minutes": {
+            "title": "T Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "t_minutes",
+          "impact_score",
+          "failed",
+          "impaired",
+          "affected_population"
+        ],
+        "title": "TimelinePoint",
         "type": "object"
       },
       "Trade": {
@@ -1454,6 +3141,166 @@
         ]
       }
     },
+    "/api/v1/incidents": {
+      "get": {
+        "operationId": "list_incidents_api_v1_incidents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_IncidentOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Incidents",
+        "tags": [
+          "incidents"
+        ]
+      },
+      "post": {
+        "description": "Structured incidents are validated deterministically against the twin. Free-text reports\nare stored verbatim (untrusted) and await SENTINEL analysis (Phase 3).",
+        "operationId": "create_incident_api_v1_incidents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "discriminator": {
+                  "mapping": {
+                    "FREE_TEXT": "#/components/schemas/FreeTextIncidentCreate",
+                    "STRUCTURED": "#/components/schemas/StructuredIncidentCreate"
+                  },
+                  "propertyName": "source"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/StructuredIncidentCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FreeTextIncidentCreate"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Incident",
+        "tags": [
+          "incidents"
+        ]
+      }
+    },
+    "/api/v1/incidents/{incident_id}": {
+      "get": {
+        "operationId": "get_incident_api_v1_incidents__incident_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "incident_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Incident Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Incident",
+        "tags": [
+          "incidents"
+        ]
+      }
+    },
     "/api/v1/infrastructure/assets": {
       "get": {
         "operationId": "list_assets_api_v1_infrastructure_assets_get",
@@ -1772,6 +3619,28 @@
         ]
       }
     },
+    "/api/v1/infrastructure/criticality": {
+      "get": {
+        "description": "Structural criticality by exact N-1 simulation; single points of failure flagged.",
+        "operationId": "get_criticality_api_v1_infrastructure_criticality_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CriticalityReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Criticality",
+        "tags": [
+          "infrastructure"
+        ]
+      }
+    },
     "/api/v1/infrastructure/graph": {
       "get": {
         "operationId": "get_graph_api_v1_infrastructure_graph_get",
@@ -1811,6 +3680,510 @@
         "summary": "Get Health",
         "tags": [
           "infrastructure"
+        ]
+      }
+    },
+    "/api/v1/operational-picture": {
+      "get": {
+        "operationId": "get_picture_api_v1_operational_picture_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationalPicture"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Picture",
+        "tags": [
+          "operational picture"
+        ]
+      }
+    },
+    "/api/v1/operational-picture/apply/{simulation_id}": {
+      "post": {
+        "operationId": "apply_picture_api_v1_operational_picture_apply__simulation_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "simulation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Simulation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationalPicture"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Picture",
+        "tags": [
+          "operational picture"
+        ]
+      }
+    },
+    "/api/v1/operational-picture/reset": {
+      "post": {
+        "description": "Return the operational picture to the baseline. History is kept (append-only).",
+        "operationId": "reset_picture_api_v1_operational_picture_reset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PictureResetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationalPicture"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Picture",
+        "tags": [
+          "operational picture"
+        ]
+      }
+    },
+    "/api/v1/scenarios": {
+      "get": {
+        "operationId": "list_scenarios_api_v1_scenarios_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioOut"
+                  },
+                  "title": "Response List Scenarios Api V1 Scenarios Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Scenarios",
+        "tags": [
+          "scenarios"
+        ]
+      }
+    },
+    "/api/v1/scenarios/{key}": {
+      "get": {
+        "operationId": "get_scenario_api_v1_scenarios__key__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "title": "Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Scenario",
+        "tags": [
+          "scenarios"
+        ]
+      }
+    },
+    "/api/v1/simulations": {
+      "get": {
+        "operationId": "list_simulations_api_v1_simulations_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "incident_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Incident Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_SimulationSummary_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Simulations",
+        "tags": [
+          "simulations"
+        ]
+      },
+      "post": {
+        "description": "Run a deterministic simulation synchronously and persist it (immutable).",
+        "operationId": "create_simulation_api_v1_simulations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Simulation",
+        "tags": [
+          "simulations"
+        ]
+      }
+    },
+    "/api/v1/simulations/compare": {
+      "get": {
+        "operationId": "compare_simulations_api_v1_simulations_compare_get",
+        "parameters": [
+          {
+            "description": "two ids: a,b",
+            "in": "query",
+            "name": "ids",
+            "required": true,
+            "schema": {
+              "description": "two ids: a,b",
+              "title": "Ids",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationComparison"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare Simulations",
+        "tags": [
+          "simulations"
+        ]
+      }
+    },
+    "/api/v1/simulations/{simulation_id}": {
+      "get": {
+        "operationId": "get_simulation_api_v1_simulations__simulation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "simulation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Simulation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Simulation",
+        "tags": [
+          "simulations"
+        ]
+      }
+    },
+    "/api/v1/simulations/{simulation_id}/events": {
+      "get": {
+        "operationId": "get_simulation_events_api_v1_simulations__simulation_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "simulation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Simulation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_t",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From T"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_t",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To T"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SimEvent"
+                  },
+                  "title": "Response Get Simulation Events Api V1 Simulations  Simulation Id  Events Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Simulation Events",
+        "tags": [
+          "simulations"
+        ]
+      }
+    },
+    "/api/v1/simulations/{simulation_id}/replay": {
+      "post": {
+        "description": "Re-run with identical inputs and compare result hashes (reproducibility check).",
+        "operationId": "replay_simulation_api_v1_simulations__simulation_id__replay_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "simulation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Simulation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplayResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replay Simulation",
+        "tags": [
+          "simulations"
         ]
       }
     },

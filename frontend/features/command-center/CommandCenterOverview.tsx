@@ -6,6 +6,8 @@ import { ErrorState, Loading, Panel, Stat } from "@/components/ui/primitives";
 import { CATEGORY, CONDITION, formatNumber } from "@/lib/domain";
 import { useInfrastructureHealth, useSystemStatus } from "@/lib/queries";
 
+import { PicturePanel } from "./PicturePanel";
+
 const CAPABILITY_LABELS: Record<string, string> = {
   digital_twin: "Infrastructure digital twin",
   simulation: "Cascading-failure simulation",
@@ -15,8 +17,9 @@ const CAPABILITY_LABELS: Record<string, string> = {
 };
 
 /**
- * Phase 1 Command Center: baseline health of the district from the real backend, plus an
- * honest capability list. Incident, simulation and recovery panels arrive with their phases.
+ * Command Center: the current operational picture (baseline or an applied simulation), the
+ * district's composition, and an honest capability list. Agent and recovery panels arrive with
+ * their phases.
  */
 export function CommandCenterOverview() {
   const health = useInfrastructureHealth();
@@ -24,6 +27,7 @@ export function CommandCenterOverview() {
 
   return (
     <div className="grid gap-3 p-3 lg:grid-cols-3">
+      <PicturePanel />
       <Panel title="District baseline" className="lg:col-span-2" bodyClassName="p-3">
         {health.isPending ? (
           <Loading />

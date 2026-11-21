@@ -72,6 +72,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Incidents */
+        get: operations["list_incidents_api_v1_incidents_get"];
+        put?: never;
+        /**
+         * Create Incident
+         * @description Structured incidents are validated deterministically against the twin. Free-text reports
+         *     are stored verbatim (untrusted) and await SENTINEL analysis (Phase 3).
+         */
+        post: operations["create_incident_api_v1_incidents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/incidents/{incident_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Incident */
+        get: operations["get_incident_api_v1_incidents__incident_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/infrastructure/assets": {
         parameters: {
             query?: never;
@@ -143,6 +182,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/infrastructure/criticality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Criticality
+         * @description Structural criticality by exact N-1 simulation; single points of failure flagged.
+         */
+        get: operations["get_criticality_api_v1_infrastructure_criticality_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/infrastructure/graph": {
         parameters: {
             query?: never;
@@ -177,6 +236,186 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/operational-picture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Picture */
+        get: operations["get_picture_api_v1_operational_picture_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operational-picture/apply/{simulation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Picture */
+        post: operations["apply_picture_api_v1_operational_picture_apply__simulation_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operational-picture/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Picture
+         * @description Return the operational picture to the baseline. History is kept (append-only).
+         */
+        post: operations["reset_picture_api_v1_operational_picture_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Scenarios */
+        get: operations["list_scenarios_api_v1_scenarios_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/scenarios/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Scenario */
+        get: operations["get_scenario_api_v1_scenarios__key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Simulations */
+        get: operations["list_simulations_api_v1_simulations_get"];
+        put?: never;
+        /**
+         * Create Simulation
+         * @description Run a deterministic simulation synchronously and persist it (immutable).
+         */
+        post: operations["create_simulation_api_v1_simulations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Compare Simulations */
+        get: operations["compare_simulations_api_v1_simulations_compare_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{simulation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Simulation */
+        get: operations["get_simulation_api_v1_simulations__simulation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{simulation_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Simulation Events */
+        get: operations["get_simulation_events_api_v1_simulations__simulation_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/simulations/{simulation_id}/replay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replay Simulation
+         * @description Re-run with identical inputs and compare result hashes (reproducibility check).
+         */
+        post: operations["replay_simulation_api_v1_simulations__simulation_id__replay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system/status": {
         parameters: {
             query?: never;
@@ -198,6 +437,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AreaFloodEvent
+         * @description Assets intersecting the polygon whose elevation is below the water level are inundated
+         *     (DAMAGED; roads and bridges become impassable). Demand zones are not damaged by floods.
+         */
+        AreaFloodEvent: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "AREA_FLOOD";
+            polygon: components["schemas"]["PolygonGeometry"];
+            /**
+             * T Minutes
+             * @default 0
+             */
+            t_minutes: number;
+            /** Water Level M */
+            water_level_m: number;
+        };
         /**
          * AssetCategory
          * @enum {string}
@@ -267,6 +526,27 @@ export interface components {
             /** Utilization */
             utilization: number | null;
         };
+        /** AssetFailureEvent */
+        AssetFailureEvent: {
+            /** Asset Code */
+            asset_code: string;
+            /**
+             * Condition
+             * @default DAMAGED
+             * @enum {string}
+             */
+            condition: "DEGRADED" | "DAMAGED" | "DESTROYED";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "ASSET_FAILURE";
+            /**
+             * T Minutes
+             * @default 0
+             */
+            t_minutes: number;
+        };
         /** AssetRef */
         AssetRef: {
             category: components["schemas"]["AssetCategory"];
@@ -274,6 +554,47 @@ export interface components {
             code: string;
             /** Name */
             name: string;
+        };
+        /**
+         * AssetRestoredEvent
+         * @description A completed repair: the asset's physical condition returns to INTACT.
+         */
+        AssetRestoredEvent: {
+            /** Asset Code */
+            asset_code: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "ASSET_RESTORED";
+            /**
+             * T Minutes
+             * @default 0
+             */
+            t_minutes: number;
+        };
+        /** AssetState */
+        AssetState: {
+            /** Backup Remaining Minutes */
+            backup_remaining_minutes: number;
+            /**
+             * Causes
+             * @default []
+             */
+            causes: components["schemas"]["Cause"][];
+            /** Code */
+            code: string;
+            condition: components["schemas"]["PhysicalCondition"];
+            /** Isolated */
+            isolated: boolean;
+            /** On Backup */
+            on_backup: boolean;
+            status: components["schemas"]["FunctionalStatus"];
+            /**
+             * Supply
+             * @description 0 none, 1 reduced, 2 full
+             */
+            supply: number;
         };
         /** AssetSummary */
         AssetSummary: {
@@ -387,6 +708,55 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** Cause */
+        Cause: {
+            /** Group */
+            group?: string | null;
+            kind: components["schemas"]["CauseKind"];
+            /**
+             * Providers
+             * @default []
+             */
+            providers: string[];
+            service_type?: components["schemas"]["ServiceType"] | null;
+        };
+        /**
+         * CauseKind
+         * @enum {string}
+         */
+        CauseKind: "PHYSICAL" | "DEPENDENCY" | "SOFT_DEPENDENCY" | "BACKUP";
+        /** CriticalityEntry */
+        CriticalityEntry: {
+            /** Affected Population */
+            affected_population: number;
+            /** Code */
+            code: string;
+            /** Critical Failed */
+            critical_failed: string[];
+            /** Failed Assets */
+            failed_assets: string[];
+            /** Impact Score */
+            impact_score: number;
+            /** Single Point Of Failure */
+            single_point_of_failure: boolean;
+            /** Static Criticality */
+            static_criticality: number;
+        };
+        /** CriticalityReport */
+        CriticalityReport: {
+            /** Dataset Version */
+            dataset_version: string;
+            /** Entries */
+            entries: components["schemas"]["CriticalityEntry"][];
+            /** Horizon Minutes */
+            horizon_minutes: number;
+            /**
+             * Method
+             * @default N-1 simulation
+             * @constant
+             */
+            method: "N-1 simulation";
+        };
         /** DatasetInfo */
         DatasetInfo: {
             /** Asset Count */
@@ -437,6 +807,28 @@ export interface components {
          * @enum {string}
          */
         Direction: "upstream" | "downstream";
+        /**
+         * EventKind
+         * @enum {string}
+         */
+        EventKind: "CONDITION_CHANGED" | "STATUS_CHANGED" | "BACKUP_ENGAGED" | "BACKUP_DISENGAGED" | "BACKUP_EXHAUSTED" | "ISOLATION_DETECTED" | "ISOLATION_RESOLVED" | "HORIZON_REACHED";
+        /** FreeTextIncidentCreate */
+        FreeTextIncidentCreate: {
+            /** Occurred At */
+            occurred_at?: string | null;
+            /** Raw Report */
+            raw_report: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "FREE_TEXT";
+        };
+        /**
+         * FunctionalStatus
+         * @enum {string}
+         */
+        FunctionalStatus: "OPERATIONAL" | "DEGRADED" | "ON_BACKUP" | "FAILED";
         /** GraphNode */
         GraphNode: {
             category: components["schemas"]["AssetCategory"];
@@ -480,6 +872,79 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** ImpactMetrics */
+        ImpactMetrics: {
+            /** Affected Population */
+            affected_population: number;
+            /** Asset Count Loss */
+            asset_count_loss: number;
+            /** Criticality Loss */
+            criticality_loss: number;
+            /** Impact Score */
+            impact_score: number;
+            /** Isolated Assets */
+            isolated_assets: string[];
+            /** Population By Service */
+            population_by_service: {
+                [key: string]: number;
+            };
+            /** Population Loss */
+            population_loss: number;
+            /** Service Availability */
+            service_availability: components["schemas"]["ServiceAvailability"][];
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /** T Minutes */
+            t_minutes: number;
+        };
+        /** IncidentOut */
+        IncidentOut: {
+            /**
+             * Analysis Available
+             * @description Free-text incidents need SENTINEL analysis (Phase 3) before simulation.
+             */
+            analysis_available: boolean;
+            /** Confidence */
+            confidence: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Incident Type */
+            incident_type: string | null;
+            /** Initiating Events */
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[] | null;
+            /** Missing Information */
+            missing_information: string[];
+            /** Occurred At */
+            occurred_at: string | null;
+            /** Raw Report */
+            raw_report: string | null;
+            /** Reference */
+            reference: string;
+            /** Severity */
+            severity: string | null;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Title */
+            title: string | null;
+        };
         /** InfrastructureHealth */
         InfrastructureHealth: {
             /** Asset Count */
@@ -522,6 +987,33 @@ export interface components {
              */
             status: "ok";
         };
+        /** OperationalPicture */
+        OperationalPicture: {
+            /**
+             * As Of Minutes
+             * @description Simulated time the picture reflects
+             */
+            as_of_minutes: number;
+            /** Changed At */
+            changed_at: string | null;
+            /** Label */
+            label: string | null;
+            metrics: components["schemas"]["ImpactMetrics"];
+            /** Simulation Id */
+            simulation_id: string | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "baseline" | "simulation";
+            /**
+             * Stale
+             * @description True if the twin changed after this picture was applied
+             */
+            stale: boolean;
+            /** States */
+            states: components["schemas"]["AssetState"][];
+        };
         /** Page[AssetSummary] */
         Page_AssetSummary_: {
             /** Items */
@@ -536,11 +1028,43 @@ export interface components {
             /** Next Cursor */
             next_cursor: string | null;
         };
+        /** Page[IncidentOut] */
+        Page_IncidentOut_: {
+            /** Items */
+            items: components["schemas"]["IncidentOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** Page[SimulationSummary] */
+        Page_SimulationSummary_: {
+            /** Items */
+            items: components["schemas"]["SimulationSummary"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
         /**
          * PhysicalCondition
          * @enum {string}
          */
         PhysicalCondition: "INTACT" | "DEGRADED" | "DAMAGED" | "DESTROYED";
+        /** PictureResetRequest */
+        PictureResetRequest: {
+            /** Reason */
+            reason?: string | null;
+        };
+        /** PolygonGeometry */
+        PolygonGeometry: {
+            /** Coordinates */
+            coordinates: [
+                number,
+                number
+            ][][];
+            /**
+             * Type
+             * @constant
+             */
+            type: "Polygon";
+        };
         /**
          * RecoveryProfile
          * @description What it takes to repair/replace the asset (used from Phase 4).
@@ -573,6 +1097,25 @@ export interface components {
             };
             trade: components["schemas"]["Trade"];
         };
+        /** ReplayResult */
+        ReplayResult: {
+            /** Hash Matches */
+            hash_matches: boolean;
+            /** Original Hash */
+            original_hash: string;
+            /** Replay Hash */
+            replay_hash: string;
+            /**
+             * Simulation Id
+             * Format: uuid
+             */
+            simulation_id: string;
+            /**
+             * Snapshot Matches
+             * @description False if the twin changed since the original run
+             */
+            snapshot_matches: boolean;
+        };
         /**
          * RequirementGroup
          * @description A k-of-n requirement of an asset.
@@ -594,11 +1137,254 @@ export interface components {
              */
             spare_providers: number;
         };
+        /** ScenarioOut */
+        ScenarioOut: {
+            /** Content Hash */
+            content_hash: string;
+            /** Description */
+            description: string;
+            /** Horizon Minutes */
+            horizon_minutes: number;
+            /** Initiating Events */
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[];
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Version */
+            version: number;
+        };
+        /** ServiceAvailability */
+        ServiceAvailability: {
+            /** Assets Impaired */
+            assets_impaired: number;
+            /** Assets Total */
+            assets_total: number;
+            /**
+             * Availability
+             * @description criticality-weighted share of full service, 0..1
+             */
+            availability: number;
+            /** Service */
+            service: string;
+        };
         /**
          * ServiceType
          * @enum {string}
          */
         ServiceType: "POWER" | "TELECOM" | "WATER" | "FUEL" | "DATA" | "HEALTHCARE" | "ACCESS";
+        /** SimEvent */
+        SimEvent: {
+            /** Asset Code */
+            asset_code?: string | null;
+            /** Details */
+            details?: {
+                [key: string]: unknown;
+            };
+            from_status?: components["schemas"]["FunctionalStatus"] | null;
+            kind: components["schemas"]["EventKind"];
+            /** Seq */
+            seq: number;
+            /** T Minutes */
+            t_minutes: number;
+            to_status?: components["schemas"]["FunctionalStatus"] | null;
+            /** Wave */
+            wave: number;
+        };
+        /** SimulationComparison */
+        SimulationComparison: {
+            a: components["schemas"]["SimulationSummary"];
+            /** Affected Population Delta */
+            affected_population_delta: number;
+            b: components["schemas"]["SimulationSummary"];
+            /** Failed In Both */
+            failed_in_both: string[];
+            /** Failed Only In A */
+            failed_only_in_a: string[];
+            /** Failed Only In B */
+            failed_only_in_b: string[];
+            /**
+             * Impact Delta
+             * @description b - a, final impact score
+             */
+            impact_delta: number;
+            /** Status Differences */
+            status_differences: components["schemas"]["StatusDifference"][];
+        };
+        /** SimulationDetail */
+        SimulationDetail: {
+            /** Affected Population */
+            affected_population: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Dataset Version */
+            dataset_version: string;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Engine Version */
+            engine_version: string;
+            /** Error */
+            error: {
+                [key: string]: string;
+            } | null;
+            /** Failed Count */
+            failed_count: number | null;
+            final_metrics: components["schemas"]["ImpactMetrics"] | null;
+            /** Final State */
+            final_state: components["schemas"]["AssetState"][];
+            /** Horizon Minutes */
+            horizon_minutes: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Impact Score */
+            impact_score: number | null;
+            /** Incident Id */
+            incident_id: string | null;
+            /** Initiating Events */
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[];
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string | null;
+            /** Peak Impact Score */
+            peak_impact_score: number | null;
+            peak_metrics: components["schemas"]["ImpactMetrics"] | null;
+            /** Result Hash */
+            result_hash: string | null;
+            /** Scenario Key */
+            scenario_key: string | null;
+            /** Scoring Version */
+            scoring_version: string;
+            /** Snapshot Hash */
+            snapshot_hash: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "COMPLETED" | "FAILED";
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Timeline */
+            timeline: components["schemas"]["TimelinePoint"][];
+        };
+        /**
+         * SimulationRequest
+         * @description Exactly one source of initiating events: a scenario, an incident, or explicit events.
+         */
+        SimulationRequest: {
+            /**
+             * Apply To Picture
+             * @default false
+             */
+            apply_to_picture: boolean;
+            /** Horizon Minutes */
+            horizon_minutes?: number | null;
+            /** Incident Id */
+            incident_id?: string | null;
+            /** Initiating Events */
+            initiating_events?: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[] | null;
+            /** Label */
+            label?: string | null;
+            /** Scenario Key */
+            scenario_key?: string | null;
+        };
+        /** SimulationSummary */
+        SimulationSummary: {
+            /** Affected Population */
+            affected_population: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Dataset Version */
+            dataset_version: string;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Engine Version */
+            engine_version: string;
+            /** Failed Count */
+            failed_count: number | null;
+            /** Horizon Minutes */
+            horizon_minutes: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Impact Score */
+            impact_score: number | null;
+            /** Incident Id */
+            incident_id: string | null;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string | null;
+            /** Peak Impact Score */
+            peak_impact_score: number | null;
+            /** Result Hash */
+            result_hash: string | null;
+            /** Scenario Key */
+            scenario_key: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "COMPLETED" | "FAILED";
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+        };
+        /** StatusDifference */
+        StatusDifference: {
+            a: components["schemas"]["FunctionalStatus"];
+            b: components["schemas"]["FunctionalStatus"];
+            /** Code */
+            code: string;
+        };
+        /** StructuredIncidentCreate */
+        StructuredIncidentCreate: {
+            /**
+             * Incident Type
+             * @enum {string}
+             */
+            incident_type: "POWER_FAILURE" | "FLOODING" | "TELECOM_OUTAGE" | "WATER_DISRUPTION" | "EQUIPMENT_FAILURE" | "COMBINED";
+            /** Initiating Events */
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[];
+            /** Occurred At */
+            occurred_at?: string | null;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "STRUCTURED";
+            /** Title */
+            title: string;
+        };
         /** SystemStatus */
         SystemStatus: {
             /** App Version */
@@ -611,6 +1397,19 @@ export interface components {
             environment: string;
             /** Simulation Notice */
             simulation_notice: string;
+        };
+        /** TimelinePoint */
+        TimelinePoint: {
+            /** Affected Population */
+            affected_population: number;
+            /** Failed */
+            failed: number;
+            /** Impact Score */
+            impact_score: number;
+            /** Impaired */
+            impaired: number;
+            /** T Minutes */
+            t_minutes: number;
         };
         /**
          * Trade
@@ -773,6 +1572,102 @@ export interface operations {
             };
         };
     };
+    list_incidents_api_v1_incidents_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_IncidentOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_incident_api_v1_incidents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StructuredIncidentCreate"] | components["schemas"]["FreeTextIncidentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_incident_api_v1_incidents__incident_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_assets_api_v1_infrastructure_assets_get: {
         parameters: {
             query?: {
@@ -900,6 +1795,26 @@ export interface operations {
             };
         };
     };
+    get_criticality_api_v1_infrastructure_criticality_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CriticalityReport"];
+                };
+            };
+        };
+    };
     get_graph_api_v1_infrastructure_graph_get: {
         parameters: {
             query?: never;
@@ -936,6 +1851,335 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InfrastructureHealth"];
+                };
+            };
+        };
+    };
+    get_picture_api_v1_operational_picture_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationalPicture"];
+                };
+            };
+        };
+    };
+    apply_picture_api_v1_operational_picture_apply__simulation_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                simulation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationalPicture"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_picture_api_v1_operational_picture_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PictureResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationalPicture"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_scenarios_api_v1_scenarios_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioOut"][];
+                };
+            };
+        };
+    };
+    get_scenario_api_v1_scenarios__key__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_simulations_api_v1_simulations_get: {
+        parameters: {
+            query?: {
+                incident_id?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_SimulationSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_simulation_api_v1_simulations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_simulations_api_v1_simulations_compare_get: {
+        parameters: {
+            query: {
+                /** @description two ids: a,b */
+                ids: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationComparison"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_simulation_api_v1_simulations__simulation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                simulation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_simulation_events_api_v1_simulations__simulation_id__events_get: {
+        parameters: {
+            query?: {
+                from_t?: number | null;
+                to_t?: number | null;
+            };
+            header?: never;
+            path: {
+                simulation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimEvent"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replay_simulation_api_v1_simulations__simulation_id__replay_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                simulation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplayResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

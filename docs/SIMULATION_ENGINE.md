@@ -125,3 +125,23 @@ Scenarios are versioned JSON files in `data/scenarios/` and are validated agains
 ## 9. Performance envelope
 
 The target is 50 assets and about 150 edges, with growth headroom to about 5 000 assets. A fixed-point wave is O(E), at most 2·V waves per instant, and the number of events is bounded by about 3·V. A full 72 h simulation at the 50-asset scale is expected to take well under 50 ms in Python.
+
+## 10. As implemented (Phase 2, engine 1.0.0, scoring 1.0)
+
+Code: `app/simulation/{model,evaluator,engine,impact,criticality}.py`, all pure and covered by the import-linter purity contract.
+
+Refinements over §2–§6, each covered by tests:
+
+- **Backup engages only for a physically functional asset** (`phys > 0`). A damaged exchange does not drain its batteries. An asset that is FAILED for another reason (for example lost telecom backhaul) but whose power group is unmet keeps drawing on its backup, because the generator still runs.
+- **Wave assignment.** The final state is always the greatest fixed point computed from the top. Waves are then assigned by Jacobi steps from the previous instant towards that fixed point:
+  - Failures take effect at wave 0 for directly damaged assets.
+  - Restorations take effect at wave 0 for assets whose own requirements are already met.
+  - A *status-only* change (engaging backup, losing a SOFT supply) gets wave = 1 + the wave of its **earliest** cause.
+- **Instants with no effect** (for example a stale backup timer) are skipped and produce no timeline point.
+- **Isolated assets:** serving assets that have at least one HARD requirement but cannot be reached from a serving source (grid supply, generation, water intake) through serving HARD providers. In the Riverside scenario, HOS-02 on its generator is isolated until its backup is exhausted.
+- **Timeline:** the first point is the pre-event baseline at t=0; the second point at t=0 is the post-event state.
+- **Initial pictures:** `simulate(..., initial={code: InitialAssetState})` starts from a non-baseline state (used for restoration runs; `ASSET_RESTORED` events model completed repairs).
+
+Measured performance on the 50-asset district: 12–16 ms per 72 h scenario; the full N-1 criticality analysis (43 simulations) takes about 0.5 s and is cached per snapshot hash.
+
+N-1 findings on Meridian Valley v1.1.0: 14 single points of failure. They include PDN-02, whose loss takes down the telephone exchange once its 6 h backup is exhausted, and with it the data centre and the EOC.

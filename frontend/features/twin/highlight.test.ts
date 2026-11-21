@@ -54,6 +54,10 @@ describe("roleOf", () => {
     expect(roleOf("Z-99", hl)).toBe("hidden");
   });
 
+  it("keeps unrelated assets normal when dimming is disabled (Lab)", () => {
+    expect(roleOf("Z-99", h({ selected: "B-01", dimUnrelated: false }))).toBe("normal");
+  });
+
   it("hides filtered-out assets when nothing is selected", () => {
     expect(roleOf("A-01", h({ visible: new Set(["B-01"]) }))).toBe("hidden");
     expect(roleOf("B-01", h({ visible: new Set(["B-01"]) }))).toBe("normal");

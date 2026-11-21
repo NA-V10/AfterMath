@@ -98,3 +98,20 @@ export function formatNumber(value: number | null | undefined, digits = 0): stri
   if (value === null || value === undefined) return "—";
   return value.toLocaleString("en-GB", { maximumFractionDigits: digits });
 }
+
+export const STATUS: Record<
+  "OPERATIONAL" | "DEGRADED" | "ON_BACKUP" | "FAILED",
+  { label: string; color: string; rank: number }
+> = {
+  OPERATIONAL: { label: "Operational", color: "#3fb950", rank: 0 },
+  DEGRADED: { label: "Degraded", color: "#d29922", rank: 1 },
+  ON_BACKUP: { label: "On backup", color: "#e3b341", rank: 2 },
+  FAILED: { label: "Failed", color: "#f85149", rank: 3 },
+};
+
+export function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `T+${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `T+${h}h${String(m).padStart(2, "0")}` : `T+${h}h`;
+}

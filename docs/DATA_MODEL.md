@@ -207,3 +207,13 @@ Append-only: a trigger rejects `UPDATE`/`DELETE`, and the application DB role ha
 | 3 | workflow_run, agent_execution (+ LangGraph checkpoint tables via its own setup) |
 | 4 | resource_inventory, recovery_strategy, recovery_action |
 | 5 | approval_record, recovery_execution, recovery_verification, app_user |
+
+## As implemented (Phase 2, migration `0002`)
+
+- `simulation_scenario`, `incident`, `incident_evidence`, `simulation_run`, `simulation_event` as specified, with these differences:
+  - `incident.title` was added.
+  - `simulation_run.status` is `COMPLETED | FAILED` only, because runs are synchronous (milliseconds).
+  - `simulation_event.asset_code` is a text code rather than an FK, since codes are stable and events must stay readable even if a later dataset removes an asset.
+- **New: `operational_picture_change`** `(id, kind APPLY|RESET, simulation_run_id, actor_id, reason, created_at)`. This is the append-only history of what the operational picture shows. The current picture is the latest row (APPLY shows that run's final state; RESET or no rows shows the baseline).
+- **Immutability:** a `reject_mutation()` trigger blocks UPDATE/DELETE on `simulation_run`, `simulation_event` and `operational_picture_change`, alongside the audit log.
+- Incident references come from the `incident_reference_seq` sequence: `INC-<year>-<nnnn>`.

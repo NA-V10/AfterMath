@@ -4,9 +4,9 @@ Complexity: S ≈ ½–1 day · M ≈ 2–4 days · L ≈ 1–2 weeks (solo deve
 
 | Phase | Objective | Key deliverables | Depends on | Complexity | Exit criteria (summary) |
 |---|---|---|---|---|---|
-| **0** | Architecture foundation | `docs/*`, ADRs, Phase 1 plan | — | M | Owner approves architecture ✅ awaiting review |
-| **1** | Infrastructure digital twin | Dataset + validator, asset/dependency tables, graph builder + traversal, infrastructure API, Twin screen (map + graph + inspector) | 0 | L | See [PHASE_1_PLAN](PHASE_1_PLAN.md) |
-| **2** | Deterministic simulation | Lattice fixed-point evaluator, event engine, flood resolution, impact metrics, scenarios, simulation persistence + API, structural criticality, Simulation Lab basics | 1 | L | Golden scenarios pass; P1–P8 pass; replay hash matches |
+| **0** | Architecture foundation | `docs/*`, ADRs, Phase 1 plan | — | M | ✅ complete |
+| **1** | Infrastructure digital twin | Dataset + validator, asset/dependency tables, graph builder + traversal, infrastructure API, Twin screen (map + graph + inspector) | 0 | L | ✅ complete ([report](reports/PHASE_1_REPORT.md)) |
+| **2** | Deterministic simulation | Lattice fixed-point evaluator, event engine, flood resolution, impact metrics, scenarios, simulation persistence + API, structural criticality, Simulation Lab basics | 1 | L | ✅ complete ([report](reports/PHASE_2_REPORT.md)) |
 | **3** | Multi-agent system | `app.llm` providers + fallback, LangGraph workflow, 5 agents, execution logging, SSE, Agent Activity screen basics | 2 | L | Full workflow in deterministic mode; fault-injection tests pass; grounding check 100% |
 | **4** | Recovery optimisation | Inventory, action catalogue, SGS scheduler, 3 policies, risk score, validator V-001…V-012, comparison | 2 (3 for agent integration) | L | 3 distinct strategies per scenario; P9–P10 pass; benchmark report |
 | **5** | Governance & execution | Auth + roles, approval/rejection, execute + revalidation, verification, audit chain, reports | 4 | M–L | P11–P14 pass; stateful governance tests pass |

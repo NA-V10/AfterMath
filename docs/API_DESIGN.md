@@ -132,3 +132,18 @@ POST `/auth/token` (username/password → JWT) · GET `/auth/me`.
   "request_id": "0b9e…"
 }
 ```
+
+## As implemented (Phase 2)
+
+| Method & path | Notes |
+|---|---|
+| GET `/scenarios`, `/scenarios/{key}` | Synced from `data/scenarios/*.json` by the seed command. Content-hashed, versioned on change. |
+| POST `/simulations` | Body: exactly one of `scenario_key`, `incident_id`, `initiating_events`, plus `horizon_minutes`, `label` and `apply_to_picture`. Synchronous → **201** with full detail. Unknown asset or event beyond the horizon → 422. Free-text incident without analysis → 409. An engine exception is persisted as a FAILED run, then returns a 500 `simulation-failed` problem response carrying `simulation_id`. |
+| GET `/simulations`, `/simulations/{id}`, `/simulations/{id}/events?from_t&to_t` | Cursor pagination on the list |
+| GET `/simulations/compare?ids=a,b` | Server-side diff |
+| POST `/simulations/{id}/replay` | `{hash_matches, snapshot_matches}` |
+| GET `/operational-picture`; POST `/operational-picture/apply/{simulation_id}`; POST `/operational-picture/reset` | **Apply endpoint added** so the Lab can promote any completed run |
+| POST/GET `/incidents`, GET `/incidents/{id}` | STRUCTURED (validated against the twin) or FREE_TEXT (stored verbatim; analysis in Phase 3) |
+| GET `/infrastructure/criticality` | Exact N-1 report, cached per snapshot |
+
+**Identity before Phase 5:** state-changing calls are attributed to `local:operator` and are refused with 401 when `AFTERMATH_ENV=production`. These endpoints are not yet protected by authentication. This is a known, documented gap until Phase 5.
