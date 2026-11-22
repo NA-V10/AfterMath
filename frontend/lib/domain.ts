@@ -13,11 +13,11 @@ export type Domain =
   | "zone";
 
 export const DOMAIN_COLOR: Record<Domain, string> = {
-  power: "#a371f7",
+  power: "#f2cf63",
   telecom: "#39c5cf",
   water: "#4493f8",
-  health: "#db61a2",
-  emergency: "#e5739a",
+  health: "#ee6fae",
+  emergency: "#f2836b",
   data: "#7d8cf5",
   fuel: "#b8a582",
   transport: "#8b949e",

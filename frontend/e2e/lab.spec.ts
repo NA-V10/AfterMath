@@ -73,7 +73,7 @@ test("operational picture: apply a run, see it in Command Center and Twin, then 
   await panel.getByRole("button", { name: "Run simulation" }).click();
   await expect(page.getByTestId("simulation-result")).toBeVisible();
 
-  await page.goto("/");
+  await page.goto("/command");
   const picture = page.getByTestId("operational-picture");
   await expect(picture).toContainText("Showing simulation");
 
@@ -81,7 +81,7 @@ test("operational picture: apply a run, see it in Command Center and Twin, then 
   await expect(page.getByTestId("picture-overlay-toggle")).toBeVisible();
   await expect(page.getByTestId("graph-node-EOC-01")).toHaveAttribute("data-status", "FAILED");
 
-  await page.goto("/");
+  await page.goto("/command");
   await page.getByRole("button", { name: "Reset to baseline" }).click();
   await expect(page.getByTestId("operational-picture")).toContainText("Baseline");
 });

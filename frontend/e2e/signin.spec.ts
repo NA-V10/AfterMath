@@ -36,7 +36,7 @@ test("sign in through the form, see your role, sign out", async ({ page }) => {
 
 test("viewers cannot reach write actions", async ({ page }) => {
   await signInAs(page, "viewer");
-  await page.goto("/");
+  await page.goto("/command");
   await expect(page.getByTestId("user-role")).toHaveText("viewer");
   await page.goto("/agents");
   await expect(page.getByText("Only operators can report incidents")).toBeVisible();

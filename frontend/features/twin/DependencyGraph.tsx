@@ -51,7 +51,7 @@ const AssetNodeView = memo(function AssetNodeView({ data }: NodeProps<AssetNode>
       data-status={data.status ?? undefined}
       title={`${data.code} — ${data.name}`}
       className={cn(
-        "flex items-center gap-1.5 rounded-sm border bg-panel-2 px-1.5 text-[11px] transition-opacity",
+        "flex items-center gap-1.5 rounded-sm border bg-panel-2 px-1.5 text-[13px] transition-opacity",
         data.role === "dimmed" && "opacity-25",
         data.role === "hidden" && "opacity-[0.06]",
       )}
@@ -69,14 +69,14 @@ const AssetNodeView = memo(function AssetNodeView({ data }: NodeProps<AssetNode>
       <Handle type="target" position={Position.Left} className="!size-1 !min-h-0 !min-w-0 !border-0 !bg-transparent" />
       <span
         aria-hidden
-        className="flex size-5 shrink-0 items-center justify-center rounded-[3px] font-mono text-[10px] font-bold text-bg"
+        className="flex size-5 shrink-0 items-center justify-center rounded-[3px] font-mono text-[13px] font-medium text-bg"
         style={{ background: categoryColor(data.category) }}
       >
         {CATEGORY[data.category].glyph}
       </span>
       <span className="min-w-0 flex-1 leading-tight">
-        <span className="block font-mono font-semibold">{data.code}</span>
-        <span className="block truncate text-[10px] text-muted">{data.name}</span>
+        <span className="block font-mono font-medium">{data.code}</span>
+        <span className="block truncate text-[13px] text-muted">{data.name}</span>
       </span>
       <span
         aria-label={data.status ? STATUS[data.status].label : CONDITION[data.condition].label}

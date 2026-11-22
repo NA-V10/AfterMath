@@ -1,13 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-
-import { AppShell } from "@/components/shell/AppShell";
+import localFont from "next/font/local";
 
 import "./globals.css";
 import { Providers } from "./providers";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+/* The dealt pairing (taste-skill, software): Outfit for text and headings, DM Mono for figures and
+ * codes. Self-hosted from the @fontsource packages: no font request leaves the browser. */
+const outfit = localFont({
+  src: "../node_modules/@fontsource-variable/outfit/files/outfit-latin-wght-normal.woff2",
+  variable: "--font-outfit",
+  weight: "100 900",
+  display: "swap",
+});
+const dmMono = localFont({
+  src: [
+    { path: "../node_modules/@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2", weight: "400" },
+    { path: "../node_modules/@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2", weight: "500" },
+  ],
+  variable: "--font-dm-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: { default: "AFTERMATH", template: "%s · AFTERMATH" },
@@ -15,15 +27,13 @@ export const metadata: Metadata = {
     "Infrastructure resilience and disaster-recovery decision support. Simulation environment — not connected to live infrastructure.",
 };
 
-export const viewport: Viewport = { themeColor: "#0a0d11", colorScheme: "dark" };
+export const viewport: Viewport = { themeColor: "#0a0d14", colorScheme: "dark" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" className={`${outfit.variable} ${dmMono.variable} antialiased`}>
       <body>
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

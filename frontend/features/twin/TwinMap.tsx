@@ -75,7 +75,7 @@ export default function TwinMap({
       .map((f) => {
         const el = document.createElement("div");
         el.className =
-          "pointer-events-none select-none text-[10px] font-semibold tracking-[0.2em] text-[#5d6876]";
+          "pointer-events-none select-none text-[13px] font-medium text-[#5d6876]";
         el.textContent = String(f.properties?.name ?? "");
         return new maplibregl.Marker({ element: el })
           .setLngLat((f.geometry as Point).coordinates as [number, number])

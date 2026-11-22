@@ -16,3 +16,4 @@
 | [ADR-0012](ADR-0012-local-dev-topology.md) | Hybrid local development topology | Proposed |
 | [ADR-0013](ADR-0013-asyncpg-langgraph-checkpointer.md) | LangGraph checkpointer on asyncpg | Accepted |
 | [ADR-0014](ADR-0014-authentication-and-sessions.md) | Bearer-token auth (PyJWT HS256), scrypt passwords, roles re-read per request | Accepted |
+| [ADR-0015](ADR-0015-taste-skill-design-system.md) | Phase 6 design from the taste-skill: dealt console system, static product page | Accepted |

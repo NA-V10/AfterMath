@@ -14,8 +14,8 @@ import { type Highlight, isAccessEdge, roleOf } from "./highlight";
 type GraphNode = Schemas["GraphNode"];
 type Edge = Schemas["DependencyEdge"];
 
-export const UPSTREAM_COLOR = "#58a6ff";
-export const DOWNSTREAM_COLOR = "#c297ff";
+export const UPSTREAM_COLOR = "#5ab9fc";
+export const DOWNSTREAM_COLOR = "#e7a65a";
 export const SELECTED_COLOR = "#ffffff";
 
 export function assetFeatures(nodes: GraphNode[]): FeatureCollection {
@@ -119,11 +119,11 @@ export function buildStyle(basemap: FeatureCollection): StyleSpecification {
       links: { type: "geojson", data: empty },
     },
     layers: [
-      { id: "background", type: "background", paint: { "background-color": "#080b0e" } },
+      { id: "background", type: "background", paint: { "background-color": "#0a0d14" } },
       { id: "boundary-fill", type: "fill", source: "basemap", filter: layer("boundary"),
-        paint: { "fill-color": "#0d1217" } },
+        paint: { "fill-color": "#0f1420" } },
       { id: "terrain", type: "fill", source: "basemap", filter: layer("terrain"),
-        paint: { "fill-color": "#121921" } },
+        paint: { "fill-color": "#141a27" } },
       { id: "floodplain", type: "fill", source: "basemap", filter: layer("floodplain"),
         paint: { "fill-color": "#4493f8", "fill-opacity": 0.06 } },
       { id: "floodplain-edge", type: "line", source: "basemap", filter: layer("floodplain"),
@@ -131,7 +131,7 @@ export function buildStyle(basemap: FeatureCollection): StyleSpecification {
       { id: "water", type: "fill", source: "basemap", filter: layer("water"),
         paint: { "fill-color": "#123049" } },
       { id: "streets", type: "line", source: "basemap", filter: layer("street"),
-        paint: { "line-color": "#1b232d", "line-width": 1 } },
+        paint: { "line-color": "#202736", "line-width": 1 } },
       { id: "boundary-edge", type: "line", source: "basemap", filter: layer("boundary"),
         paint: { "line-color": "#2f3a47", "line-width": 1, "line-dasharray": [4, 2] } },
       // demand zones
@@ -153,7 +153,7 @@ export function buildStyle(basemap: FeatureCollection): StyleSpecification {
       // roads & bridges
       { id: "asset-lines-casing", type: "line", source: "assets", filter: geom("LineString"),
         layout: { "line-cap": "round" },
-        paint: { "line-color": "#080b0e", "line-width": 7, "line-opacity": opacity(1) } },
+        paint: { "line-color": "#0a0d14", "line-width": 7, "line-opacity": opacity(1) } },
       { id: "asset-lines", type: "line", source: "assets", filter: geom("LineString"),
         layout: { "line-cap": "round" },
         paint: {

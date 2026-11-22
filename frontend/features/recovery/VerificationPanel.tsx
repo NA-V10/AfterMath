@@ -7,10 +7,10 @@ import type { Execution } from "@/lib/queries";
 
 function Delta({ label, before, after }: { label: string; before: number; after: number }) {
   return (
-    <div className="flex flex-col rounded-sm border border-line-strong bg-panel-2 px-2 py-1.5">
-      <span className="text-[10px] uppercase tracking-[0.08em] text-dim">{label}</span>
+    <div className="flex flex-col rounded-md border border-line-strong bg-panel-2 px-3 py-2">
+      <span className="text-[13px] text-dim">{label}</span>
       <span className="font-mono text-[13px]">
-        <span className="text-muted">{before.toFixed(1)}%</span> → <span className="font-semibold">{after.toFixed(1)}%</span>
+        <span className="text-muted">{before.toFixed(1)}%</span> → <span className="font-medium">{after.toFixed(1)}%</span>
       </span>
     </div>
   );
@@ -19,20 +19,20 @@ function Delta({ label, before, after }: { label: string; before: number; after:
 /** GUARDIAN's verification of a simulated execution: repaired vs functionally restored. */
 export function VerificationPanel({ execution }: { execution: Execution }) {
   const v = execution.verification?.result;
-  if (!v) return <p className="text-[12px] text-warn">Execution {execution.status.toLowerCase()} without verification.</p>;
+  if (!v) return <p className="text-[14px] text-warn">Execution {execution.status.toLowerCase()} without verification.</p>;
   const full = v.outcome === "FULLY_RESTORED";
   return (
-    <section className="flex flex-col gap-2 rounded-sm border border-line-strong p-2.5" data-testid="verification">
+    <section className="flex flex-col gap-2.5 rounded-lg border border-line-strong p-3.5" data-testid="verification">
       <div className="flex flex-wrap items-center gap-2">
         {full ? <CheckCircle2 className="size-4 text-ok" aria-hidden /> : <AlertTriangle className="size-4 text-warn" aria-hidden />}
         <span className="font-medium" data-testid="verification-outcome">
           {full ? "Fully restored" : "Partially restored"}
         </span>
-        <span className="text-[11px] text-dim">
+        <span className="text-[13px] text-dim">
           simulated execution by <span className="font-mono">{execution.requested_by}</span> · verified by GUARDIAN
         </span>
       </div>
-      <p className={v.matches_expectation ? "text-[12px] text-ok" : "text-[12px] font-semibold text-crit"}>
+      <p className={v.matches_expectation ? "text-[14px] text-ok" : "text-[14px] font-medium text-crit"}>
         {v.matches_expectation
           ? "The outcome matches the approved plan's expectation exactly (same result hash)."
           : "The outcome differs from the approved plan's expectation. This indicates a defect and has been logged."}
@@ -42,7 +42,7 @@ export function VerificationPanel({ execution }: { execution: Execution }) {
         <Delta label="Criticality-weighted" before={v.before.by_criticality} after={v.after.by_criticality} />
         <Delta label="Population served" before={v.before.by_population} after={v.after.by_population} />
       </div>
-      <p className="text-[11px] text-dim">
+      <p className="text-[13px] text-dim">
         “Before” is the same incident with no recovery at the same horizon (T+{Math.round(v.horizon_minutes / 60)}h).
       </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -54,7 +54,7 @@ export function VerificationPanel({ execution }: { execution: Execution }) {
       {v.repaired_not_functional.length > 0 && (
         <div>
           <SectionLabel>Repaired but not functional</SectionLabel>
-          <ul className="text-[12px] text-warn">
+          <ul className="text-[14px] text-warn">
             {v.repaired_not_functional.map((u) => (
               <li key={u.code}>
                 <span className="font-mono">{u.code}</span> {u.name}: {u.reason}
@@ -66,9 +66,9 @@ export function VerificationPanel({ execution }: { execution: Execution }) {
       <div>
         <SectionLabel>{`Still not operational (${v.unresolved.length})`}</SectionLabel>
         {v.unresolved.length === 0 ? (
-          <p className="text-[12px] text-dim">None.</p>
+          <p className="text-[14px] text-dim">None.</p>
         ) : (
-          <table className="w-full text-left text-[11px]">
+          <table className="w-full text-left text-[13px]">
             <tbody>
               {v.unresolved.map((u) => (
                 <tr key={u.code} className="border-t border-line">

@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en" data-type="software" data-radius="sharp" data-ground="sand" data-buttons="solid" data-motion>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AFTERMATH: recovery planning for infrastructure teams</title>
+<meta name="description" content="A simulator that shows how a failure spreads through power, water and telecom, and plans recovery that a person approves.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AFTERMATH: recovery planning for infrastructure teams">
+<meta property="og:description" content="Simulate a cascading failure, compare three recovery plans and approve one. Simulation only.">
+<meta property="og:image" content="/landing/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/landing/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0a0d14">
+<!-- <link rel="canonical" href="https://[the project's domain]/"> : no domain yet -->
+<meta name="site-kind" content="software">
+<meta name="page-type" content="software">
+<link rel="stylesheet" href="/landing/assets/system.css">
+<link rel="stylesheet" href="/landing/assets/ui/cards.css">
+<link rel="stylesheet" href="/landing/assets/motion/motion.css">
+<link rel="stylesheet" href="/landing/assets/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="/landing/assets/layout/layout.css">
+<link rel="stylesheet" href="/landing/assets/layout/demo.css">
+<link rel="stylesheet" href="/landing/assets/icons/icon.css">
+<!-- the dealt pairing, self-hosted (no request to a font service) -->
+<style>
+@font-face { font-family: "Outfit"; src: url("/landing/fonts/outfit-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "DM Mono"; src: url("/landing/fonts/dm-mono-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "DM Mono"; src: url("/landing/fonts/dm-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+:root {
+  --p-bg: #0a0d14; --p-surface: #131824; --p-ink: #e9edf3; --p-muted: #8891a1;
+  --p-accent: #5ab9fc; --p-accent-ink: #0a0d14; --p-action: #5ab9fc; --p-action-ink: #0a0d14;
+  --p-inv-bg: #e9edf3; --p-inv-surface: #d7dbe1; --p-inv-ink: #0a0d14; --p-inv-muted: #54575f;
+  --p-inv-accent: #0a0d14; --p-inv-accent-ink: #e9edf3; --p-inv-action: #0a0d14; --p-inv-action-ink: #e9edf3;
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-text: "Outfit", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 400;
+  --display-tracking: -0.03em;
+  --display-tracking-xl: -0.04em;
+}
+</style>
+<link rel="stylesheet" href="/landing/assets/ui/base.css">
+<link rel="stylesheet" href="/landing/assets/ui/window/fragment.css">
+<link rel="stylesheet" href="/landing/assets/ui/pipeline-board/fragment.css">
+<link rel="stylesheet" href="/landing/assets/ui/notify/fragment.css">
+<link rel="stylesheet" href="/landing/assets/ui/checklist/fragment.css">
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
+<script src="/landing/assets/backgrounds/backgrounds.js"></script>
+<script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
+<link rel="modulepreload" href="/landing/assets/moments/moments.js">
+<link rel="modulepreload" href="/landing/assets/moments/lib.js">
+<link rel="modulepreload" href="/landing/assets/moments/iris-opens/moment.js">
+<!-- page CSS: only inside visuals, the app frame's recipe and one --p-h per card group -->
+<style>
+  .hero__notice { margin: 0 0 var(--s-4); font-size: var(--t-small); color: var(--muted); }
+  /* the hero's art: the lit sand ground with one soft light; the note card on its lower left */
+  .hero__art { background:
+      radial-gradient(70% 60% at 18% 12%, color-mix(in oklab, var(--ground-surface) 80%, white), transparent 70%),
+      radial-gradient(60% 50% at 90% 100%, color-mix(in oklab, var(--ground-bg) 80%, var(--ground-accent)), transparent 70%),
+      var(--ground-bg); }
+  .hero__art > .ly-piece--note { left: var(--s-6); bottom: var(--s-6); width: 300px; z-index: 2; }
+  .d-note__line { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px; color: #3d4247; border-top: 1px solid rgb(0 0 0 / .06); }
+  .d-note__line:first-of-type { border-top: 0; }
+  .d-note__line i { width: 18px; height: 18px; border-radius: 50%; flex: none; display: grid; place-items: center; background: #e7f4ec; color: #17673f; font-style: normal; font-size: 13px; font-weight: 500; }
+  .d-note__line i.warn { background: #fdf0dc; color: #8a5300; }
+  .d-note__line b { font-weight: 500; color: #16181a; }
+  .hero__proof { font-size: var(--t-small); color: var(--muted); }
+  .ly-piece--main .d-row { grid-template-columns: 36px minmax(0, 1fr) 56px 96px; }
+  .ly-piece--main .d-main { padding-right: var(--ly-cut-room); }
+  @media (max-width: 639px) { .ly-piece--main .d-row { grid-template-columns: 36px minmax(0, 1fr) 96px; } }
+  @media (max-width: 1023px) { .hero__art > .ly-piece--note { left: var(--s-4); bottom: var(--s-4); width: 270px; } }
+  /* the steps run two screens where the three cards stack (tablet and the 1024-1279 two-up) */
+  @media (min-width: 640px) and (max-width: 1279px) { #steps { --h: 2 } }
+  @media (max-width: 639px) { #steps { --hm: 2 } }
+  /* split frames fill the screen like the other sections (one gap between sections) */
+  :is(#cascade, #safety, #questions) .frame--split { aspect-ratio: 628 / 680; align-self: start; }
+  @media (min-width: 640px) and (max-width: 1023px) { :is(#cascade, #safety, #questions) .frame--split { aspect-ratio: 16 / 9; } }
+  @media (max-width: 639px) { :is(#cascade, #safety, #questions) .frame--split { aspect-ratio: 4 / 3; } #cascade .facts { display: none; } }
+  #cascade .cascade-win .d-win__body, #questions .roles-win .d-win__body { grid-template-columns: minmax(0, 1fr); }
+  #questions .roles-win .d-row { grid-template-columns: 36px minmax(0, 1fr) 96px; }
+  #questions .faq--single { grid-template-columns: minmax(0, 1fr); margin-top: var(--s-6); }
+  @media (max-width: 639px) { footer.closing { --hm: 2 } #questions .faq__item:nth-child(4) { display: none; } }
+  /* the hero window below 1280: the head button and the third tab would be cut by the frame */
+  @media (max-width: 1279px) { .hero__art .d-btn, .hero__art .d-tabs span:nth-child(3) { display: none; } }
+  @media (max-width: 1023px) { .ly-piece--main .d-row:nth-child(n+5) { display: none; } .app .ui-pipe__log { display: none; } }
+  /* UI text inside the agent pipeline at 12px so the longest agent name fits its step */
+  .app .ui-pipe__nm { font-size: 12px; }
+  @media (max-width: 1279px) { .ly-piece--main .d-row:nth-child(n+4) { display: none; } .ly-piece--main .d-row { grid-template-columns: 36px minmax(0, 1fr) 96px; } .ly-piece--main .d-row .num { display: none; } }
+  @media (max-width: 1023px) { #cascade .d-row:nth-child(n+5) { display: none; } #questions .frame--split { aspect-ratio: 21 / 9; } }
+  @media (max-width: 639px) { .ly-piece--main .d-row:nth-child(n+2) { display: none; } #questions .d-row:nth-child(n+3) { display: none; } #safety .frame--split { aspect-ratio: 16 / 9; } }
+  @media (min-width: 640px) and (max-width: 1023px) and (min-height: 1100px) { #steps { --h: 1 } }
+  @media (max-width: 1023px) { .app .ui-pipe__ico { display: none; } #questions .d-row:nth-child(n+3) { display: none; } #questions .frame--split { aspect-ratio: 3 / 1; } }
+  @media (max-width: 639px) { #safety .frame--split { aspect-ratio: 2 / 1; } }
+  /* the three steps from 640 to 1279: one card a row, the words beside the panel */
+  @media (min-width: 640px) and (max-width: 1279px) {
+    #steps .grid > .card { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-auto-rows: min-content; column-gap: var(--s-6); align-content: start; }
+    #steps .grid > .card > :not(.panel) { grid-column: 1; }
+    #steps .grid > .card > .panel { grid-column: 2; grid-row: 1 / span 4; --p-h: 200px; }
+  }
+  .app.ui { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-top: var(--s-7); background: var(--u-bg); border: 1px solid var(--u-border); border-radius: var(--u-r); box-shadow: var(--u-shadow); }
+  .app > .app__pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+  .app > .app__pane + .app__pane { border-left: 1px solid var(--u-line); }
+  .app > .app__pane > .ui-panel { width: 100%; border: 0; border-radius: 0; box-shadow: none; }
+  .app > .app__pane::after { content: ""; position: absolute; inset: auto 0 0 0; height: 64px; background: linear-gradient(transparent, var(--u-bg)); pointer-events: none; }
+  @media (min-width: 1024px) and (max-width: 1279px) { .app.ui { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); } }
+  @media (max-width: 1023px) {
+    .app.ui { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    .app > .app__pane--list { max-height: 252px; }
+    .app > .app__pane--list::after { display: none; }
+    .app .ui-win__side { display: none; }
+    .app .ui-win__body { grid-template-columns: minmax(0, 1fr); }
+    .app > .app__pane + .app__pane { border-left: 0; border-top: 1px solid var(--u-line); }
+  }
+  @media (max-width: 639px) {
+    .app.ui { grid-template-rows: minmax(0, 1fr); }
+    .app > .app__pane--list { display: none; }
+    .app > .app__pane + .app__pane { border-top: 0; }
+  }
+  #steps .panel { --p-h: 336px; }
+  @media (max-width: 639px) { #steps .panel { --p-h: 220px; } }
+  #cascade .cascade-win .d-win__body { grid-template-columns: minmax(0, 1fr); }
+  #cascade .cascade-win .d-row { grid-template-columns: 36px minmax(0, 1fr) 56px 96px; }
+  #cascade .cascade-win .d-main { padding-right: var(--s-7); }
+  .result { display: grid; gap: var(--s-3); padding: var(--s-5); }
+  .result__row { display: flex; justify-content: space-between; gap: var(--s-4); padding-bottom: var(--s-3); border-bottom: 1px solid var(--u-line); font-size: var(--t-small); }
+  .result__row b { font-family: var(--font-mono); font-weight: 500; }
+  .result__head { display: flex; align-items: center; gap: var(--s-2); font-weight: 500; }
+</style>
+</head>
+<body>
+<!-- type: software (site-kind software)
+     deal: palette blue-black-cornflower (night ground and one sky-blue signal colour, as in a control room
+     at night), type outfit (Outfit + DM Mono), radius sharp, hero collage, nav nav-mega, close close-type,
+     footer footer-dark, rhythm surface-pairs, buttons solid, mark dots, lit ground sand
+     moments: iris-opens in #safety (the one statement that matters most: nothing here touches real systems)
+     The simulation notice is required on every screen by the project; it sits in the hero as its notice line,
+     in #safety and in the footer's legal row. -->
+<header class="nav">
+  <div class="wrap nav__bar">
+    <a class="skip-link" href="#top">Skip to content</a>
+    <a class="nav__logo" href="#top"><span class="mark" data-mark="dots" aria-hidden="true"></span>AFTERMATH</a>
+    <nav class="nav__links" aria-label="Main">
+      <div class="nav__item">
+        <a class="nav__link" href="#how">Product <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="nav__menu">
+          <div class="wrap grid">
+            <div class="menu-col span-3">
+              <p class="t-label">Analysis</p>
+              <a href="#how">Agent analysis<span>Five agents read each incident</span></a>
+              <a href="#cascade">Cascade simulation<span>Every dependency, wave by wave</span></a>
+            </div>
+            <div class="menu-col span-3">
+              <p class="t-label">Recovery</p>
+              <a href="#steps">Recovery plans<span>Three strategies, compared</span></a>
+              <a href="#steps">Approval<span>A person decides, on record</span></a>
+              <a href="#safety">Simulated execution<span>Replayed and verified</span></a>
+            </div>
+            <a class="menu-card span-3 start-10" href="#steps">
+              <div class="panel"><div class="stage stage--fade-br"><div class="at-corner" style="--ax:24px;--ay:24px">
+                <div class="ui ui-panel ui-checks" data-ui="checklist" data-ui-still>
+                  <div class="ui-checks__head"><div class="ui-title">Checks before it runs</div><span class="ui-spacer"></span><div class="ui-meta">12 of 12</div></div>
+                  <div class="ui-checks__bar"><i style="--k:1"></i></div>
+                  <ul class="ui-checks__list">
+                    <li class="ui-check is-done"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg></span><span class="ui-check__label">Crews never double-booked</span></li>
+                    <li class="ui-check is-done"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg></span><span class="ui-check__label">Stock covers every part</span></li>
+                  </ul>
+                </div>
+              </div></div></div>
+              <span class="t-card">Checked twice</span>
+              <span class="t-small muted">Before approval and before it runs</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="nav__item"><a class="nav__link" href="#cascade">Cascades</a></div>
+      <div class="nav__item"><a class="nav__link" href="#safety">Safety</a></div>
+      <div class="nav__item"><a class="nav__link" href="#questions">Questions</a></div>
+    </nav>
+    <div class="nav__actions">
+      <a class="btn btn--primary" href="/command">Open the console</a>
+    </div>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menu">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero hero--collage" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <p class="hero__notice">SIMULATION ENVIRONMENT — NOT CONNECTED TO LIVE INFRASTRUCTURE</p>
+        <h1 id="hero-h">Recovery planning for infrastructure teams</h1>
+        <p class="hero__lead">See how one failure spreads across 50 synthetic sites of power, water and telecom, then compare three recovery plans for an approver to sign off.</p>
+        <div class="btn-row"><a class="btn btn--primary" href="/command">Open the console<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a><a class="btn btn--secondary" href="#how">See how it works</a></div>
+      </div>
+      <div class="hero__art span-6 start-7" role="img" aria-label="The recommended recovery plan for a storm: seven actions with their times, waiting for approval, and a card showing the checks it passed">
+        <div class="ly-piece ly-piece--main d-win" aria-hidden="true">
+          <div class="d-win__bar"><span class="d-win__dots"><i></i><i></i><i></i></span><span>AFTERMATH · Recovery Command</span></div>
+          <div class="d-win__body">
+            <div class="d-side">
+              <span><i></i>Command</span><span><i></i>Twin</span><span><i></i>Lab</span><span class="is-on"><i></i>Recovery</span><span><i></i>Agents</span><span><i></i>Audit</span>
+              <span class="d-side__label">Storm, six sites</span><span><i></i>Critical first</span><span><i></i>Balanced</span>
+            </div>
+            <div class="d-main">
+              <div class="d-main__head"><h4>Maximum restoration</h4><span class="d-btn">Approve</span></div>
+              <div class="d-tabs"><span class="is-on">Plan 7</span><span>Resources</span><span>Checks 12</span></div>
+              <div class="d-rows">
+                <div class="d-row"><span class="d-thumb" style="background:#f2cf63"></span><div><b>Repair SUB-02</b><small>Riverside Substation · electrical</small></div><span class="num">T+0:30</span><span class="d-chip">8 h</span></div>
+                <div class="d-row"><span class="d-thumb" style="background:#4493f8"></span><div><b>Repair WPS-02</b><small>West Pumping Station · water</small></div><span class="num">T+0:30</span><span class="d-chip">4 h</span></div>
+                <div class="d-row"><span class="d-thumb" style="background:#8b949e"></span><div><b>Repair RD-04</b><small>Eastridge Road · civil</small></div><span class="num">T+0:30</span><span class="d-chip">4 h</span></div>
+                <div class="d-row"><span class="d-thumb" style="background:#ee6fae"></span><div><b>Refuel HOS-02</b><small>Riverside Community Hospital</small></div><span class="num">T+0:30</span><span class="d-chip d-chip--low">Backup</span></div>
+                <div class="d-row"><span class="d-thumb" style="background:#f2836b"></span><div><b>Refuel FIR-02</b><small>East Fire Station</small></div><span class="num">T+4:30</span><span class="d-chip d-chip--low">Backup</span></div>
+                <div class="d-row"><span class="d-thumb" style="background:#f2cf63"></span><div><b>Repair PDN-01</b><small>Northgate West Feeder · electrical</small></div><span class="num">T+8:30</span><span class="d-chip">3 h</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ly-piece ly-piece--note d-card" aria-hidden="true" data-ly-steps="700">
+          <div class="d-card__row"><h5>GUARDIAN</h5><span class="d-chip" data-step data-step-at="4">Approved</span></div>
+          <div class="d-note__line" data-step><i class="warn">!</i><span>Hospital backup ends <b>T+4h</b></span></div>
+          <div class="d-note__line" data-step><i>✓</i><span><b>12 of 12</b> rules passed</span></div>
+          <div class="d-note__line" data-step><i>✓</i><span>Impact <b>2,315</b> ih, the lowest of three</span></div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <div class="grid">
+        <h2 id="how-h" class="span-5">5 agents analyse each incident. <span class="muted">A person decides.</span></h2>
+        <p class="span-6 start-7">Describe the damage in plain words. SENTINEL finds the sites, CARTOGRAPHER traces what depends on them, ORACLE simulates the cascade, STRATEGIST plans and GUARDIAN checks. <a class="link" href="#steps">See the three plans</a></p>
+      </div>
+      <div class="ui app fill" role="img" aria-label="The incident list beside the five-agent analysis of a storm: each agent's result and timing, finished in 3.3 seconds" data-ui-pause-host>
+        <div class="app__pane app__pane--list">
+          <div class="ui ui-panel ui-win" data-ui="window" data-open="Analysing" data-work="Analysing" data-done="Needs approval" data-ui-still>
+            <div class="ui-win__bar">
+              <span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="ui-win__crumb">Incidents <i>/</i> <b>Open</b></span>
+              <span class="ui-spacer"></span>
+              <span class="ui-win__search" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><span class="ui-win__ph">Search</span><span class="ui-kbd">/</span></span>
+            </div>
+            <div class="ui-win__body">
+              <nav class="ui-win__side" aria-hidden="true">
+                <span class="ui-win__nav is-on"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M2.5 9h3l1 1.5h3l1-1.5h3"/><path d="M2.5 9 4 3.5h8L13.5 9v3.5h-11z"/></svg>Open<em>4</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>Waiting<em>2</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><path d="m3.5 8.4 2.8 2.8 6.2-6.4"/></svg>Recovered</span>
+                <span class="ui-win__label">Scenarios</span>
+                <span class="ui-win__nav"><span class="ui-win__hash">#</span>Storm</span>
+                <span class="ui-win__nav"><span class="ui-win__hash">#</span>Flood</span>
+              </nav>
+              <div class="ui-win__main">
+                <div class="ui-win__cols" aria-hidden="true"><span>Incident</span><span>Report</span><span>Status</span><span>Age</span></div>
+                <ul class="ui-win__rows">
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="1">35</span><span class="ui-win__who">INC-2026-0035</span><span class="ui-win__sub">Storm damage at six sites</span><span class="ui-win__st is-you" data-st>Needs approval</span><span class="ui-win__age">2m</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="3">34</span><span class="ui-win__who">INC-2026-0034</span><span class="ui-win__sub">River over the east bank</span><span class="ui-win__st" data-st>Analysing</span><span class="ui-win__age">5m</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="4">33</span><span class="ui-win__who">INC-2026-0033</span><span class="ui-win__sub">Riverside substation fire</span><span class="ui-win__st is-done" data-st>Recovered</span><span class="ui-win__age">14m</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="2">32</span><span class="ui-win__who">INC-2026-0032</span><span class="ui-win__sub">Sirens downtown, no detail</span><span class="ui-win__st" data-st>Asks a person</span><span class="ui-win__age">21m</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="5">31</span><span class="ui-win__who">INC-2026-0031</span><span class="ui-win__sub">Northgate tripped, exchange down</span><span class="ui-win__st is-you" data-st>Needs approval</span><span class="ui-win__age">26m</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="3">30</span><span class="ui-win__who">INC-2026-0030</span><span class="ui-win__sub">Mast down at Eastridge</span><span class="ui-win__st is-done" data-st>Recovered</span><span class="ui-win__age">40m</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="1">29</span><span class="ui-win__who">INC-2026-0029</span><span class="ui-win__sub">Pump failure, West Pumping</span><span class="ui-win__st is-done" data-st>Recovered</span><span class="ui-win__age">1h</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="4">28</span><span class="ui-win__who">INC-2026-0028</span><span class="ui-win__sub">Docklands feeder fault</span><span class="ui-win__st is-done" data-st>Recovered</span><span class="ui-win__age">2h</span></li>
+                  <li class="ui-win__row" data-row><span class="ui-avatar" data-tone="2">27</span><span class="ui-win__who">INC-2026-0027</span><span class="ui-win__sub">Low Bridge closed by water</span><span class="ui-win__st is-done" data-st>Recovered</span><span class="ui-win__age">3h</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="app__pane app__pane--open" data-ui-loop>
+          <div class="ui ui-panel ui-pipe" data-ui="pipeline-board">
+            <div class="ui-pipe__head">
+              <svg class="ui-icon ui-pipe__branch" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4.5" cy="3.5" r="1.5"/><circle cx="4.5" cy="12.5" r="1.5"/><circle cx="11.5" cy="5" r="1.5"/><path d="M4.5 5v6M11.5 6.5c0 2.6-2.2 3.6-5.6 4.6"/></svg>
+              <span class="ui-pipe__repo">INC-2026-0035</span><i class="ui-pipe__slash">/</i><code class="ui-pipe__ref">storm</code>
+              <span class="ui-pipe__run">Analysis</span>
+              <span class="ui-spacer"></span>
+              <span class="ui-pipe__total"><svg class="ui-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8.5" r="5.5"/><path d="M8 5.5v3l2 1.25M6.5 1.75h3"/></svg><span data-pipe-total>3.3 s</span></span>
+              <span class="ui-chip ui-chip--ink ui-chip--live ui-pipe__chip" data-pipe-chip data-done="Done">Running</span>
+            </div>
+            <div class="ui-pipe__commit">
+              <span class="ui-avatar" data-tone="4">OP</span>
+              <span class="ui-pipe__msg">Six sites damaged after the storm</span>
+              <code class="ui-pipe__sha">d4e71bd</code>
+              <button class="ui-btn ui-btn--ghost ui-btn--sm ui-pipe__btn" type="button" tabindex="-1" data-pipe-btn data-done="Plans ready">Running</button>
+            </div>
+            <ol class="ui-pipe__steps">
+              <li class="ui-pipe__step is-done" data-step="sentinel"><span class="ui-pipe__ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg></span><span class="ui-pipe__name"><span class="ui-pipe__nm">Sentinel</span></span><code class="ui-pipe__cmd">6 damaged, confidence 1.00</code><span class="ui-pipe__time" data-time>75 ms</span><span class="ui-pipe__bar"><i></i></span></li>
+              <li class="ui-pipe__step is-done" data-step="cartographer"><span class="ui-pipe__ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg></span><span class="ui-pipe__name"><span class="ui-pipe__nm">Cartographer</span></span><code class="ui-pipe__cmd">24 downstream, 3 single points</code><span class="ui-pipe__time" data-time>44 ms</span><span class="ui-pipe__bar"><i></i></span></li>
+              <li class="ui-pipe__step is-run" data-step="oracle" style="--k:0.6"><span class="ui-pipe__ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg></span><span class="ui-pipe__name"><span class="ui-pipe__nm">Oracle</span></span><code class="ui-pipe__cmd">23 failed, 176,000 affected</code><span class="ui-pipe__time" data-time="146 ms">90 ms</span><span class="ui-pipe__bar"><i></i></span></li>
+              <li class="ui-pipe__step" data-step="strategist"><span class="ui-pipe__ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg></span><span class="ui-pipe__name"><span class="ui-pipe__nm">Strategist</span></span><code class="ui-pipe__cmd">3 plans, lowest 2,315 ih</code><span class="ui-pipe__time" data-time="2.8 s">Queued</span><span class="ui-pipe__bar"><i></i></span></li>
+              <li class="ui-pipe__step" data-step="guardian"><span class="ui-pipe__ico"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4.5 8.2 2.3 2.3 4.7-5"/></svg></span><span class="ui-pipe__name"><span class="ui-pipe__nm">Guardian</span></span><code class="ui-pipe__cmd">3 of 3 passed the rules</code><span class="ui-pipe__time" data-time="224 ms">Queued</span><span class="ui-pipe__bar"><i></i></span></li>
+            </ol>
+            <div class="ui-pipe__log" aria-hidden="true">
+              <span class="ui-pipe__line" data-step="sentinel"><b>›</b>Severe storm, combined, critical</span>
+              <span class="ui-pipe__line" data-step="sentinel">Damaged: SUB-02, SUB-04, PDN-01, TEL-05, WPS-02, RD-04</span>
+              <span class="ui-pipe__line" data-step="cartographer"><b>›</b>24 downstream assets, 6 requirements lost</span>
+              <span class="ui-pipe__line" data-step="cartographer">Single points of failure: 3</span>
+              <span class="ui-pipe__line is-on" data-step="oracle"><b>›</b>Impact 64.05, 23 assets failed</span>
+              <span class="ui-pipe__line is-on" data-step="oracle">Result hash d4e71bd515f9</span>
+              <span class="ui-pipe__line" data-step="strategist"><b>›</b>Critical first 2,568 · Maximum 2,315 · Balanced 2,386</span>
+              <span class="ui-pipe__line" data-step="strategist">No action would cost 10,691 impact-hours</span>
+              <span class="ui-pipe__line" data-step="guardian"><b>›</b>Rules V-001 to V-009 passed on all three</span>
+              <span class="ui-pipe__line" data-step="guardian">Recommended: Maximum restoration</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section ground-surface" id="cascade" aria-labelledby="cascade-h">
+    <div class="wrap">
+      <div class="grid">
+        <div class="span-5 stack-6">
+          <h2 id="cascade-h">One substation fails, 18 sites follow in 4 waves</h2>
+          <p class="t-lead">When Riverside Substation fails, its two feeders go dark at once. The hospital and two masts switch to backup power, which runs out on schedule.</p>
+          <ul class="facts stack-2">
+            <li>The same inputs always give the same result hash</li>
+            <li>Every run replays wave by wave</li>
+            <li>Backup endurance comes from each site's record</li>
+          </ul>
+          <a class="link" href="/lab">Open the Simulation Lab</a>
+        </div>
+        <div class="frame frame--split frame--lit span-6 start-7" role="img" aria-label="The Riverside substation failure, event by event: feeders failing at once, the hospital and two masts on backup, the masts failing at two hours and the hospital at four">
+          <div class="stage stage--fade-br"><div class="at-corner to-edge" style="--ax:56px;--ay:56px">
+            <div class="d-win cascade-win" aria-hidden="true">
+              <div class="d-win__bar"><span class="d-win__dots"><i></i><i></i><i></i></span><span>Simulation Lab · Riverside substation failure</span></div>
+              <div class="d-win__body">
+                <div class="d-main">
+                  <div class="d-main__head"><h4>Events, wave by wave</h4><span class="d-btn">Replay</span></div>
+                  <div class="d-rows">
+                    <div class="d-row"><span class="d-thumb" style="background:#f2cf63"></span><div><b>SUB-02 failed</b><small>Riverside Substation, damaged</small></div><span class="num">T+0</span><span class="d-chip d-chip--out">Failed</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#f2cf63"></span><div><b>PDN-03 failed</b><small>East feeder lost its supply</small></div><span class="num">T+0</span><span class="d-chip d-chip--out">Failed</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#ee6fae"></span><div><b>HOS-02 on backup</b><small>Riverside Community Hospital</small></div><span class="num">T+0</span><span class="d-chip d-chip--low">Backup</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#4493f8"></span><div><b>WTP-01 failed</b><small>Riverside Treatment Works</small></div><span class="num">T+0</span><span class="d-chip d-chip--out">Failed</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#39c5cf"></span><div><b>TEL-03 failed</b><small>Riverside Mast, battery empty</small></div><span class="num">T+2h</span><span class="d-chip d-chip--out">Failed</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#ee6fae"></span><div><b>HOS-02 failed</b><small>Hospital generator out of fuel</small></div><span class="num">T+4h</span><span class="d-chip d-chip--out">Failed</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section ground-surface" id="steps" aria-labelledby="steps-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="steps-h">From plan to recovery in 3 steps. <span class="muted">Each one checked and recorded.</span></h2>
+      </div>
+      <div class="grid">
+        <article class="card card--row span-4">
+          <span class="step-num">1</span>
+          <h3>Compare three plans</h3>
+          <p>Critical services first, most assets restored, or a balance, each scheduled against real crew and stock limits.</p>
+          <div class="panel panel--flush"><div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:340px;--ax:max(24px, 50% - 170px);--ay:40px;--ay-sm:24px">
+            <div class="ui ui-panel result" data-ui-still>
+              <div class="result__head">Storm, six sites · 3 of 3 valid</div>
+              <div class="result__row"><span>Maximum restoration</span><b>2,315 ih</b></div>
+              <div class="result__row"><span>Balanced</span><b>2,386 ih</b></div>
+              <div class="result__row"><span>Critical services first</span><b>2,568 ih</b></div>
+              <div class="result__row"><span>No action</span><b>10,691 ih</b></div>
+            </div>
+          </div></div></div>
+        </article>
+        <article class="card card--row span-4">
+          <span class="step-num">2</span>
+          <h3>Approve the one you choose</h3>
+          <p>The approval covers that exact plan. Whoever asked for it cannot approve it, and a change needs a new review.</p>
+          <div class="panel panel--flush"><div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:380px;--ax:max(24px, 50% - 190px);--ay:calc(100% - 180px);--ay-sm:calc(100% - 180px)" data-ui-loop>
+            <div class="ui ui-notify" data-ui="notify">
+              <ul class="ui-notify__list" data-notify-list>
+                <li class="ui-note"><span class="ui-note__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="m3.5 8.4 2.8 2.8 6.2-6.4"/></svg></span><span class="ui-note__text"><span class="ui-note__title">Approved by an approver<time>now</time></span><span class="ui-note__body">Maximum restoration, its hash on record</span></span></li>
+                <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="3">OP</span><span class="ui-note__text"><span class="ui-note__title">Operator asked for plans<time>4m</time></span><span class="ui-note__body">They cannot approve their own</span></span></li>
+                <li class="ui-note"><span class="ui-note__ico"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg></span><span class="ui-note__text"><span class="ui-note__title">Three plans ready<time>6m</time></span><span class="ui-note__body">All passed GUARDIAN's rules</span></span></li>
+              </ul>
+            </div>
+          </div></div></div>
+        </article>
+        <article class="card card--row span-4">
+          <span class="step-num">3</span>
+          <h3>Run it and check the result</h3>
+          <p>GUARDIAN checks the plan again, replays it in the simulator and compares the outcome with the plan.</p>
+          <div class="panel panel--flush"><div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:340px;--ax:max(24px, 50% - 170px);--ay:40px;--ay-sm:24px">
+            <div class="ui ui-panel result" data-ui-still>
+              <div class="result__head"><svg class="ui-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.4 2.8 2.8 6.2-6.4"/></svg>Fully restored</div>
+              <div class="result__row"><span>Assets operational</span><b>69.8% → 100%</b></div>
+              <div class="result__row"><span>Weighted by criticality</span><b>67.5% → 100%</b></div>
+              <div class="result__row"><span>Matches the plan</span><b>Same hash</b></div>
+              <div class="result__row"><span>Rules at run time</span><b>12 of 12</b></div>
+            </div>
+          </div></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section ground-inverse" id="safety" data-moment="iris-opens" data-moment-opts='{"from": "surface"}' aria-labelledby="safety-h">
+    <div class="wrap">
+      <div class="grid">
+        <div class="span-5 stack-6">
+          <h2 id="safety-h">0 connections to real infrastructure. <span class="muted">Every site in it is fictional.</span></h2>
+          <p class="t-lead">Execution replays the approved plan inside the simulator. There is no connection to any control system, and Meridian Valley, the district it models, does not exist.</p>
+          <a class="link" href="#questions">Read the questions</a>
+        </div>
+        <div class="frame frame--split span-6 start-7" role="img" aria-label="The simulation notice as the console shows it on every screen">
+          <div class="stage"><div class="at-rise fit" style="--fit-max:520px;--ax:max(24px, 50% - 260px);--ay:96px;--ay-sm:48px">
+            <div class="ui ui-panel result">
+              <div class="result__head">On every console screen</div>
+              <div class="result__row"><span>Notice</span><b>Simulation environment</b></div>
+              <div class="result__row"><span>Live connections</span><b>None</b></div>
+              <div class="result__row"><span>Data</span><b>50 synthetic assets</b></div>
+              <div class="result__row"><span>Language model</span><b>Optional, explains only</b></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="questions" aria-labelledby="questions-h">
+    <div class="wrap">
+      <div class="grid">
+        <div class="span-6">
+          <h2 id="questions-h">Questions about AFTERMATH</h2>
+          <div class="faq faq--single">
+            <div class="faq__item"><h3>Connects to no live system</h3><p>AFTERMATH reads no live data and sends no commands anywhere.</p></div>
+            <div class="faq__item"><h3>Runs without an AI provider</h3><p>No key is needed. A model, when set up, only writes explanations.</p></div>
+            <div class="faq__item"><h3>Needs a second person to approve</h3><p>An approver who did not request the plan signs off that exact plan.</p></div>
+            <div class="faq__item"><h3>Comes with 4 demo accounts</h3><p>Viewer, operator, approver and admin, created with one command on your machine.</p></div>
+          </div>
+        </div>
+        <div class="frame frame--split frame--lit span-6 start-7" role="img" aria-label="The four demo accounts and what each role may do in the console">
+          <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:440px;--ax:max(24px, 50% - 220px);--ay:56px;--ay-sm:24px">
+            <div class="d-win roles-win" aria-hidden="true">
+              <div class="d-win__bar"><span class="d-win__dots"><i></i><i></i><i></i></span><span>AFTERMATH · Sign in</span></div>
+              <div class="d-win__body">
+                <div class="d-main">
+                  <div class="d-main__head"><h4>Demo accounts</h4><span class="d-btn">Sign in</span></div>
+                  <div class="d-rows">
+                    <div class="d-row"><span class="d-thumb" style="background:#8b949e"></span><div><b>viewer</b><small>Reads every screen</small></div><span class="d-chip">Read</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#4493f8"></span><div><b>operator</b><small>Reports, plans and runs</small></div><span class="d-chip">Run</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#5ab9fc"></span><div><b>approver</b><small>Approves or rejects plans</small></div><span class="d-chip d-chip--low">Decide</span></div>
+                    <div class="d-row"><span class="d-thumb" style="background:#f2cf63"></span><div><b>admin</b><small>Stock and resets</small></div><span class="d-chip">Manage</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer closing footer--dark" id="contact" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="closing__cta close--type">
+      <div class="section-head">
+        <h2 id="close-h">Plan a recovery for a simulated storm</h2>
+        <p>Sign in with a demo account; no data leaves your machine.</p>
+      </div>
+      <a class="btn btn--primary btn--xl btn--wide" href="/command">Open the console<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+    </div>
+    <div class="closing__links">
+      <div class="grid">
+        <div class="span-4 stack-4">
+          <a class="nav__logo" href="#top"><span class="mark" data-mark="dots" aria-hidden="true"></span>AFTERMATH</a>
+          <p class="footer__lede">Recovery planning and approval for simulated infrastructure failures.</p>
+        </div>
+        <div class="span-2 footer__col"><h3>Product</h3><ul><li><a href="#how">Agents</a></li><li><a href="#cascade">Cascades</a></li><li><a href="#steps">Plans</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Safety</h3><ul><li><a href="#safety">Simulation only</a></li><li><a href="#questions">Questions</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Plan</h3><ul><li><a href="/lab">Simulation Lab</a></li><li><a href="/agents">Agent Activity</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Review</h3><ul><li><a href="/recovery">Recovery Command</a></li><li><a href="/audit">Audit log</a></li></ul></div>
+      </div>
+      <div class="footer__legal">
+        <span>&copy; 2026 AFTERMATH &nbsp; SIMULATION ENVIRONMENT — NOT CONNECTED TO LIVE INFRASTRUCTURE</span>
+        <div class="socials"></div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<nav class="actionbar" aria-label="Quick actions">
+  <a class="btn btn--primary" href="/command">Open the console</a>
+</nav>
+
+<script type="module" src="/landing/assets/system.js"></script>
+<script type="module" src="/landing/assets/motion/motion.js"></script>
+<script type="module" src="/landing/assets/layout/layout.js"></script>
+</body>
+</html>

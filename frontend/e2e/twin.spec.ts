@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("simulation banner is shown on every screen", async ({ page }) => {
-  for (const path of ["/", "/twin", "/lab", "/recovery", "/agents", "/audit"]) {
+  for (const path of ["/command", "/twin", "/lab", "/recovery", "/agents", "/audit"]) {
     await page.goto(path);
     await expect(page.getByTestId("simulation-banner")).toContainText(
       "SIMULATION ENVIRONMENT — NOT CONNECTED TO LIVE INFRASTRUCTURE",

@@ -3,7 +3,7 @@
 import { ArrowRight, CircleDashed, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Badge, ErrorState, Loading, Panel, SectionLabel, cn } from "@/components/ui/primitives";
+import { Badge, ErrorState, Loading, PageHeader, Panel, SectionLabel, cn } from "@/components/ui/primitives";
 import type { Schemas } from "@/lib/api";
 import {
   type AgentExecution,
@@ -25,7 +25,7 @@ const STATUS_COLOR: Record<string, string> = {
   SUCCEEDED: "#3fb950",
   FELL_BACK: "#d29922",
   FAILED: "#f85149",
-  RUNNING: "#58a6ff",
+  RUNNING: "#5ab9fc",
 };
 
 function AgentCard({
@@ -57,14 +57,14 @@ function AgentCard({
         execution && "hover:bg-raised",
       )}
     >
-      <span className="font-mono text-[12px] font-semibold">{def.name}</span>
-      <span className="text-[11px] text-muted">{def.role}</span>
-      <span className="flex items-center gap-1 text-[11px]" style={{ color }}>
+      <span className="font-mono text-[14px] font-medium">{def.name}</span>
+      <span className="text-[13px] text-muted">{def.role}</span>
+      <span className="flex items-center gap-1 text-[13px]" style={{ color }}>
         {status === "RUNNING" && <Loader2 className="size-3 animate-spin" />}
         {status === "PENDING" && <CircleDashed className="size-3 text-dim" />}
         {status === "PHASE" ? `available in Phase ${def.available_from_phase}` : status.replace("_", " ").toLowerCase()}
       </span>
-      {execution?.summary && <span className="line-clamp-2 text-[11px] text-dim">{execution.summary}</span>}
+      {execution?.summary && <span className="line-clamp-2 text-[13px] text-dim">{execution.summary}</span>}
     </button>
   );
 }
@@ -83,9 +83,9 @@ function Clarification({ run }: { run: Workflow }) {
   return (
     <div className="m-3 flex flex-col gap-2 rounded-sm border border-warn/50 bg-warn/5 p-3" data-testid="clarification">
       <div className="font-medium text-warn">Operator input required</div>
-      <p className="text-[12px]">{q.message}</p>
+      <p className="text-[14px]">{q.message}</p>
       {q.missing_information.length > 0 && (
-        <p className="text-[11px] text-muted">Missing: {q.missing_information.join("; ")}</p>
+        <p className="text-[13px] text-muted">Missing: {q.missing_information.join("; ")}</p>
       )}
       <label className="block">
         <SectionLabel>Damaged facilities</SectionLabel>
@@ -94,7 +94,7 @@ function Clarification({ run }: { run: Workflow }) {
           value={codes}
           onChange={(e) => setCodes(Array.from(e.target.selectedOptions, (o) => o.value))}
           aria-label="Damaged facilities"
-          className="h-32 w-full rounded-sm border border-line-strong bg-bg p-1 text-[12px]"
+          className="field h-32 p-1"
         >
           {assets.map((a) => (
             <option key={a.code} value={a.code}>
@@ -107,7 +107,7 @@ function Clarification({ run }: { run: Workflow }) {
         type="button"
         disabled={codes.length === 0 || clarify.isPending}
         onClick={() => clarify.mutate({ asset_codes: codes, condition: "DAMAGED" })}
-        className="self-start rounded-sm bg-focus px-3 py-1 font-medium text-bg disabled:opacity-40"
+        className="btn btn-primary self-start"
       >
         Confirm and continue
       </button>
@@ -140,12 +140,12 @@ function WorkflowView({ runId }: { runId: string }) {
   return (
     <div className="flex flex-col" data-testid="workflow-view">
       <div className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-2">
-        <span className="font-mono font-semibold">{r.incident_reference}</span>
+        <span className="font-mono font-medium">{r.incident_reference}</span>
         <Badge color={STATUS_COLOR[r.status === "COMPLETED" ? "SUCCEEDED" : r.status] ?? "#d29922"}>
           <span data-testid="workflow-status">{r.status.replaceAll("_", " ").toLowerCase()}</span>
         </Badge>
         <Badge>{r.llm_mode === "DETERMINISTIC" ? "deterministic mode" : `LLM: ${r.llm_provider}`}</Badge>
-        <span className="text-[11px] text-dim">
+        <span className="text-[13px] text-dim">
           {stream === "live" ? "live updates" : r.status === "RUNNING" ? "polling" : ""}
         </span>
       </div>
@@ -180,10 +180,10 @@ export function AgentActivity() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-1.5">
-        <h1 className="text-[13px] font-semibold">Agent Activity</h1>
-        <span className="text-[11px] text-dim">Agents interpret and explain · numbers come from deterministic engines · humans decide</span>
-      </div>
+      <PageHeader
+        title="Agent Activity"
+        hint="Agents interpret and explain. Numbers come from deterministic engines; people decide."
+      />
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col gap-px overflow-y-auto bg-line">
           <Panel title="Report an incident" className="shrink-0 border-0">
@@ -195,7 +195,7 @@ export function AgentActivity() {
                 }}
               />
             ) : (
-              <p className="p-3 text-[12px] text-muted">
+              <p className="p-3 text-[14px] text-muted">
                 Only operators can report incidents and start an analysis. You can follow every analysis below.
               </p>
             )}
@@ -218,10 +218,10 @@ export function AgentActivity() {
                       className={cn("w-full border-b border-line px-3 py-1.5 text-left hover:bg-raised", incidentId === i.id && "bg-raised")}
                     >
                       <span className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[12px]">{i.reference}</span>
-                        <span className="text-[10px] text-dim">{i.status.replaceAll("_", " ").toLowerCase()}</span>
+                        <span className="font-mono text-[14px]">{i.reference}</span>
+                        <span className="text-[13px] text-dim">{i.status.replaceAll("_", " ").toLowerCase()}</span>
                       </span>
-                      <span className="block truncate text-[11px] text-muted">
+                      <span className="block truncate text-[13px] text-muted">
                         {i.title ?? i.raw_report ?? "—"}
                       </span>
                     </button>

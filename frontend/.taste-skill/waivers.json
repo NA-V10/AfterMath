@@ -1,0 +1,7 @@
+[
+  {
+    "check": "copy-headings",
+    "target": "div.faq.faq--single > div.faq__item h3",
+    "reason": "FAQ entries: copy.md allows FAQ headings to be questions; these are short statements naming what the product does (no live connections, no AI key needed, two-person approval). The noun heuristic misses them."
+  }
+]

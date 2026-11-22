@@ -11,7 +11,7 @@ import type { AgentExecution } from "@/lib/queries";
 type Out = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 function Codes({ codes }: { codes: string[] }) {
-  return codes.length ? <span className="font-mono text-[11px]">{codes.join(", ")}</span> : <span className="text-dim">none</span>;
+  return codes.length ? <span className="font-mono text-[13px]">{codes.join(", ")}</span> : <span className="text-dim">none</span>;
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -37,9 +37,9 @@ function SentinelView({ o }: { o: Out }) {
         <ul className="flex flex-col gap-1">
           {damaged.length === 0 && <li className="text-dim">None identified.</li>}
           {damaged.map((m: Out) => (
-            <li key={m.code} className="text-[12px]">
+            <li key={m.code} className="text-[14px]">
               <span className="font-mono">{m.code}</span> {m.name} <span className="text-dim">· {m.condition.toLowerCase()} · {m.method} match {m.score.toFixed(2)}</span>
-              <div className="text-[11px] text-muted">“{m.quote}”</div>
+              <div className="text-[13px] text-muted">“{m.quote}”</div>
             </li>
           ))}
         </ul>
@@ -51,14 +51,14 @@ function SentinelView({ o }: { o: Out }) {
       )}
       {o.missing_information.length > 0 && (
         <Section title="Missing information">
-          <ul className="list-disc pl-4 text-[12px] text-warn">
+          <ul className="list-disc pl-4 text-[14px] text-warn">
             {o.missing_information.map((m: string) => <li key={m}>{m}</li>)}
           </ul>
         </Section>
       )}
       {o.reported_consequences.length > 0 && (
         <Section title="Reported consequences (not authoritative)">
-          <ul className="list-disc pl-4 text-[12px] text-muted">
+          <ul className="list-disc pl-4 text-[14px] text-muted">
             {o.reported_consequences.map((c: string) => <li key={c}>{c}</li>)}
           </ul>
         </Section>
@@ -73,7 +73,7 @@ function CartographerView({ o }: { o: Out }) {
   const reduced = o.redundancy_effects.filter((r: Out) => r.effect === "REDUNDANCY_REDUCED");
   return (
     <>
-      <p className="px-3 pb-2 text-[12px] leading-relaxed">{o.briefing}</p>
+      <p className="px-3 pb-2 text-[14px] leading-relaxed">{o.briefing}</p>
       <Section title={`Downstream assets (${o.downstream.length})`}>
         <Codes codes={o.downstream.map((d: Out) => d.code)} />
       </Section>
@@ -82,16 +82,16 @@ function CartographerView({ o }: { o: Out }) {
           <span className="text-dim">none among the damaged assets</span>
         ) : (
           o.single_points_of_failure.map((s: Out) => (
-            <div key={s.code} className="text-[12px]">
+            <div key={s.code} className="text-[14px]">
               <span className="font-mono">{s.code}</span> alone fails <Codes codes={s.critical_failed} />
             </div>
           ))
         )}
       </Section>
       <Section title="Redundancy">
-        <div className="text-[12px]">Required supply lost: <Codes codes={lost.map((r: Out) => r.dependent)} /></div>
-        <div className="text-[12px]">Supporting service lost (still operating): <Codes codes={support.map((r: Out) => r.dependent)} /></div>
-        <div className="text-[12px]">No spare left: <Codes codes={reduced.map((r: Out) => r.dependent)} /></div>
+        <div className="text-[14px]">Required supply lost: <Codes codes={lost.map((r: Out) => r.dependent)} /></div>
+        <div className="text-[14px]">Supporting service lost (still operating): <Codes codes={support.map((r: Out) => r.dependent)} /></div>
+        <div className="text-[14px]">No spare left: <Codes codes={reduced.map((r: Out) => r.dependent)} /></div>
       </Section>
     </>
   );
@@ -100,7 +100,7 @@ function CartographerView({ o }: { o: Out }) {
 function OracleView({ o }: { o: Out }) {
   return (
     <>
-      <p className="px-3 pb-2 text-[12px] leading-relaxed">{o.narrative}</p>
+      <p className="px-3 pb-2 text-[14px] leading-relaxed">{o.narrative}</p>
       <div className="grid grid-cols-4 gap-2 px-3 pb-2">
         <Stat label="Impact" value={o.impact_score.toFixed(2)} />
         <Stat label="Failed" value={<span style={{ color: o.failed ? STATUS.FAILED.color : undefined }}>{o.failed}</span>} />
@@ -108,7 +108,7 @@ function OracleView({ o }: { o: Out }) {
         <Stat label="People" value={formatNumber(o.affected_population)} />
       </div>
       <Section title="Critical failure chains">
-        <ul className="flex flex-col gap-0.5 font-mono text-[11px]">
+        <ul className="flex flex-col gap-0.5 font-mono text-[13px]">
           {o.key_chains.map((c: Out) => (
             <li key={c.asset}>
               <span style={{ color: STATUS[c.status as keyof typeof STATUS]?.color }}>{c.asset}</span> ← {c.chain.slice(1).join(" ← ")}
@@ -117,14 +117,14 @@ function OracleView({ o }: { o: Out }) {
         </ul>
       </Section>
       <Section title="Backup power deadlines">
-        <ul className="flex flex-col gap-0.5 text-[12px]">
+        <ul className="flex flex-col gap-0.5 text-[14px]">
           {o.deadlines.map((d: Out) => (
             <li key={d.asset} className={d.exhausted_within_horizon ? "text-warn" : "text-muted"}>
               <span className="font-mono">{d.asset}</span> T+{d.exhausts_at_minutes} min{d.exhausted_within_horizon ? " (runs out)" : ""}
             </li>
           ))}
         </ul>
-        <p className="mt-2 text-[11px] text-dim">Applied to the operational picture · result {o.result_hash.slice(0, 16)}…</p>
+        <p className="mt-2 text-[13px] text-dim">Applied to the operational picture · result {o.result_hash.slice(0, 16)}…</p>
       </Section>
     </>
   );
@@ -136,7 +136,7 @@ export function ExecutionDetail({ execution }: { execution: AgentExecution }) {
   return (
     <div className="flex flex-col" data-testid={`execution-${execution.agent}`}>
       <header className="flex flex-wrap items-center gap-2 px-3 pt-3 pb-2">
-        <h3 className="font-mono text-[14px] font-semibold">{execution.agent}</h3>
+        <h3 className="font-mono text-[14px] font-medium">{execution.agent}</h3>
         <Badge>attempt {execution.attempt}</Badge>
         <Badge color={execution.status === "FAILED" ? "#f85149" : execution.status === "FELL_BACK" ? "#d29922" : "#3fb950"}>
           {execution.status === "FELL_BACK" ? "deterministic fallback" : execution.status.toLowerCase()}
@@ -147,11 +147,11 @@ export function ExecutionDetail({ execution }: { execution: AgentExecution }) {
             {grounding.ok ? "grounded" : "LLM text rejected"}
           </Badge>
         )}
-        {execution.latency_ms != null && <span className="text-[11px] text-dim">{Math.round(execution.latency_ms)} ms</span>}
+        {execution.latency_ms != null && <span className="text-[13px] text-dim">{Math.round(execution.latency_ms)} ms</span>}
       </header>
-      {execution.summary && <p className="px-3 pb-2 text-[12px] text-muted">{execution.summary}</p>}
+      {execution.summary && <p className="px-3 pb-2 text-[14px] text-muted">{execution.summary}</p>}
       {execution.error && (
-        <p className="mx-3 mb-2 flex items-start gap-1.5 rounded-sm border border-crit/40 bg-crit/10 p-2 text-[12px] text-crit">
+        <p className="mx-3 mb-2 flex items-start gap-1.5 rounded-sm border border-crit/40 bg-crit/10 p-2 text-[14px] text-crit">
           <AlertTriangle className="mt-0.5 size-3.5 shrink-0" /> {String((execution.error as Out).type)}: {String((execution.error as Out).message)}
         </p>
       )}
@@ -160,7 +160,7 @@ export function ExecutionDetail({ execution }: { execution: AgentExecution }) {
       {o && execution.agent === "ORACLE" && <OracleView o={o} />}
       {grounding && !grounding.ok && (
         <Section title="Grounding check">
-          <p className="text-[12px] text-warn">
+          <p className="text-[14px] text-warn">
             The language model mentioned facts not present in the tool results
             {grounding.unknown_asset_codes.length > 0 && <> (assets: {grounding.unknown_asset_codes.join(", ")})</>}
             {grounding.unknown_numbers.length > 0 && <> (figures: {grounding.unknown_numbers.join(", ")})</>}; its text was
@@ -169,7 +169,7 @@ export function ExecutionDetail({ execution }: { execution: AgentExecution }) {
         </Section>
       )}
       <Section title={`Deterministic tool calls (${execution.tool_calls.length})`}>
-        <table className="w-full text-left text-[11px]">
+        <table className="w-full text-left text-[13px]">
           <tbody>
             {(execution.tool_calls as Out[]).map((t, i) => (
               <tr key={i} className="border-t border-line first:border-0">
@@ -183,7 +183,7 @@ export function ExecutionDetail({ execution }: { execution: AgentExecution }) {
       </Section>
       <Section title={`Language model calls (${execution.llm_calls.length})`}>
         {(execution.llm_calls as Out[]).length === 0 && <span className="text-dim">none</span>}
-        <ul className="flex flex-col gap-1 text-[11px]">
+        <ul className="flex flex-col gap-1 text-[13px]">
           {(execution.llm_calls as Out[]).map((c, i) => (
             <li key={i}>
               <span className="font-mono">{c.task}</span> → {c.provider}
@@ -197,9 +197,9 @@ export function ExecutionDetail({ execution }: { execution: AgentExecution }) {
           ))}
         </ul>
         {(execution.tokens_in || execution.tokens_out) && (
-          <p className="mt-1 text-[11px] text-dim">tokens in {execution.tokens_in ?? 0} · out {execution.tokens_out ?? 0}</p>
+          <p className="mt-1 text-[13px] text-dim">tokens in {execution.tokens_in ?? 0} · out {execution.tokens_out ?? 0}</p>
         )}
-        <p className="mt-1 text-[11px] text-dim">Structured outputs and evidence only — no model reasoning is stored or shown.</p>
+        <p className="mt-1 text-[13px] text-dim">Structured outputs and evidence only — no model reasoning is stored or shown.</p>
       </Section>
     </div>
   );

@@ -18,7 +18,7 @@ export function PicturePanel() {
     <Panel
       title="Operational picture"
       className="lg:col-span-3"
-      bodyClassName="p-3"
+      bodyClassName="p-4"
       actions={
         picture.data?.source === "simulation" && (
           <button
@@ -26,9 +26,9 @@ export function PicturePanel() {
             onClick={() => reset.mutate("Reset from Command Center")}
             disabled={reset.isPending || !canReset}
             title={canReset ? undefined : "Resetting the operational picture needs the admin role"}
-            className="flex items-center gap-1 rounded-sm border border-line-strong px-1.5 text-[11px] hover:bg-raised disabled:opacity-40"
+            className="btn btn-secondary btn-sm"
           >
-            <RotateCcw className="size-3" /> Reset to baseline
+            <RotateCcw aria-hidden /> Reset to baseline
           </button>
         )
       }
@@ -39,17 +39,17 @@ export function PicturePanel() {
         <ErrorState error={picture.error} onRetry={() => picture.refetch()} />
       ) : (
         <div className="flex flex-col gap-3" data-testid="operational-picture">
-          <div className="flex flex-wrap items-center gap-2 text-[12px]">
+          <div className="flex flex-wrap items-center gap-2 text-[14px]">
             {picture.data.source === "baseline" ? (
               <span className="text-muted">
                 Baseline: no incident applied. Run a simulation in the{" "}
-                <Link href="/lab" className="text-focus hover:underline">Simulation Lab</Link> and apply it to
+                <Link href="/lab" className="link">Simulation Lab</Link> and apply it to
                 see its consequences here.
               </span>
             ) : (
               <span>
                 Showing simulation <span className="font-medium">{picture.data.label ?? picture.data.simulation_id?.slice(0, 8)}</span>{" "}
-                <span className="text-dim">as of {formatMinutes(picture.data.as_of_minutes)}</span>
+                <span className="text-muted">as of {formatMinutes(picture.data.as_of_minutes)}</span>
               </span>
             )}
             {picture.data.stale && (
@@ -76,7 +76,7 @@ export function PicturePanel() {
           </div>
           <ul className="grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-4">
             {picture.data.metrics.service_availability.map((s) => (
-              <li key={s.service} className="grid grid-cols-[110px_1fr_40px] items-center gap-2 text-[12px]">
+              <li key={s.service} className="grid grid-cols-[120px_1fr_44px] items-center gap-2 text-[14px]">
                 <span className="capitalize text-muted">{s.service.replace("_", " ")}</span>
                 <span className="h-1.5 rounded-full bg-raised">
                   <span className="block h-1.5 rounded-full bg-fg/70" style={{ width: `${s.availability * 100}%` }} />

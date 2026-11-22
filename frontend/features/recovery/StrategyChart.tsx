@@ -66,7 +66,7 @@ export function StrategyChart({ round }: { round: Schemas["StrategyRound"] }) {
 
   return (
     <figure className="flex h-full flex-col" aria-label="Impact score over time by strategy">
-      <figcaption className="px-3 pt-2 text-[11px] text-muted">
+      <figcaption className="px-3 pt-2 text-[13px] text-muted">
         Impact score over time <span className="text-dim">(lower is better; dashed = no recovery action)</span>
       </figcaption>
       <div className="min-h-0 flex-1">
@@ -74,12 +74,12 @@ export function StrategyChart({ round }: { round: Schemas["StrategyRound"] }) {
           <LineChart data={data} margin={{ top: 8, right: 24, bottom: 4, left: -16 }}>
             <CartesianGrid stroke={GRID} vertical={false} />
             <XAxis dataKey="t" type="number" domain={[0, window]} ticks={xTicks} tickFormatter={(v: number) => formatMinutes(v)}
-              stroke={INK} tick={{ fontSize: 10, fill: INK }} tickLine={false} axisLine={{ stroke: GRID }} />
-            <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} stroke={INK} tick={{ fontSize: 10, fill: INK }}
+              stroke={INK} tick={{ fontSize: 13, fill: INK }} tickLine={false} axisLine={{ stroke: GRID }} />
+            <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} stroke={INK} tick={{ fontSize: 13, fill: INK }}
               tickLine={false} axisLine={false} />
             <Tooltip
               cursor={{ stroke: INK, strokeDasharray: "3 3" }}
-              contentStyle={{ background: "var(--color-raised)", border: "1px solid var(--color-line-strong)", borderRadius: 4, fontSize: 12 }}
+              contentStyle={{ background: "var(--color-raised)", border: "1px solid var(--color-line-strong)", borderRadius: 4, fontSize: 13 }}
               labelStyle={{ color: "var(--color-fg)" }}
               itemStyle={{ color: "var(--color-fg)" }}
               labelFormatter={(v) => formatMinutes(Number(v))}
@@ -89,7 +89,7 @@ export function StrategyChart({ round }: { round: Schemas["StrategyRound"] }) {
               verticalAlign="top"
               height={22}
               iconType="plainline"
-              wrapperStyle={{ fontSize: 11, color: "var(--color-muted)" }}
+              wrapperStyle={{ fontSize: 13, color: "var(--color-muted)" }}
               formatter={(name) => (name === "NO_ACTION" ? "No action" : POLICY_LABEL[String(name)])}
             />
             <Line type="stepAfter" dataKey="NO_ACTION" stroke={BASELINE} strokeWidth={1.5} strokeDasharray="4 3"

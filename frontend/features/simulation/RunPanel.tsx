@@ -98,15 +98,15 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
                     setScenarioKey(s.key);
                     setHorizon(s.horizon_minutes);
                   }}
-                  className="accent-[#58a6ff]"
+                  className="accent-[#5ab9fc]"
                 />
                 <span className="font-medium">{s.name}</span>
               </span>
-              <span className="mt-1 block text-[11px] text-muted">{s.description}</span>
+              <span className="mt-1 block text-[13px] text-muted">{s.description}</span>
             </label>
           ))}
           {selectedScenario && (
-            <ul className="text-[11px] text-dim">
+            <ul className="text-[13px] text-dim">
               {selectedScenario.initiating_events.map((e, i) => (
                 <li key={i} className="font-mono">{describeEvent(e)}</li>
               ))}
@@ -121,7 +121,7 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
                 aria-label={`Failed asset ${i + 1}`}
                 value={r.asset_code}
                 onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, asset_code: e.target.value } : x)))}
-                className="min-w-0 rounded-sm border border-line-strong bg-bg px-1 py-0.5 text-[12px]"
+                className="field min-w-0"
               >
                 {assets.map((a) => (
                   <option key={a.code} value={a.code}>
@@ -133,7 +133,7 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
                 aria-label={`Condition ${i + 1}`}
                 value={r.condition}
                 onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, condition: e.target.value as Condition } : x)))}
-                className="rounded-sm border border-line-strong bg-bg px-1 py-0.5 text-[12px]"
+                className="field"
               >
                 <option value="DAMAGED">damaged</option>
                 <option value="DEGRADED">degraded</option>
@@ -145,7 +145,7 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
                 aria-label={`Minutes after start ${i + 1}`}
                 value={r.t_minutes}
                 onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, t_minutes: Math.max(0, Number(e.target.value)) } : x)))}
-                className="rounded-sm border border-line-strong bg-bg px-1 py-0.5 text-right font-mono text-[12px]"
+                className="field text-right font-mono"
               />
               <IconButton aria-label={`Remove failure ${i + 1}`} onClick={() => setRows(rows.filter((_, j) => j !== i))}>
                 <Trash2 className="size-3.5" />
@@ -155,11 +155,11 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
           <button
             type="button"
             onClick={() => setRows([...rows, { asset_code: assets[0]?.code ?? "SUB-01", condition: "DAMAGED", t_minutes: 0 }])}
-            className="flex items-center gap-1 self-start text-[12px] text-focus hover:underline"
+            className="flex items-center gap-1 self-start text-[14px] text-focus hover:underline"
           >
             <Plus className="size-3.5" /> Add failure
           </button>
-          <p className="text-[11px] text-dim">Times are minutes after the start of the simulation.</p>
+          <p className="text-[13px] text-dim">Times are minutes after the start of the simulation.</p>
         </div>
       )}
 
@@ -180,12 +180,12 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
           maxLength={120}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="e.g. Riverside drill #1"
-          className="w-full rounded-sm border border-line-strong bg-bg px-2 py-1 text-[12px] placeholder:text-dim"
+          className="field placeholder:text-dim"
         />
       </label>
 
       <label
-        className="flex cursor-pointer items-center gap-2 text-[12px] text-muted"
+        className="flex cursor-pointer items-center gap-2 text-[14px] text-muted"
         title={canApply ? undefined : "Applying to the operational picture needs the operator role"}
       >
         <input
@@ -193,7 +193,7 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
           checked={apply && canApply}
           disabled={!canApply}
           onChange={(e) => setApply(e.target.checked)}
-          className="accent-[#58a6ff]"
+          className="accent-[#5ab9fc]"
         />
         Apply result to the operational picture
       </label>
@@ -202,7 +202,7 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
         type="button"
         disabled={!canRun || run.isPending}
         onClick={submit}
-        className="flex items-center justify-center gap-1.5 rounded-sm bg-focus px-3 py-1.5 font-medium text-bg disabled:opacity-40"
+        className="btn btn-primary"
       >
         <Play className="size-3.5" aria-hidden />
         {run.isPending ? "Simulating…" : "Run simulation"}

@@ -36,7 +36,7 @@ test("free-text report is analysed by SENTINEL, CARTOGRAPHER and ORACLE", async 
   await expect(page.getByTestId("execution-ORACLE")).toContainText("grounded");
 
   // ORACLE applied the result to the operational picture.
-  await page.goto("/");
+  await page.goto("/command");
   await expect(page.getByTestId("operational-picture")).toContainText("ORACLE");
   await page.getByRole("button", { name: "Reset to baseline" }).click();
   await expect(page.getByTestId("operational-picture")).toContainText("Baseline");
@@ -56,6 +56,6 @@ test("an unclear report pauses for operator clarification, then completes", asyn
   await clarification.getByRole("button", { name: "Confirm and continue" }).click();
   await expect(page.getByTestId("workflow-status")).toHaveText("completed", { timeout: 30_000 });
 
-  await page.goto("/");
+  await page.goto("/command");
   await page.getByRole("button", { name: "Reset to baseline" }).click();
 });

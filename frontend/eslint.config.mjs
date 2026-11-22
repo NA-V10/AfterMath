@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored taste-skill kit (MIT) served as-is by the static product page.
+    "public/landing/assets/**",
   ]),
 ]);
 

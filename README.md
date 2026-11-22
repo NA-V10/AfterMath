@@ -17,7 +17,8 @@ AFTERMATH is an infrastructure resilience and disaster-recovery decision-support
 | 3 | Multi-agent system | ✅ complete ([report](docs/reports/PHASE_3_REPORT.md)) |
 | 4 | Recovery optimisation | ✅ complete ([report](docs/reports/PHASE_4_REPORT.md)) |
 | 5 | Governance & execution | ✅ complete ([report](docs/reports/PHASE_5_REPORT.md)) |
-| 6 | Complete frontend | next |
+| 6 | Complete frontend | ✅ complete ([report](docs/reports/PHASE_6_REPORT.md)) |
+| 7 | Hardening & deployment | next |
 
 ## Quick start (Windows / PowerShell, hybrid dev mode)
 
@@ -40,7 +41,7 @@ uv run python -m uvicorn app.main:app --port 8000   # API: http://localhost:8000
 
 cd ..\frontend
 pnpm install
-pnpm dev                               # UI: http://localhost:3000 — sign in as operator / approver / …
+pnpm dev                               # http://localhost:3000 = product page; console at /command (sign in as operator / approver / …)
 ```
 
 Everything requires signing in. Operators report incidents, run analyses and execute approved
@@ -85,7 +86,7 @@ pnpm test:e2e                          # Playwright via installed Microsoft Edge
 
 ```
 backend/    FastAPI app (app/graph = pure domain core), Alembic migrations, tests
-frontend/   Next.js app (Command Center, Twin, Simulation Lab, Agent Activity, Recovery Command, Audit)
+frontend/   Next.js app: console screens under app/(console); static product page in public/landing
 data/       Synthetic dataset, scenario definitions, generated JSON Schemas
 docs/       Product, architecture, ADRs, reports
 scripts/    Database init scripts

@@ -9,6 +9,7 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
+/** A titled region of a screen. Titles are sentence case, 15px at 500 (the system's one label look). */
 export function Panel({
   title,
   actions,
@@ -25,11 +26,9 @@ export function Panel({
   return (
     <section className={cn("flex min-h-0 flex-col border border-line bg-panel", className)}>
       {(title || actions) && (
-        <header className="flex h-8 shrink-0 items-center justify-between gap-2 border-b border-line px-3">
-          <h2 className="truncate text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-            {title}
-          </h2>
-          <div className="flex items-center gap-1">{actions}</div>
+        <header className="flex min-h-11 shrink-0 items-center justify-between gap-2 border-b border-line px-4">
+          <h2 className="truncate text-[15px] font-medium">{title}</h2>
+          <div className="flex items-center gap-1.5">{actions}</div>
         </header>
       )}
       <div className={cn("min-h-0 flex-1", bodyClassName)}>{children}</div>
@@ -37,12 +36,21 @@ export function Panel({
   );
 }
 
-export function SectionLabel({ children }: { children: ReactNode }) {
+/** The title row of a screen. It enters once on load (the console's one entrance). */
+export function PageHeader({ title, hint, children }: { title: string; hint?: ReactNode; children?: ReactNode }) {
   return (
-    <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-dim">
-      {children}
+    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-line px-5 pt-4 pb-3">
+      <div className="page-enter min-w-0">
+        <h1 className="text-[24px] leading-tight">{title}</h1>
+        {hint && <p className="mt-0.5 text-[13px] text-muted">{hint}</p>}
+      </div>
+      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
   );
+}
+
+export function SectionLabel({ children }: { children: ReactNode }) {
+  return <div className="mb-1.5 text-[13px] font-medium text-muted">{children}</div>;
 }
 
 export function Dot({ color, className }: { color: string; className?: string }) {
@@ -67,13 +75,13 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-sm border px-1.5 py-px text-[11px] font-medium",
+        "inline-flex items-center gap-1 rounded-sm border px-1.5 text-[13px] leading-[22px] font-medium",
         className,
       )}
       style={
         color
           ? { color, borderColor: `${color}55`, background: `${color}14` }
-          : { borderColor: "var(--color-line-strong)" }
+          : { borderColor: "var(--color-line-strong)", color: "var(--color-muted)" }
       }
     >
       {children}
@@ -93,7 +101,7 @@ export function Segmented<T extends string>({
   label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex rounded-sm border border-line-strong">
+    <div role="radiogroup" aria-label={label} className="flex rounded-md border border-line-strong p-0.5">
       {options.map((o) => (
         <button
           key={o.value}
@@ -102,8 +110,8 @@ export function Segmented<T extends string>({
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "px-2 py-0.5 text-[11px] text-muted transition-colors hover:text-fg",
-            value === o.value && "bg-raised text-fg",
+            "rounded-sm px-2.5 py-1 text-[13px] text-muted transition-colors duration-150 hover:text-fg",
+            value === o.value && "bg-fg text-bg hover:text-bg",
           )}
         >
           {o.label}
@@ -121,7 +129,7 @@ export function IconButton({
     <button
       type="button"
       className={cn(
-        "inline-flex size-6 items-center justify-center rounded-sm text-muted hover:bg-raised hover:text-fg",
+        "inline-flex size-8 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-raised hover:text-fg",
         className,
       )}
       {...props}
@@ -151,14 +159,10 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
       <div className="font-medium">{title}</div>
       <div className="max-w-sm text-muted">{detail}</div>
       {apiError?.requestId && (
-        <div className="font-mono text-[11px] text-dim">request {apiError.requestId}</div>
+        <div className="font-mono text-[13px] text-dim">request {apiError.requestId}</div>
       )}
       {onRetry && (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-1 rounded-sm border border-line-strong px-2 py-0.5 text-[12px] hover:bg-raised"
-        >
+        <button type="button" onClick={onRetry} className="btn btn-secondary btn-sm mt-1">
           Retry
         </button>
       )}
@@ -169,8 +173,8 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
 export function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
     <div className="min-w-0">
-      <div className="truncate text-[10px] uppercase tracking-[0.08em] text-dim">{label}</div>
-      <div className="truncate font-mono text-[13px] tabular-nums" title={hint}>
+      <div className="truncate text-[13px] text-muted">{label}</div>
+      <div className="truncate font-mono text-[16px] tabular-nums" title={hint}>
         {value}
       </div>
     </div>

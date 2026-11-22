@@ -13,9 +13,9 @@ import { VerificationPanel } from "./VerificationPanel";
 const when = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
 
 function Decisions({ s }: { s: StrategyDetail }) {
-  if (s.decisions.length === 0) return <p className="text-[12px] text-dim">No decision has been recorded.</p>;
+  if (s.decisions.length === 0) return <p className="text-[14px] text-dim">No decision has been recorded.</p>;
   return (
-    <ul className="flex flex-col gap-1 text-[12px]" data-testid="decisions">
+    <ul className="flex flex-col gap-1 text-[14px]" data-testid="decisions">
       {s.decisions.map((d) => (
         <li key={d.id} className="flex items-start gap-1.5">
           {d.decision === "APPROVED" ? (
@@ -69,31 +69,31 @@ export function GovernancePanel({ s, incidentId }: { s: StrategyDetail; incident
       </div>
 
       {s.status === "VALIDATED" && (
-        <div className="flex flex-col gap-2 rounded-sm border border-line-strong p-2.5">
-          <span className="flex items-center gap-1.5 text-[12px] font-medium">
+        <div className="flex flex-col gap-2.5 rounded-lg border border-line-strong p-3.5">
+          <span className="flex items-center gap-1.5 text-[14px] font-medium">
             <Gavel className="size-3.5" aria-hidden /> Human decision required
           </span>
           {!isApprover ? (
-            <p className="text-[12px] text-muted">Only an approver can approve or reject this strategy.</p>
+            <p className="text-[14px] text-muted">Only an approver can approve or reject this strategy.</p>
           ) : ownPlan ? (
-            <p className="text-[12px] text-warn" data-testid="sod-notice">
+            <p className="text-[14px] text-warn" data-testid="sod-notice">
               You requested this plan. Separation of duties: another approver must decide.
             </p>
           ) : (
             <>
-              <p className="text-[11px] text-dim">
+              <p className="text-[13px] text-dim">
                 You are deciding on exactly this content (hash {s.content_hash.slice(0, 10)}…, version {s.version}). If it
                 changes, your decision is refused and you review again.
               </p>
-              <label className="flex flex-col gap-1 text-[12px]">
-                Comment <span className="text-[11px] text-dim">(required to reject)</span>
+              <label className="flex flex-col gap-1 text-[14px]">
+                Comment <span className="text-[13px] text-dim">(required to reject)</span>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   rows={2}
                   maxLength={2000}
                   aria-label="Decision comment"
-                  className="rounded-sm border border-line-strong bg-bg p-1.5 text-[12px]"
+                  className="field"
                 />
               </label>
               <div className="flex gap-2">
@@ -101,7 +101,7 @@ export function GovernancePanel({ s, incidentId }: { s: StrategyDetail; incident
                   type="button"
                   disabled={busy}
                   onClick={() => approve.mutate(decision)}
-                  className="flex items-center gap-1 rounded-sm bg-ok px-3 py-1 font-medium text-bg disabled:opacity-40"
+                  className="btn btn-primary"
                 >
                   <CheckCircle2 className="size-3.5" aria-hidden /> Approve
                 </button>
@@ -110,7 +110,7 @@ export function GovernancePanel({ s, incidentId }: { s: StrategyDetail; incident
                   disabled={busy || comment.trim().length < 3}
                   onClick={() => reject.mutate(decision)}
                   title={comment.trim().length < 3 ? "Explain the rejection in the comment" : undefined}
-                  className="flex items-center gap-1 rounded-sm border border-crit/60 px-3 py-1 font-medium text-crit disabled:opacity-40"
+                  className="btn btn-secondary"
                 >
                   <XCircle className="size-3.5" aria-hidden /> Reject
                 </button>
@@ -121,37 +121,37 @@ export function GovernancePanel({ s, incidentId }: { s: StrategyDetail; incident
       )}
 
       {s.status === "APPROVED" && (
-        <div className="flex flex-col gap-2 rounded-sm border border-ok/50 bg-ok/5 p-2.5">
-          <span className="flex items-center gap-1.5 text-[12px] font-medium">
+        <div className="flex flex-col gap-2.5 rounded-lg border border-ok/40 bg-ok/5 p-3.5">
+          <span className="flex items-center gap-1.5 text-[14px] font-medium">
             <ShieldCheck className="size-3.5 text-ok" aria-hidden /> Approved — ready for simulated execution
           </span>
-          <p className="text-[11px] text-dim">
+          <p className="text-[13px] text-dim">
             GUARDIAN revalidates the plan against the current twin and inventory (V-001…V-012) first. Execution replays the
             plan in the simulator and applies the result to the operational picture. Nothing leaves the simulation.
           </p>
           {!isOperator ? (
-            <p className="text-[12px] text-muted">Only an operator can execute.</p>
+            <p className="text-[14px] text-muted">Only an operator can execute.</p>
           ) : !confirming ? (
             <button
               type="button"
               disabled={busy}
               onClick={() => setConfirming(true)}
-              className="flex items-center gap-1 self-start rounded-sm bg-focus px-3 py-1 font-medium text-bg disabled:opacity-40"
+              className="btn btn-primary self-start"
             >
               <Play className="size-3.5" aria-hidden /> Execute (simulated)
             </button>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="text-[12px]">Run this approved plan now?</span>
+              <span className="text-[14px]">Run this approved plan now?</span>
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => execute.mutate({ strategyId: s.id, idempotencyKey })}
-                className="rounded-sm bg-focus px-3 py-1 font-medium text-bg disabled:opacity-40"
+                className="btn btn-primary"
               >
                 {execute.isPending ? "Executing…" : "Confirm execution"}
               </button>
-              <button type="button" disabled={busy} onClick={() => setConfirming(false)} className="text-[12px] text-muted">
+              <button type="button" disabled={busy} onClick={() => setConfirming(false)} className="text-[14px] text-muted">
                 Cancel
               </button>
             </div>
@@ -160,7 +160,7 @@ export function GovernancePanel({ s, incidentId }: { s: StrategyDetail; incident
       )}
 
       {["REJECTED", "SUPERSEDED", "VALIDATION_FAILED", "EXECUTION_FAILED"].includes(s.status) && (
-        <p className="text-[12px] text-muted" data-testid="not-executable">
+        <p className="text-[14px] text-muted" data-testid="not-executable">
           This strategy is {s.status.replaceAll("_", " ").toLowerCase()} and can never be executed.
         </p>
       )}
@@ -169,7 +169,7 @@ export function GovernancePanel({ s, incidentId }: { s: StrategyDetail; incident
         <div>
           <ErrorState error={error} />
           {problemOf(error) === "revalidation-failed" && (
-            <p className="mt-1 text-[11px] text-dim">The GUARDIAN rule list below shows what failed. Re-plan the incident.</p>
+            <p className="mt-1 text-[13px] text-dim">The GUARDIAN rule list below shows what failed. Re-plan the incident.</p>
           )}
         </div>
       )}

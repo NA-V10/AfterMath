@@ -13,7 +13,7 @@ function name(s: Schemas["SimulationSummary"]): string {
 
 function Codes({ codes }: { codes: string[] }) {
   return codes.length ? (
-    <span className="font-mono text-[11px]">{codes.join(", ")}</span>
+    <span className="font-mono text-[13px]">{codes.join(", ")}</span>
   ) : (
     <span className="text-dim">none</span>
   );
@@ -39,8 +39,8 @@ export function ComparisonPanel({ a, b, onClose }: { a: string; b: string; onClo
         <ErrorState error={q.error} />
       ) : (
         <div className="flex flex-col gap-4" data-testid="comparison">
-          <table className="w-full text-left text-[12px]">
-            <thead className="text-[10px] uppercase tracking-[0.08em] text-dim">
+          <table className="w-full text-left text-[14px]">
+            <thead className="text-[13px] text-dim">
               <tr>
                 <th className="py-1 font-medium">Metric</th>
                 <th className="py-1 text-right font-medium">A · {name(q.data.a)}</th>
@@ -64,17 +64,17 @@ export function ComparisonPanel({ a, b, onClose }: { a: string; b: string; onClo
               ))}
             </tbody>
           </table>
-          <p className="text-[12px]">
+          <p className="text-[14px]">
             Impact difference (B − A): <span className="font-mono">{q.data.impact_delta > 0 ? "+" : ""}{q.data.impact_delta.toFixed(2)}</span>
           </p>
-          <div className="grid gap-2 text-[12px]">
+          <div className="grid gap-2 text-[14px]">
             <div><SectionLabel>Failed only in A</SectionLabel><Codes codes={q.data.failed_only_in_a} /></div>
             <div><SectionLabel>Failed only in B</SectionLabel><Codes codes={q.data.failed_only_in_b} /></div>
             <div><SectionLabel>Failed in both</SectionLabel><Codes codes={q.data.failed_in_both} /></div>
           </div>
           <div>
             <SectionLabel>All status differences at the horizon ({q.data.status_differences.length})</SectionLabel>
-            <ul className="grid grid-cols-1 gap-0.5 text-[11px] sm:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-0.5 text-[13px] sm:grid-cols-2">
               {q.data.status_differences.map((d) => (
                 <li key={d.code} className="flex items-center gap-1.5">
                   <span className="w-14 font-mono">{d.code}</span>

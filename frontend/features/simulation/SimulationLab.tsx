@@ -5,7 +5,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight, Pause, Play, ShieldAlert, XCir
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { ErrorState, Loading, Panel, SectionLabel, Segmented, Stat, cn } from "@/components/ui/primitives";
+import { ErrorState, Loading, PageHeader, Panel, SectionLabel, Segmented, Stat, cn } from "@/components/ui/primitives";
 import type { Schemas } from "@/lib/api";
 import { SERVICE_LABEL, STATUS, formatMinutes, formatNumber } from "@/lib/domain";
 import {
@@ -62,11 +62,11 @@ function History({
             checked={compare.includes(r.id)}
             disabled={!compare.includes(r.id) && compare.length >= 2}
             onChange={() => onToggleCompare(r.id)}
-            className="mt-1 accent-[#58a6ff]"
+            className="mt-1 accent-[#5ab9fc]"
           />
           <button type="button" onClick={() => onSelect(r.id)} className="min-w-0 flex-1 text-left">
             <span className="block truncate">{runName(r)}</span>
-            <span className="block text-[11px] text-dim">
+            <span className="block text-[13px] text-dim">
               {r.created_at.slice(11, 19)} · impact{" "}
               <span className="font-mono text-muted">{r.impact_score?.toFixed(1) ?? "—"}</span> · {r.failed_count ?? 0} failed
               {r.status === "FAILED" && <span className="text-crit"> · run failed</span>}
@@ -93,10 +93,10 @@ function AssetAtTime({
 }) {
   const causes = (change?.details as { causes?: Schemas["Cause"][] } | undefined)?.causes ?? [];
   return (
-    <div className="flex flex-col gap-1.5 p-3 text-[12px]" data-testid="asset-at-time">
+    <div className="flex flex-col gap-1.5 p-3 text-[14px]" data-testid="asset-at-time">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[14px] font-semibold">{code}</span>
-        <button type="button" onClick={onClose} className="text-[11px] text-muted hover:text-fg">clear</button>
+        <span className="font-mono text-[14px] font-medium">{code}</span>
+        <button type="button" onClick={onClose} className="text-[13px] text-muted hover:text-fg">clear</button>
       </div>
       {status && (
         <span className="flex items-center gap-1.5">
@@ -204,10 +204,10 @@ export function SimulationLab() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-1.5">
-        <h1 className="text-[13px] font-semibold">Simulation Lab</h1>
-        <span className="text-[11px] text-dim">Deterministic engine · results are reproducible by hash</span>
-      </div>
+      <PageHeader
+        title="Simulation Lab"
+        hint="A deterministic engine: the same inputs always give the same result and hash."
+      />
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[300px_minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col gap-px overflow-y-auto bg-line">
           <Panel title="Run a simulation" className="shrink-0 border-0" bodyClassName="">
@@ -222,7 +222,7 @@ export function SimulationLab() {
                 type="button"
                 disabled={compare.length !== 2}
                 onClick={() => setShowCompare(true)}
-                className="rounded-sm border border-line-strong px-1.5 text-[11px] disabled:opacity-40"
+                className="btn btn-secondary btn-sm"
               >
                 Compare ({compare.length}/2)
               </button>
@@ -291,9 +291,9 @@ export function SimulationLab() {
                   value={frameIndex}
                   onChange={(e) => { setPlaying(false); setFrameIndex(Number(e.target.value)); }}
                   aria-label="Cascade step"
-                  className="min-w-40 flex-1 accent-[#58a6ff]"
+                  className="min-w-40 flex-1 accent-[#5ab9fc]"
                 />
-                <span className="w-56 text-right font-mono text-[11px] text-muted" aria-live="polite">
+                <span className="w-56 text-right font-mono text-[13px] text-muted" aria-live="polite">
                   {frameIndex === 0
                     ? "before any change"
                     : `${formatMinutes(frame.t)} · wave ${frame.wave} · ${frame.changes.length} change${frame.changes.length === 1 ? "" : "s"}`}
@@ -328,7 +328,7 @@ export function SimulationLab() {
                       onClose={() => setSelected(null)}
                     />
                   ) : (
-                    <div className="flex flex-col gap-2 p-3 text-[12px] text-muted">
+                    <div className="flex flex-col gap-2 p-3 text-[14px] text-muted">
                       <p>Select an asset to see why it is in its current state.</p>
                       <ul className="flex flex-col gap-1">
                         {Object.entries(STATUS).map(([k, s]) => (
@@ -337,7 +337,7 @@ export function SimulationLab() {
                           </li>
                         ))}
                       </ul>
-                      <p className="text-[11px] text-dim">Fill = functional status · ring = physical condition.</p>
+                      <p className="text-[13px] text-dim">Fill = functional status · ring = physical condition.</p>
                     </div>
                   )}
                 </Panel>
@@ -366,7 +366,7 @@ export function SimulationLab() {
                 <Panel title="Critical services at the horizon" className="border-0" bodyClassName="p-3">
                   <ul className="flex flex-col gap-1.5">
                     {d.final_metrics?.service_availability.map((s) => (
-                      <li key={s.service} className="grid grid-cols-[110px_1fr_48px] items-center gap-2 text-[12px]">
+                      <li key={s.service} className="grid grid-cols-[110px_1fr_48px] items-center gap-2 text-[14px]">
                         <span className="capitalize text-muted">{s.service.replace("_", " ")}</span>
                         <span className="h-1.5 rounded-full bg-raised" role="meter" aria-valuenow={Math.round(s.availability * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={`${s.service} availability`}>
                           <span className="block h-1.5 rounded-full bg-fg/70" style={{ width: `${s.availability * 100}%` }} />
@@ -376,18 +376,18 @@ export function SimulationLab() {
                     ))}
                   </ul>
                   {d.final_metrics && d.final_metrics.isolated_assets.length > 0 && (
-                    <p className="mt-2 flex items-center gap-1 text-[11px] text-warn">
+                    <p className="mt-2 flex items-center gap-1 text-[13px] text-warn">
                       <ShieldAlert className="size-3.5" /> Isolated (no path to a source): {d.final_metrics.isolated_assets.join(", ")}
                     </p>
                   )}
                 </Panel>
-                <Panel title="Reproducibility" className="border-0" bodyClassName="flex flex-col gap-2 p-3 text-[12px]">
-                  <div className="font-mono text-[11px] text-muted break-all">result {d.result_hash}</div>
-                  <div className="text-[11px] text-dim">
+                <Panel title="Reproducibility" className="border-0" bodyClassName="flex flex-col gap-2 p-3 text-[14px]">
+                  <div className="font-mono text-[13px] text-muted break-all">result {d.result_hash}</div>
+                  <div className="text-[13px] text-dim">
                     engine {d.engine_version} · scoring {d.scoring_version} · dataset {d.dataset_version} · {d.duration_ms?.toFixed(0)} ms
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <button type="button" onClick={() => replay.mutate(d.id)} disabled={replay.isPending} className="rounded-sm border border-line-strong px-2 py-0.5 hover:bg-raised">
+                    <button type="button" onClick={() => replay.mutate(d.id)} disabled={replay.isPending} className="btn btn-secondary btn-sm">
                       {replay.isPending ? "Replaying…" : "Replay & verify"}
                     </button>
                     {replay.data && (
@@ -402,7 +402,7 @@ export function SimulationLab() {
                       onClick={() => apply.mutate(d.id)}
                       disabled={apply.isPending || !canApply}
                       title={canApply ? undefined : "Applying to the operational picture needs the operator role"}
-                      className="rounded-sm border border-line-strong px-2 py-0.5 hover:bg-raised disabled:opacity-40"
+                      className="btn btn-secondary btn-sm"
                     >
                       {apply.isSuccess ? "Applied to operational picture" : "Apply to operational picture"}
                     </button>

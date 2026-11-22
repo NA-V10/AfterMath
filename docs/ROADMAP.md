@@ -10,7 +10,7 @@ Complexity: S ≈ ½–1 day · M ≈ 2–4 days · L ≈ 1–2 weeks (solo deve
 | **3** | Multi-agent system | `app.llm` providers + fallback, LangGraph workflow, 5 agents, execution logging, SSE, Agent Activity screen basics | 2 | L | ✅ complete ([report](reports/PHASE_3_REPORT.md)); STRATEGIST/GUARDIAN wired in Phase 4 |
 | **4** | Recovery optimisation | Inventory, action catalogue, SGS scheduler, 3 policies, risk score, validator V-001…V-012, comparison | 2 (3 for agent integration) | L | ✅ complete ([report](reports/PHASE_4_REPORT.md)). V-001…V-009 built; V-010…V-012 (execution-time) moved to Phase 5. Distinct strategies only where resources are contended (2 of 4 scenarios); see report |
 | **5** | Governance & execution | Auth + roles, approval/rejection, execute + revalidation, verification, audit chain, reports | 4 | M–L | ✅ complete ([report](reports/PHASE_5_REPORT.md)) |
-| **6** | Complete frontend | All six screens on live API; loading/error states; playback; comparison; approvals; reports | 1–5 | L | E2E journeys 1–5 pass |
+| **6** | Complete frontend | All six screens on live API; loading/error states; playback; comparison; approvals; reports | 1–5 | L | ✅ complete ([report](reports/PHASE_6_REPORT.md)): journeys 1–4 pass in E2E; journey 5 (provider outage) is covered by backend integration tests only |
 | **7** | Hardening & deployment | Full compose, CI, security scans, performance, README, demo walkthrough | all | M | Clean-machine setup ≤ 15 min following the README; all suites green |
 
 Frontend work is spread across phases (Twin in 1, Lab in 2, Agents in 3, Recovery in 4–5). Phase 6 completes and polishes the screens rather than starting them.

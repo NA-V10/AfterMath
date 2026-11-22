@@ -19,7 +19,7 @@ function AssetLink({ asset, onSelect }: { asset: Schemas["AssetRef"]; onSelect: 
       title={asset.name}
     >
       <span className="size-1.5 rounded-full" style={{ background: categoryColor(asset.category) }} />
-      <span className="font-mono text-[11px]">{asset.code}</span>
+      <span className="font-mono text-[13px]">{asset.code}</span>
     </button>
   );
 }
@@ -50,14 +50,14 @@ function StructuralCriticality({ code, onSelect }: { code: string; onSelect: (c:
         {entry.single_point_of_failure && <Badge color="#f85149">single point of failure</Badge>}
       </div>
       {entry.critical_failed.length > 0 && (
-        <div className="text-[11px] text-muted">
+        <div className="text-[13px] text-muted">
           Losing it alone fails critical assets:{" "}
           {entry.critical_failed.map((c) => (
             <button key={c} type="button" onClick={() => onSelect(c)} className="mr-1 font-mono hover:underline">{c}</button>
           ))}
         </div>
       )}
-      <div className="text-[11px] text-dim">
+      <div className="text-[13px] text-dim">
         {entry.failed_assets.length} other asset(s) fail within {q.data.horizon_minutes / 60} h ·{" "}
         {formatNumber(entry.affected_population)} people affected · exact N-1 simulation
       </div>
@@ -84,7 +84,7 @@ function Reach({
     <div className="flex flex-col gap-1">
       {[...byDepth.entries()].map(([depth, items]) => (
         <div key={depth} className="flex gap-2">
-          <span className="w-6 shrink-0 pt-px text-right font-mono text-[10px] text-dim">{depth}</span>
+          <span className="w-6 shrink-0 pt-px text-right font-mono text-[13px] text-dim">{depth}</span>
           <div className="flex flex-wrap gap-0.5">
             {items.map((i) => (
               <AssetLink key={i.asset.code} asset={i.asset} onSelect={onSelect} />
@@ -125,13 +125,13 @@ export function AssetInspector({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span
-              className="flex size-5 items-center justify-center rounded-[3px] font-mono text-[10px] font-bold text-bg"
+              className="flex size-5 items-center justify-center rounded-[3px] font-mono text-[13px] font-medium text-bg"
               style={{ background: categoryColor(a.category) }}
               aria-hidden
             >
               {CATEGORY[a.category].glyph}
             </span>
-            <h2 className="font-mono text-[15px] font-semibold">{a.code}</h2>
+            <h2 className="font-mono text-[15px] font-medium">{a.code}</h2>
           </div>
           <div className="mt-0.5 truncate">{a.name}</div>
           <div className="mt-1.5 flex flex-wrap gap-1">
@@ -144,9 +144,9 @@ export function AssetInspector({
       </header>
 
       <div className="px-3 pb-2.5">
-        <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.08em] text-dim">
+        <div className="mb-1 flex items-center justify-between text-[13px] text-dim">
           <span>Criticality</span>
-          <span className="font-mono text-[12px] text-fg">{a.criticality}</span>
+          <span className="font-mono text-[14px] text-fg">{a.criticality}</span>
         </div>
         <div className="h-1 rounded-full bg-raised" role="meter" aria-valuenow={a.criticality} aria-valuemin={0} aria-valuemax={100} aria-label="Criticality">
           <div className="h-1 rounded-full bg-fg/70" style={{ width: `${a.criticality}%` }} />
@@ -165,7 +165,7 @@ export function AssetInspector({
           <ul className="flex flex-col gap-2">
             {a.requirements.map((g) => (
               <li key={g.group} className="rounded-sm border border-line bg-panel-2 p-2">
-                <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                <div className="flex flex-wrap items-center gap-1.5 text-[13px]">
                   <span className="font-medium text-fg">{SERVICE_LABEL[g.service_type] ?? g.service_type}</span>
                   <span className={g.mode === "HARD" ? "text-fg" : "text-muted"}>
                     {g.mode === "HARD" ? "required" : "supporting"}
@@ -184,7 +184,7 @@ export function AssetInspector({
                     <AssetLink key={p.code} asset={p} onSelect={onSelect} />
                   ))}
                 </div>
-                <p className="mt-1 text-[11px] text-muted">{g.description}</p>
+                <p className="mt-1 text-[13px] text-muted">{g.description}</p>
               </li>
             ))}
           </ul>
@@ -197,7 +197,7 @@ export function AssetInspector({
         ) : (
           <ul className="flex flex-col gap-0.5">
             {a.dependents.map((d) => (
-              <li key={`${d.asset.code}-${d.service_type}`} className="flex items-center gap-1.5 text-[11px]">
+              <li key={`${d.asset.code}-${d.service_type}`} className="flex items-center gap-1.5 text-[13px]">
                 <AssetLink asset={d.asset} onSelect={onSelect} />
                 <span className="text-muted">{SERVICE_LABEL[d.service_type] ?? d.service_type}</span>
                 <span className="text-dim">{d.mode === "HARD" ? "required" : "supporting"}</span>
@@ -224,7 +224,7 @@ export function AssetInspector({
         }
       >
         <Reach code={a.code} direction="downstream" onSelect={onSelect} />
-        <p className="mt-2 text-[11px] text-dim">
+        <p className="mt-2 text-[13px] text-dim">
           Structural reach only: redundancy and backup power determine what actually fails (see
           structural criticality below).
         </p>
@@ -256,7 +256,7 @@ export function AssetInspector({
 
       {Object.keys(a.metadata).length > 1 && (
         <Section title="Notes">
-          <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[11px]">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[13px]">
             {Object.entries(a.metadata)
               .filter(([k]) => k !== "synthetic")
               .map(([k, v]) => (

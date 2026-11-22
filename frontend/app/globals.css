@@ -1,43 +1,54 @@
 @import "tailwindcss";
 
 /*
- * AFTERMATH design tokens — emergency operations aesthetic.
+ * AFTERMATH console design system (Phase 6), from the taste-skill deal:
+ *   palette blue-black-cornflower (night ground, one sky-blue action colour), type Outfit + DM Mono,
+ *   radius sharp (4/6/8), buttons solid. One system: one button pair, one hairline, one focus ring,
+ *   sentence-case labels at 13px/500, nothing under 13px, weights 400 and 500 only.
  * Status colours carry meaning and are reserved: ok = operational, warn = warning,
- * crit = critical failure, inactive = neutral/offline. Domain colours avoid those hues.
+ * crit = critical failure, inactive = offline. Domain colours avoid those hues and never use violet.
  */
 @theme {
-  --color-bg: #0a0d11;
-  --color-panel: #10151b;
-  --color-panel-2: #151b23;
-  --color-raised: #1a212b;
-  --color-line: #222b36;
-  --color-line-strong: #2f3a47;
+  --color-bg: #0a0d14;
+  --color-panel: #131824;
+  --color-panel-2: #171d2b;
+  --color-raised: #1e2535;
+  --color-line: #242b39;
+  --color-line-strong: #343d4f;
 
-  --color-fg: #d8dee6;
-  --color-muted: #8b97a6;
-  --color-dim: #5d6876;
+  --color-fg: #e9edf3;
+  --color-muted: #9aa3b2;
+  --color-dim: #858fa0;
 
   --color-ok: #3fb950;
-  --color-warn: #d29922;
+  --color-warn: #d6a02a;
   --color-crit: #f85149;
-  --color-inactive: #6e7681;
+  --color-inactive: #7d8693;
 
-  --color-focus: #58a6ff;
-  --color-upstream: #58a6ff;
-  --color-downstream: #c297ff;
+  --color-focus: #5ab9fc; /* the one accent: primary buttons, links, focus, selection */
+  --color-on-focus: #0a0d14;
+  --color-upstream: #5ab9fc;
+  --color-downstream: #e7a65a;
 
-  --color-dom-power: #a371f7;
+  --color-dom-power: #f2cf63;
   --color-dom-telecom: #39c5cf;
   --color-dom-water: #4493f8;
-  --color-dom-health: #db61a2;
-  --color-dom-emergency: #e5739a;
+  --color-dom-health: #ee6fae;
+  --color-dom-emergency: #f2836b;
   --color-dom-data: #7d8cf5;
   --color-dom-fuel: #b8a582;
   --color-dom-transport: #8b949e;
   --color-dom-zone: #6e7681;
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  --ease-ui: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html,
@@ -49,17 +60,34 @@ body {
 
 body {
   font-family: var(--font-sans);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.5;
+  font-feature-settings: "ss01";
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 1px;
+.font-mono,
+code,
+kbd {
+  font-feature-settings: "zero";
+}
+
+/* Headings: the display weight, tight tracking, never bold-and-big. */
+h1,
+h2,
+h3 {
+  font-weight: 500;
+  letter-spacing: -0.015em;
 }
 
 ::selection {
   background: color-mix(in srgb, var(--color-focus) 35%, transparent);
+}
+
+/* Focus: a 2px ring in the action colour, 2px off the control, drawn at once (never animated). */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  transition: none;
 }
 
 /* Scrollbars that don't shout */
@@ -68,15 +96,185 @@ body {
   scrollbar-color: var(--color-line-strong) transparent;
 }
 
+/* ------------------------------------------------------------------ components */
+@layer components {
+  /* One button pair. 36px on desktop, 44px for touch. Hover steps the fill 14% toward the ink
+   * and the box up 1px; press sinks 1px and scales .985 (taste-skill motion.md). */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    transition:
+      transform 120ms var(--ease-ui),
+      background-color 120ms var(--ease-ui),
+      border-color 120ms var(--ease-ui),
+      color 120ms var(--ease-ui);
+  }
+  .btn svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+  .btn-sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .btn-primary {
+    background: var(--color-focus);
+    color: var(--color-on-focus);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-fg);
+    border-color: var(--color-line-strong);
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn:not(:disabled):hover {
+      transform: translateY(-1px);
+      transition-duration: 150ms;
+    }
+    .btn-primary:not(:disabled):hover {
+      background: color-mix(in srgb, var(--color-focus) 86%, var(--color-fg));
+    }
+    .btn-secondary:not(:disabled):hover {
+      background: color-mix(in srgb, var(--color-fg) 6%, transparent);
+      border-color: color-mix(in srgb, var(--color-fg) 40%, transparent);
+    }
+  }
+  .btn:not(:disabled):active {
+    transform: translateY(1px) scale(0.985);
+    transition-duration: 90ms;
+  }
+  @media (pointer: coarse) {
+    .btn {
+      height: 44px;
+    }
+  }
+
+  /* Text links: a faint hairline at rest, an ink line draws left to right on hover. */
+  .link {
+    color: var(--color-fg);
+    text-decoration: none;
+    background:
+      linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat,
+      linear-gradient(color-mix(in srgb, currentColor 30%, transparent), color-mix(in srgb, currentColor 30%, transparent)) 0 100% / 100% 1px no-repeat;
+    transition: background-size 120ms var(--ease-ui);
+  }
+  .link:hover {
+    background-size: 100% 1px, 100% 1px;
+    transition-duration: 150ms;
+  }
+
+  /* A card that leads somewhere lifts 2px and its border darkens a step. */
+  .card-link {
+    transition:
+      transform 120ms var(--ease-ui),
+      border-color 120ms var(--ease-ui),
+      background-color 120ms var(--ease-ui);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .card-link:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--color-fg) 32%, transparent);
+      transition-duration: 180ms;
+    }
+  }
+
+  /* Fields: the action border and a soft 3px ring on focus. */
+  .field {
+    height: 36px;
+    width: 100%;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-bg);
+    padding: 0 10px;
+    font-size: 14px;
+    color: var(--color-fg);
+    transition:
+      border-color 140ms var(--ease-ui),
+      box-shadow 140ms var(--ease-ui);
+  }
+  textarea.field {
+    height: auto;
+    padding: 8px 10px;
+  }
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 25%, transparent);
+  }
+
+  /* The page title enters once on load: it rises out of a mask, then the line under it fades up. */
+  .page-enter > * {
+    animation: page-rise 700ms var(--ease-enter) both;
+  }
+  .page-enter > *:nth-child(2) {
+    animation-name: page-fade;
+    animation-duration: 520ms;
+    animation-delay: 350ms;
+  }
+}
+
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes page-fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-property: opacity, color, background-color, border-color !important;
+  }
+  .btn:active,
+  .btn:hover,
+  .card-link:hover {
+    transform: none !important;
+  }
+}
+
 /* MapLibre overrides */
 .maplibregl-popup-content {
   background: var(--color-raised);
   color: var(--color-fg);
   border: 1px solid var(--color-line-strong);
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-size: 12px;
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.5);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
 }
 .maplibregl-popup-tip {
   display: none;
@@ -95,12 +293,12 @@ body {
 /* React Flow overrides */
 .react-flow {
   --xy-background-color: var(--color-bg);
-  --xy-edge-stroke: #36414f;
+  --xy-edge-stroke: #3a4354;
   --xy-controls-button-background-color: var(--color-panel-2);
   --xy-controls-button-background-color-hover: var(--color-raised);
   --xy-controls-button-color: var(--color-fg);
   --xy-controls-button-border-color: var(--color-line-strong);
   --xy-minimap-background-color: var(--color-panel);
-  --xy-minimap-mask-background-color: rgb(10 13 17 / 0.7);
+  --xy-minimap-mask-background-color: rgb(10 13 20 / 0.7);
   --xy-attribution-background-color: transparent;
 }

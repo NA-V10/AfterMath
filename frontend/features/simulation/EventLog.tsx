@@ -53,8 +53,8 @@ export function EventLog({
 
   return (
     <div ref={container} className="h-full overflow-auto" data-testid="event-log">
-      <table className="w-full text-left text-[11px]">
-        <thead className="sticky top-0 bg-panel text-[10px] uppercase tracking-[0.08em] text-dim">
+      <table className="w-full text-left text-[13px]">
+        <thead className="sticky top-0 bg-panel text-[13px] text-dim">
           <tr>
             <th className="px-2 py-1 font-medium">Time</th>
             <th className="px-2 py-1 font-medium">Wave</th>

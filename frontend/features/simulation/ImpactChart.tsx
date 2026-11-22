@@ -14,7 +14,7 @@ import {
 import type { Schemas } from "@/lib/api";
 import { formatMinutes, formatNumber } from "@/lib/domain";
 
-const LINE = "#58a6ff";
+const LINE = "#5ab9fc";
 const INK_MUTED = "#8b97a6";
 const GRID = "#1f2731";
 
@@ -36,7 +36,7 @@ export function ImpactChart({ timeline, horizon, currentT }: Props) {
 
   return (
     <figure className="flex h-full flex-col" aria-label="Impact score over time">
-      <figcaption className="px-3 pt-2 text-[11px] text-muted">
+      <figcaption className="px-3 pt-2 text-[13px] text-muted">
         Impact score over time <span className="text-dim">(0 = no impact, 100 = total loss)</span>
       </figcaption>
       <div className="min-h-0 flex-1">
@@ -49,7 +49,7 @@ export function ImpactChart({ timeline, horizon, currentT }: Props) {
               domain={[0, horizon]}
               tickFormatter={(v: number) => formatMinutes(v)}
               stroke={INK_MUTED}
-              tick={{ fontSize: 10, fill: INK_MUTED }}
+              tick={{ fontSize: 13, fill: INK_MUTED }}
               tickLine={false}
               axisLine={{ stroke: GRID }}
             />
@@ -57,7 +57,7 @@ export function ImpactChart({ timeline, horizon, currentT }: Props) {
               domain={[0, 100]}
               ticks={[0, 25, 50, 75, 100]}
               stroke={INK_MUTED}
-              tick={{ fontSize: 10, fill: INK_MUTED }}
+              tick={{ fontSize: 13, fill: INK_MUTED }}
               tickLine={false}
               axisLine={false}
             />
@@ -67,7 +67,7 @@ export function ImpactChart({ timeline, horizon, currentT }: Props) {
                 background: "var(--color-raised)",
                 border: "1px solid var(--color-line-strong)",
                 borderRadius: 4,
-                fontSize: 12,
+                fontSize: 13,
               }}
               labelStyle={{ color: "var(--color-fg)" }}
               labelFormatter={(v) => formatMinutes(Number(v))}

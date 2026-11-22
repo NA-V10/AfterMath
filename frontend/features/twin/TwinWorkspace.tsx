@@ -4,7 +4,7 @@ import type { FeatureCollection } from "geojson";
 import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 
-import { ErrorState, Loading, Panel, Segmented, cn } from "@/components/ui/primitives";
+import { ErrorState, Loading, PageHeader, Panel, Segmented, cn } from "@/components/ui/primitives";
 import { DOMAIN_COLOR, DOMAIN_LABEL, type Domain } from "@/lib/domain";
 import {
   type AssetCategory,
@@ -35,7 +35,7 @@ const EMPTY = new Set<string>();
 function Legend() {
   const domains: Domain[] = ["power", "telecom", "water", "health", "emergency", "data", "fuel", "transport"];
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
       {domains.map((d) => (
         <span key={d} className="flex items-center gap-1">
           <span className="size-2 rounded-full" style={{ background: DOMAIN_COLOR[d] }} />
@@ -120,7 +120,7 @@ export function TwinWorkspace() {
     <Panel
       title="District map"
       className={cn("min-h-[320px]", view === "graph" && "hidden")}
-      actions={<span className="text-[10px] text-dim">fictional · synthetic coordinates</span>}
+      actions={<span className="text-[13px] text-dim">fictional · synthetic coordinates</span>}
     >
       {loading ? (
         <Loading label="Loading twin" />
@@ -147,7 +147,7 @@ export function TwinWorkspace() {
       title="Dependency graph"
       className={cn("min-h-[320px]", view === "map" && "hidden")}
       actions={
-        <span className="text-[10px] text-dim">
+        <span className="text-[13px] text-dim">
           {graph.data ? `${graph.data.nodes.length} nodes · providers → dependents` : ""}
         </span>
       }
@@ -170,32 +170,40 @@ export function TwinWorkspace() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-1.5">
-        <div className="flex items-center gap-3">
-          <h1 className="text-[13px] font-semibold">Infrastructure Twin</h1>
-          <Segmented<View>
-            label="Layout"
-            value={view}
-            onChange={setView}
-            options={[
-              { value: "split", label: "Split" },
-              { value: "map", label: "Map" },
-              { value: "graph", label: "Graph" },
-            ]}
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {picture.data?.source === "simulation" && (
-            <label className="flex cursor-pointer items-center gap-1.5 text-[11px] text-muted" data-testid="picture-overlay-toggle">
-              <input type="checkbox" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} className="accent-[#58a6ff]" />
-              Overlay operational picture
-              <span className="text-dim">({picture.data.label ?? "simulation"})</span>
-            </label>
-          )}
-          <Legend />
-        </div>
+      <PageHeader
+        title="Infrastructure Twin"
+        hint="50 synthetic assets and the dependencies between them, on a fictional district."
+      >
+        {picture.data?.source === "simulation" && (
+          <label
+            className="flex cursor-pointer items-center gap-2 text-[13px] text-muted"
+            data-testid="picture-overlay-toggle"
+          >
+            <input
+              type="checkbox"
+              checked={overlay}
+              onChange={(e) => setOverlay(e.target.checked)}
+              className="accent-[#5ab9fc]"
+            />
+            Overlay operational picture
+            <span className="max-w-56 truncate">({picture.data.label ?? "simulation"})</span>
+          </label>
+        )}
+        <Segmented<View>
+          label="Layout"
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "split", label: "Split" },
+            { value: "map", label: "Map" },
+            { value: "graph", label: "Graph" },
+          ]}
+        />
+      </PageHeader>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line px-5 py-2">
+        <Legend />
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[220px_minmax(0,1fr)_340px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[240px_minmax(0,1fr)_360px]">
         <Panel className="max-h-[40dvh] border-0 lg:max-h-none" title="Filter & find">
           <FilterPanel
             filters={filters}

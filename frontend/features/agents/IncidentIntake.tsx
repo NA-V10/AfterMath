@@ -64,13 +64,13 @@ export function IncidentIntake({ onStarted }: { onStarted: (incidentId: string, 
               rows={5}
               maxLength={10000}
               placeholder="Describe what happened, where, and what is affected…"
-              className="w-full resize-y rounded-sm border border-line-strong bg-bg p-2 text-[12px] placeholder:text-dim"
+              className="field resize-y placeholder:text-dim"
             />
           </label>
           <div className="flex flex-col gap-1">
             <SectionLabel>Example wording</SectionLabel>
             {EXAMPLES.map((ex) => (
-              <button key={ex} type="button" onClick={() => setReport(ex)} className="truncate text-left text-[11px] text-focus hover:underline" title={ex}>
+              <button key={ex} type="button" onClick={() => setReport(ex)} className="truncate text-left text-[13px] text-focus hover:underline" title={ex}>
                 {ex}
               </button>
             ))}
@@ -80,7 +80,7 @@ export function IncidentIntake({ onStarted }: { onStarted: (incidentId: string, 
         <>
           <label className="block">
             <SectionLabel>Damaged asset</SectionLabel>
-            <select value={asset} onChange={(e) => setAsset(e.target.value)} className="w-full rounded-sm border border-line-strong bg-bg px-1 py-1 text-[12px]">
+            <select value={asset} onChange={(e) => setAsset(e.target.value)} className="field">
               {assets.map((a) => (
                 <option key={a.code} value={a.code}>
                   {a.code} · {a.name}
@@ -90,7 +90,7 @@ export function IncidentIntake({ onStarted }: { onStarted: (incidentId: string, 
           </label>
           <label className="block">
             <SectionLabel>Title</SectionLabel>
-            <input value={title} maxLength={160} onChange={(e) => setTitle(e.target.value)} placeholder={`${asset} failure`} className="w-full rounded-sm border border-line-strong bg-bg px-2 py-1 text-[12px] placeholder:text-dim" />
+            <input value={title} maxLength={160} onChange={(e) => setTitle(e.target.value)} placeholder={`${asset} failure`} className="field placeholder:text-dim" />
           </label>
         </>
       )}
@@ -98,7 +98,7 @@ export function IncidentIntake({ onStarted }: { onStarted: (incidentId: string, 
         type="button"
         disabled={busy || (mode === "report" && report.trim().length < 10)}
         onClick={() => void submit().catch(() => undefined)}
-        className="flex items-center justify-center gap-1.5 rounded-sm bg-focus px-3 py-1.5 font-medium text-bg disabled:opacity-40"
+        className="btn btn-primary"
       >
         <Send className="size-3.5" aria-hidden />
         {busy ? "Submitting…" : "Report & analyse"}
