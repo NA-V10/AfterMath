@@ -80,3 +80,19 @@ The LangGraph checkpointer question is resolved with a custom asyncpg saver (ADR
 - The E2E suite reads `DEMO_PASSWORD` from the environment or from `.env`.
 
 **New dependency:** PyJWT (pure Python). Password hashing uses the standard library's scrypt (ADR-0014).
+
+## Phase 7 notes (2026-11-22)
+
+**Application Control now blocks `xxhash`'s DLL.**
+- The block appeared during Phase 7. LangGraph imports `xxhash` through `langsmith`, so **the API no longer starts natively on this host**, and neither does any test that imports it.
+- **Containers are unaffected,** because they run Linux. Use either:
+  - the full stack: `docker compose --profile full up`;
+  - the test image: `docker build -f backend/Dockerfile --target test`, then run it on the compose network (README, Tests and checks).
+- The Phase 7 backend results come from that image.
+- **langsmith pytest plugin:** it is now disabled in `pyproject.toml` (`-p no:langsmith_plugin`). It is unused, and loading it would fail first.
+
+**Import contracts.**
+- `backend/scripts/check_imports.py` checks the import-linter contracts without native code. It reads the same contracts from `pyproject.toml`.
+- The real `lint-imports` runs in the Linux test image and in CI.
+
+**MapLibre 6 worker.** MapLibre 6 looks for its web worker next to its own module, and the bundler does not emit that file. `frontend/scripts/copy-maplibre-worker.mjs` runs before `dev` and `build`. It copies the worker into `public/vendor/`, which is git-ignored, and `TwinMap` calls `setWorkerUrl`.

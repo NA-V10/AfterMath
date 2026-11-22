@@ -23,6 +23,7 @@ from app.core.errors import register_exception_handlers
 from app.core.events import EventBus
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import RequestContextMiddleware
+from app.core.ratelimit import LoginThrottle
 from app.database.session import Database
 from app.llm.chain import LLMClient, build_llm_client
 from app.services.twin_store import TwinStore
@@ -89,6 +90,7 @@ def create_app(settings: Settings | None = None, *, llm: LLMClient | None = None
         lifespan=lifespan,
     )
     app.state.settings = settings
+    app.state.login_throttle = LoginThrottle()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

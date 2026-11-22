@@ -3,7 +3,12 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { FeatureCollection, Point } from "geojson";
-import maplibregl, { type GeoJSONSource, type LngLatBoundsLike } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import type { GeoJSONSource, LngLatBoundsLike } from "maplibre-gl";
+
+// MapLibre 6 resolves its worker next to its own module, which the bundler does not emit; the
+// worker is copied to public/vendor before dev and build (scripts/copy-maplibre-worker.mjs).
+maplibregl.setWorkerUrl("/vendor/maplibre-gl-worker.mjs");
 import { useEffect, useRef } from "react";
 
 import type { Schemas } from "@/lib/api";
@@ -27,10 +32,6 @@ interface Props {
   onSelect: (code: string | null) => void;
   /** Optional functional-status overlay (simulation or operational picture). */
   statuses?: ReadonlyMap<string, FunctionalStatus> | null;
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
 export default function TwinMap({
@@ -91,14 +92,20 @@ export default function TwinMap({
         return;
       }
       const p = feature.properties as Record<string, string>;
-      popup
-        .setLngLat(e.lngLat)
-        .setHTML(
-          `<div style="font-family:var(--font-mono);font-weight:600">${escapeHtml(p.code)}</div>` +
-            `<div>${escapeHtml(p.name)}</div>` +
-            `<div style="color:#8b97a6">${escapeHtml(p.categoryLabel)} · ${escapeHtml(p.conditionLabel)}</div>`,
-        )
-        .addTo(map);
+      // DOM nodes with textContent: no HTML parsing or sanitizer involved (GHSA-jrc7-96c5-q579).
+      const line = (text: string, style?: Partial<CSSStyleDeclaration>) => {
+        const div = document.createElement("div");
+        div.textContent = text;
+        Object.assign(div.style, style);
+        return div;
+      };
+      const content = document.createElement("div");
+      content.append(
+        line(p.code, { fontFamily: "var(--font-mono)", fontWeight: "500" }),
+        line(p.name),
+        line(`${p.categoryLabel} · ${p.conditionLabel}`, { color: "var(--color-muted)" }),
+      );
+      popup.setLngLat(e.lngLat).setDOMContent(content).addTo(map);
     });
     map.on("mouseout", () => popup.remove());
     map.on("click", (e) => {
@@ -107,7 +114,6 @@ export default function TwinMap({
     });
     map.on("load", () => {
       loaded.current = true;
-      map.fire("aftermath:ready");
     });
 
     return () => {
@@ -134,7 +140,7 @@ export default function TwinMap({
       }
     };
     if (loaded.current) apply();
-    else map.once("aftermath:ready", apply);
+    else map.once("load", apply);
   }, [graph, highlight, showAccess, statuses]);
 
   // ---- bring the selection into view when it is outside the viewport

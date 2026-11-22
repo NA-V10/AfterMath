@@ -1,0 +1,121 @@
+# AFTERMATH CI. SIMULATION ENVIRONMENT — NOT CONNECTED TO LIVE INFRASTRUCTURE.
+# Runs on every push and pull request; no secrets are needed (the LLM layer defaults to the
+# deterministic provider, and the E2E stack generates its own throwaway secrets).
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16.6-alpine
+        env:
+          POSTGRES_USER: aftermath
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: aftermath_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U aftermath -d aftermath_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://aftermath:ci-only-password@localhost:5432/aftermath_test
+      AFTERMATH_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.9"
+      - run: uv sync --frozen
+      - name: Lint and format
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Types (strict)
+        run: uv run mypy app
+      - name: Import contracts
+        run: uv run lint-imports && uv run python scripts/check_imports.py
+      - name: Tests (unit, property, integration)
+        run: uv run pytest -q
+      - name: Dependency audit
+        run: |
+          uv export --frozen --no-dev --no-hashes --no-emit-project --format requirements-txt > /tmp/req.txt
+          uvx pip-audit -r /tmp/req.txt --strict
+      - name: Migrations have no drift
+        env:
+          DATABASE_URL: postgresql+asyncpg://aftermath:ci-only-password@localhost:5432/aftermath_test
+        run: uv run alembic upgrade head && uv run alembic check
+
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm install -g pnpm@12.3.4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+      - name: Dependency audit
+        run: pnpm audit --audit-level high
+
+  e2e:
+    needs: [backend, frontend]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Throwaway secrets for the stack
+        run: python3 scripts/init_env.py
+      - name: Start the full stack (production images)
+        run: docker compose --profile full up -d --build --wait
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Playwright
+        working-directory: frontend
+        run: |
+          npm install -g pnpm@12.3.4
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+          DEMO_PASSWORD="$(grep '^DEMO_PASSWORD=' ../.env | cut -d= -f2-)"
+          export DEMO_PASSWORD
+          PW_CHANNEL=chromium pnpm test:e2e
+      - name: Stack logs on failure
+        if: failure()
+        run: docker compose --profile full logs --no-color | tail -n 300
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: frontend/test-results
+          retention-days: 7
+
+  secrets:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

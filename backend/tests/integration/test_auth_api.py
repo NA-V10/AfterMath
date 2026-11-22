@@ -88,6 +88,35 @@ async def test_login_issues_a_working_token_and_failures_are_audited(
     assert {"test-approver", "nobody"} <= actors
 
 
+async def test_repeated_failed_sign_ins_are_throttled(
+    app: FastAPI, clients: dict[str, AsyncClient]
+) -> None:
+    anon = clients["anon"]
+    body = {"username": "throttle-target", "password": "wrong-password"}
+    codes = [(await anon.post("/auth/token", json=body)).status_code for _ in range(6)]
+    assert codes == [401] * 5 + [429]
+    r = await anon.post("/auth/token", json=body)
+    assert r.status_code == 429
+    assert int(r.headers["retry-after"]) > 0
+    assert r.json()["type"].endswith("/too-many-requests")
+    # Another user from the same address is not affected.
+    ok = await anon.post("/auth/token", json={"username": "test-viewer", "password": TEST_PASSWORD})
+    assert ok.status_code == 200
+    app.state.login_throttle.succeeded("throttle-target", "127.0.0.1")
+
+
+async def test_api_responses_carry_security_headers(clients: dict[str, AsyncClient]) -> None:
+    r = await clients["test-viewer"].get("/auth/me")
+    assert r.headers["x-content-type-options"] == "nosniff"
+    assert r.headers["x-frame-options"] == "DENY"
+    assert r.headers["referrer-policy"] == "no-referrer"
+    assert r.headers["cache-control"] == "no-store"
+    assert r.headers["content-security-policy"].startswith("default-src 'none'")
+    assert r.headers["x-aftermath-environment"] == "SIMULATION"
+    docs = await clients["anon"].get("/docs")
+    assert "content-security-policy" not in docs.headers  # Swagger UI loads its own assets
+
+
 async def test_bad_tokens_are_rejected(app: FastAPI, clients: dict[str, AsyncClient]) -> None:
     anon = clients["anon"]
     forged, _ = issue_token(

@@ -14,6 +14,10 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Vendored taste-skill kit (MIT) served as-is by the static product page.
     "public/landing/assets/**",
+    // MapLibre's worker, copied from node_modules (scripts/copy-maplibre-worker.mjs).
+    "public/vendor/**",
+    // taste-skill checker state (headless browser profiles, shots).
+    ".taste-skill/**",
   ]),
 ]);
 

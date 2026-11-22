@@ -19,6 +19,8 @@ def number_variants(values: Iterable[float | int]) -> set[str]:
         if isinstance(v, int) or float(v).is_integer():
             i = int(v)
             out |= {str(i), f"{i:,}"}
+            if not isinstance(v, int):  # a whole float is still written "60.0" by the templates
+                out |= {f"{i}.0", f"{i}.00", f"{i:,}.0"}
         else:
             f = float(v)
             out |= {f"{f:.2f}", f"{f:.1f}", f"{f:g}", f"{round(f)}"}

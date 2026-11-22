@@ -52,6 +52,14 @@ class UnauthorizedError(AppError):
     headers: ClassVar[dict[str, str]] = {"WWW-Authenticate": 'Bearer realm="aftermath"'}
 
 
+class TooManyRequestsError(AppError):
+    status, slug, title = 429, "too-many-requests", "Too many attempts"
+
+    def __init__(self, detail: str, *, retry_after: int) -> None:
+        super().__init__(detail, extra={"retry_after": retry_after})
+        self.headers = {"Retry-After": str(retry_after)}
+
+
 class ForbiddenError(AppError):
     status, slug, title = 403, "forbidden", "Not permitted"
 

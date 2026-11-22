@@ -45,6 +45,18 @@ export async function asUser(request: APIRequestContext, user: DemoUser): Promis
 
 export const STORM = ["SUB-02", "SUB-04", "PDN-01", "TEL-05", "WPS-02", "RD-04"];
 
+/** Put the seeded inventory back (executions consume parts), so plans do not depend on test order. */
+export async function restock(request: APIRequestContext): Promise<void> {
+  const seed = JSON.parse(
+    readFileSync(join(__dirname, "..", "..", "data", "synthetic", "meridian-valley", "inventory.json"), "utf-8"),
+  ) as { renewables: Record<string, number>; consumables: Record<string, number> };
+  const res = await request.post(`${API}/inventory`, {
+    headers: await asUser(request, "admin"),
+    data: { renewables: seed.renewables, consumables: seed.consumables, reason: "E2E restock" },
+  });
+  if (!res.ok()) throw new Error(`restock: ${res.status()} ${await res.text()}`);
+}
+
 /** Create a structured incident and run the five-agent analysis through the API, as `user`. */
 export async function analysedIncident(
   request: APIRequestContext,

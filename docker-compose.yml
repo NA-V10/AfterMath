@@ -1,8 +1,12 @@
 # AFTERMATH — SIMULATION ENVIRONMENT — NOT CONNECTED TO LIVE INFRASTRUCTURE.
 #
 # Development (hybrid, ADR-0012):   docker compose up -d db
-# Full stack (demo / E2E):          docker compose --profile full up --build
+# Full stack:                       python scripts/init_env.py   (once: writes .env with secrets)
+#                                   docker compose --profile full up -d --build
+#   then open http://localhost:3000 (product page) and http://localhost:3000/command (console).
 name: aftermath
+
+x-db-url: &db_url postgresql+asyncpg://${POSTGRES_USER:-aftermath}:${POSTGRES_PASSWORD:-change-me-local-only}@db:5432/${POSTGRES_DB:-aftermath}
 
 services:
   db:
@@ -12,7 +16,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-aftermath}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
     ports:
-      - "127.0.0.1:5432:5432"   # localhost only
+      - "127.0.0.1:${DB_PORT:-5432}:5432"   # localhost only
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./scripts/db/init-test-db.sql:/docker-entrypoint-initdb.d/10-test-db.sql:ro
@@ -24,8 +28,67 @@ services:
       timeout: 3s
       retries: 20
 
-  # backend and frontend containers are added under the "full" profile in Phase 7
-  # (the dev loop runs them natively — see docs/ENVIRONMENT.md).
+  # One-shot: migrate, load the synthetic district, scenarios and inventory, create demo accounts.
+  migrate:
+    profiles: ["full"]
+    build: { context: ., dockerfile: backend/Dockerfile }
+    image: aftermath-api:local
+    environment: &api_env
+      AFTERMATH_ENV: ${STACK_ENV:-production}
+      DATABASE_URL: *db_url
+      JWT_SECRET: ${JWT_SECRET:?run scripts/init_env.py or set JWT_SECRET in .env}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      GOVERNANCE_SEPARATION_OF_DUTIES: ${GOVERNANCE_SEPARATION_OF_DUTIES:-true}
+      API_CORS_ORIGINS: ${PUBLIC_WEB_ORIGIN:-http://localhost:3000}
+      LLM_PROVIDER: ${LLM_PROVIDER:-deterministic}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    command:
+      - sh
+      - -c
+      - >-
+        python -m alembic upgrade head &&
+        python -m app.cli seed &&
+        if [ -n "$$DEMO_PASSWORD" ]; then python -m app.cli seed-users; else echo "DEMO_PASSWORD not set: no demo accounts created"; fi
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    profiles: ["full"]
+    image: aftermath-api:local
+    environment: *api_env
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    mem_limit: 768m
+    restart: unless-stopped
+
+  web:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_ORIGIN: ${PUBLIC_API_ORIGIN:-http://localhost:8000}
+    image: aftermath-web:local
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    depends_on:
+      api: { condition: service_healthy }
+    read_only: true
+    tmpfs: ["/tmp", "/srv/.next/cache"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    mem_limit: 512m
+    restart: unless-stopped
 
 volumes:
   pgdata:

@@ -116,3 +116,40 @@ Approval and rejection live in `services/governance.decide`. The rules come from
 ### Secrets
 - `JWT_SECRET` and `DEMO_PASSWORD` come only from the environment.
 - In production, the API refuses to start with the placeholder secret, a secret shorter than 32 characters, or the placeholder database password.
+
+## 10. Hardening (Phase 7)
+
+### Containers (`docker compose --profile full`)
+- The API and web images run as non-root users with read-only root filesystems, `no-new-privileges` and all Linux capabilities dropped.
+- Ports are bound to `127.0.0.1` only.
+- Images are built from the lockfiles (`uv sync --frozen`, `pnpm install --frozen-lockfile`).
+- `.dockerignore` keeps `.env`, `.git` and local environments out of every image.
+
+### Secrets
+- **Production mode by default:** the stack runs with `AFTERMATH_ENV=production`, so the API refuses to start with a placeholder or short `JWT_SECRET`, or the placeholder database password.
+- **Generating secrets:** `scripts/init_env.py` writes random values into the git-ignored `.env` and never prints them.
+- **History scan:** the full git history was scanned for keys, tokens and passwords. The only hit was the old placeholder in `.env.example`.
+- **CI:** gitleaks runs on every push.
+
+### Response headers
+- **API:** every response carries `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` and `Cache-Control: no-store`. JSON responses also carry `Content-Security-Policy: default-src 'none'`. The `/docs` page is exempt, because Swagger UI loads its own assets.
+- **Web app CSP:** scripts and styles come from the same origin only; `connect-src` is limited to the API origin; workers come from self or blob (for MapLibre).
+- **Web app, other directives:** `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'` and `form-action 'self'`, plus a restrictive `Permissions-Policy`.
+- **Inline scripts:** `'unsafe-inline'` remains for scripts, needed by Next's inline bootstrap and the static product page. A nonce-based CSP is the next step.
+
+### Failed sign-ins
+After 5 failures in 15 minutes for one username from one address, the API answers 429 with `Retry-After`. Keying on both means a guesser cannot lock the account for everyone else. The limiter is in-process, like the rest of the API, so a restart clears it.
+
+### Dependencies
+
+| Scan | Result |
+|---|---|
+| `pip-audit --strict`, Python runtime dependencies | No known vulnerabilities |
+| `pnpm audit` | No known vulnerabilities, after the fixes below |
+
+The fixes:
+- **MapLibre GL JS** upgraded from 5.24.1 to 6.19.0, fixing a critical advisory: GHSA-jrc7-96c5-q579, an XSS sanitizer bypass in `DOM.sanitize()`.
+- **The map popup** is now built from DOM nodes (`setDOMContent` with `textContent`), so no HTML is parsed at all.
+- **minimatch** pinned to a patched version through a pnpm override (moderate; affects the lint toolchain only).
+
+CI runs both audits on every push, failing on high-severity findings in the frontend.

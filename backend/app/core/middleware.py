@@ -15,6 +15,14 @@ from app.core.logging import get_logger
 log = get_logger("aftermath.access")
 
 ENVIRONMENT_HEADER = (b"x-aftermath-environment", b"SIMULATION")
+# JSON API: never sniffed, framed, cached by shared caches or given a referrer (docs/SECURITY.md).
+SECURITY_HEADERS = [
+    (b"x-content-type-options", b"nosniff"),
+    (b"x-frame-options", b"DENY"),
+    (b"referrer-policy", b"no-referrer"),
+    (b"cache-control", b"no-store"),
+    (b"content-security-policy", b"default-src 'none'; frame-ancestors 'none'"),
+]
 
 
 def _incoming_request_id(scope: Scope) -> str:
@@ -49,6 +57,13 @@ class RequestContextMiddleware:
                 headers = list(message.get("headers", []))
                 headers.append((b"x-request-id", request_id.encode()))
                 headers.append(ENVIRONMENT_HEADER)
+                present = {name.lower(): value for name, value in headers}
+                html = present.get(b"content-type", b"").startswith(b"text/html")  # /docs page
+                headers.extend(
+                    h
+                    for h in SECURITY_HEADERS
+                    if h[0] not in present and not (html and h[0] == b"content-security-policy")
+                )
                 message["headers"] = headers
             await send(message)
 

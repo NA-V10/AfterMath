@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { analysedIncident, signInAs } from "./auth";
+import { analysedIncident, restock, signInAs } from "./auth";
 
 /** E2E journey (Phase 4): agents plan recovery for a multi-site storm; the operator compares. */
 
@@ -13,6 +13,7 @@ test.beforeEach(async ({ page }) => {
 test.afterEach(() => expect(consoleErrors, consoleErrors.join("\n")).toEqual([]));
 
 test("compare three validated strategies for a contended storm", async ({ page, request }) => {
+  await restock(request);
   const incident = await analysedIncident(request, "E2E severe storm");
   await signInAs(page, "approver");
   await page.goto("/recovery");

@@ -130,9 +130,29 @@ function OracleView({ o }: { o: Out }) {
   );
 }
 
+interface Grounding {
+  ok: boolean;
+  unknown_asset_codes: string[];
+  unknown_numbers: string[];
+}
+
+/** One grounding result, or (STRATEGIST) one per strategy, folded into a single result. */
+export function foldGrounding(raw: unknown): Grounding | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  const parts = "ok" in r ? [r] : Object.values(r).filter((v): v is Record<string, unknown> => !!v && typeof v === "object" && "ok" in v);
+  if (parts.length === 0) return null;
+  const list = (v: unknown) => (Array.isArray(v) ? v.map(String) : []);
+  return {
+    ok: parts.every((p) => p.ok === true),
+    unknown_asset_codes: [...new Set(parts.flatMap((p) => list(p.unknown_asset_codes)))],
+    unknown_numbers: [...new Set(parts.flatMap((p) => list(p.unknown_numbers)))],
+  };
+}
+
 export function ExecutionDetail({ execution }: { execution: AgentExecution }) {
   const o = execution.output as Out | null;
-  const grounding = execution.grounding as Out | null;
+  const grounding = foldGrounding(execution.grounding);
   return (
     <div className="flex flex-col" data-testid={`execution-${execution.agent}`}>
       <header className="flex flex-wrap items-center gap-2 px-3 pt-3 pb-2">

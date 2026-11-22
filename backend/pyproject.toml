@@ -77,7 +77,9 @@ markers = [
   "integration: requires PostgreSQL (TEST_DATABASE_URL)",
   "slow: long-running benchmark (run with -m slow)",
 ]
-addopts = "-m 'not slow'"
+# langsmith (a LangGraph dependency) auto-registers a pytest plugin we do not use; it imports a native
+# module Application Control blocks on the dev host, so it is switched off.
+addopts = "-m 'not slow' -p no:langsmith_plugin"
 filterwarnings = ["error::DeprecationWarning:app.*"]
 
 [tool.importlinter]
