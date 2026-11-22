@@ -2,8 +2,8 @@
 
 The validator does not trust the planner: it rebuilds the action catalogue from the twin and the
 incident and checks the stored plan against it, so a tampered or buggy plan (understated duration,
-missing crew, unknown asset, over-allocation) is rejected. V-010..V-012 concern execution time and
-are enforced by the governance service in Phase 5.
+missing crew, unknown asset, over-allocation) is rejected. V-010..V-012 (`validate_execution`)
+are checked again at execution time, against the current twin, inventory and incident.
 """
 
 from __future__ import annotations
@@ -70,6 +70,45 @@ def content_hash(
     }
     text = json.dumps(body, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(text.encode()).hexdigest()
+
+
+def renewable_findings(actions: Sequence[ScheduledAction], inventory: Inventory) -> list[str]:
+    """V-005: sweep each renewable's usage profile; report the first over-allocation."""
+    usage: dict[str, list[tuple[int, int]]] = {}
+    for a in actions:
+        for r in a.resources:
+            usage.setdefault(r.resource, [])
+            usage[r.resource] += [
+                (a.start_minutes, r.units),
+                (a.start_minutes + r.minutes, -r.units),
+            ]
+    out = []
+    for res, deltas in sorted(usage.items()):
+        level = 0
+        cap = inventory.renewables.get(res, 0)
+        for t, d in sorted(deltas, key=lambda x: (x[0], x[1])):  # releases before acquisitions
+            level += d
+            if level > cap:
+                out.append(f"{res}: {level} in use at T+{t} min (capacity {cap})")
+                break
+    return out
+
+
+def consumption(actions: Sequence[ScheduledAction]) -> dict[str, int]:
+    used: dict[str, int] = {}
+    for a in actions:
+        for k, v in a.consumables.items():
+            used[k] = used.get(k, 0) + v
+    return used
+
+
+def consumable_findings(actions: Sequence[ScheduledAction], inventory: Inventory) -> list[str]:
+    """V-006: total consumption per consumable within stock."""
+    return [
+        f"{k}: needs {v}, inventory has {inventory.consumables.get(k, 0)}"
+        for k, v in sorted(consumption(actions).items())
+        if v > inventory.consumables.get(k, 0)
+    ]
 
 
 def _catalogue(
@@ -151,34 +190,8 @@ def validate_plan(
                     + "/".join(g.providers)
                 )
 
-    # V-005 renewable capacity (sweep) -------------------------------------------------------
-    usage: dict[str, list[tuple[int, int]]] = {}
-    for a in actions:
-        for r in a.resources:
-            usage.setdefault(r.resource, [])
-            usage[r.resource] += [
-                (a.start_minutes, r.units),
-                (a.start_minutes + r.minutes, -r.units),
-            ]
-    for res, deltas in sorted(usage.items()):
-        level = 0
-        cap = inventory.renewables.get(res, 0)
-        for t, d in sorted(deltas, key=lambda x: (x[0], x[1])):  # releases before acquisitions
-            level += d
-            if level > cap:
-                findings["V-005"].append(f"{res}: {level} in use at T+{t} min (capacity {cap})")
-                break
-
-    # V-006 consumables ---------------------------------------------------------------------
-    used: dict[str, int] = {}
-    for a in actions:
-        for k, v in a.consumables.items():
-            used[k] = used.get(k, 0) + v
-    for k, v in sorted(used.items()):
-        if v > inventory.consumables.get(k, 0):
-            findings["V-006"].append(
-                f"{k}: needs {v}, inventory has {inventory.consumables.get(k, 0)}"
-            )
+    findings["V-005"] += renewable_findings(actions, inventory)
+    findings["V-006"] += consumable_findings(actions, inventory)
 
     # V-007 integrity vs catalogue ----------------------------------------------------------
     seen: set[str] = set()
@@ -244,4 +257,61 @@ def validate_plan(
         engine_version=ENGINE_VERSION,
         snapshot_hash=snapshot.content_hash,
         inventory_version=inventory.version,
+    )
+
+
+# ------------------------------------------------------------------ execution time (Phase 5)
+EXECUTION_RULES: dict[str, str] = {
+    "V-010": "Twin and inventory unchanged since validation, or the plan still fits current stock",
+    "V-011": "Strategy belongs to the incident, and the incident awaits a recovery decision",
+    "V-012": "No other strategy for this incident is executing or executed",
+}
+_BLOCKING_SIBLINGS = frozenset({"EXECUTING", "EXECUTED", "VERIFIED"})
+_RECOVERABLE_INCIDENT = frozenset({"ANALYZED", "AWAITING_APPROVAL"})
+
+
+def validate_execution(
+    plan_report: ValidationReport,
+    actions: Sequence[ScheduledAction],
+    *,
+    current_snapshot_hash: str,
+    planned_snapshot_hash: str,
+    planned_inventory_version: int,
+    current_inventory: Inventory,
+    incident_matches: bool,
+    incident_status: str,
+    sibling_statuses: Sequence[str],
+) -> ValidationReport:
+    """Revalidation at execute: the full V-001…V-009 report (re-run against the inventory the plan
+    was approved with) plus V-010…V-012 against the world as it is now."""
+    findings: dict[str, list[str]] = {r: [] for r in EXECUTION_RULES}
+    if current_snapshot_hash != planned_snapshot_hash:
+        findings["V-010"].append("the infrastructure twin changed since this plan was made")
+    if current_inventory.version != planned_inventory_version:
+        stale = renewable_findings(actions, current_inventory) + consumable_findings(
+            actions, current_inventory
+        )
+        findings["V-010"] += [
+            f"inventory is now v{current_inventory.version} (planned v{planned_inventory_version})"
+            f" and the plan no longer fits: {f}"
+            for f in stale
+        ]
+    if not incident_matches:
+        findings["V-011"].append("strategy does not belong to this incident")
+    if incident_status not in _RECOVERABLE_INCIDENT:
+        findings["V-011"].append(f"incident is {incident_status}")
+    busy = sorted(s for s in sibling_statuses if s in _BLOCKING_SIBLINGS)
+    if busy:
+        findings["V-012"].append(f"another strategy is already {busy[0]}")
+    extra = [
+        RuleResult(rule=r, description=d, passed=not findings[r], findings=findings[r][:10])
+        for r, d in EXECUTION_RULES.items()
+    ]
+    rules = [*plan_report.rules, *extra]
+    return plan_report.model_copy(
+        update={
+            "rules": rules,
+            "passed": all(r.passed for r in rules),
+            "inventory_version": current_inventory.version,
+        }
     )

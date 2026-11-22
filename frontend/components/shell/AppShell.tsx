@@ -1,12 +1,15 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   Bot,
   FlaskConical,
   LayoutDashboard,
+  LogOut,
   Network,
   ScrollText,
+  UserRound,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -16,6 +19,9 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/components/ui/primitives";
 import { useSystemStatus } from "@/lib/queries";
+import { clearSession, useSession, type Session } from "@/lib/session";
+
+import { SignIn } from "./SignIn";
 
 interface NavItem {
   href: string;
@@ -48,6 +54,32 @@ function SimulationBanner() {
   );
 }
 
+function UserMenu({ session }: { session: Session }) {
+  const client = useQueryClient();
+  return (
+    <div className="flex items-center gap-2 text-[11px]" data-testid="user-menu">
+      <span className="flex items-center gap-1 text-muted">
+        <UserRound className="size-3.5" aria-hidden />
+        <span className="font-medium text-fg">{session.user.display_name}</span>
+        <span className="rounded-sm border border-line-strong px-1 font-mono text-[10px]" data-testid="user-role">
+          {session.user.role}
+        </span>
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          clearSession();
+          client.clear();
+        }}
+        className="flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-muted hover:bg-raised hover:text-fg"
+      >
+        <LogOut className="size-3.5" aria-hidden />
+        Sign out
+      </button>
+    </div>
+  );
+}
+
 function ConnectionStatus() {
   const { data, isError, isPending } = useSystemStatus();
   const state = isPending ? "connecting" : isError ? "offline" : "online";
@@ -68,6 +100,27 @@ function ConnectionStatus() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const session = useSession();
+  // `undefined` = server render / hydration, where the session is not knowable. The page segment
+  // is still rendered (Next validates it); the API client sends nothing without a session.
+  if (session === null) {
+    return (
+      <div className="flex h-dvh flex-col overflow-hidden">
+        <SimulationBanner />
+        <header className="flex h-10 shrink-0 items-center gap-2 border-b border-line bg-panel px-3">
+          <Activity className="size-4 text-crit" aria-hidden />
+          <span className="font-mono text-[13px] font-bold tracking-[0.25em]">AFTERMATH</span>
+        </header>
+        <main className="min-h-0 flex-1 overflow-auto">
+          <SignIn />
+        </main>
+      </div>
+    );
+  }
+  return <SignedInShell session={session}>{children}</SignedInShell>;
+}
+
+function SignedInShell({ session, children }: { session: Session | undefined; children: ReactNode }) {
   const pathname = usePathname();
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -80,7 +133,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             Infrastructure resilience &amp; recovery
           </span>
         </div>
-        <ConnectionStatus />
+        <div className="flex items-center gap-4">
+          <ConnectionStatus />
+          {session && <UserMenu session={session} />}
+        </div>
       </header>
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <nav

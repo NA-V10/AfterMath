@@ -11,7 +11,9 @@ from sqlalchemy import select
 from app.api.deps import SessionDep
 from app.core.errors import NotFoundError
 from app.database.models import AuditLog
+from app.schemas.governance import ChainVerificationOut
 from app.schemas.infrastructure import Page
+from app.services.audit import verify_chain
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
@@ -41,6 +43,9 @@ async def list_audit(
     entity_type: Annotated[str | None, Query(max_length=48)] = None,
     entity_id: Annotated[str | None, Query(max_length=128)] = None,
     action: Annotated[str | None, Query(max_length=64)] = None,
+    actor: Annotated[str | None, Query(max_length=128)] = None,
+    from_: Annotated[datetime | None, Query(alias="from")] = None,
+    to: datetime | None = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     cursor: Annotated[
         int | None, Query(ge=1, description="return records with id < cursor")
@@ -53,6 +58,12 @@ async def list_audit(
         stmt = stmt.where(AuditLog.entity_id == entity_id)
     if action:
         stmt = stmt.where(AuditLog.action == action)
+    if actor:
+        stmt = stmt.where(AuditLog.actor_id == actor)
+    if from_:
+        stmt = stmt.where(AuditLog.occurred_at >= from_)
+    if to:
+        stmt = stmt.where(AuditLog.occurred_at < to)
     if cursor:
         stmt = stmt.where(AuditLog.id < cursor)
     rows = (await session.scalars(stmt)).all()
@@ -60,6 +71,15 @@ async def list_audit(
     return Page[AuditRecord](
         items=[AuditRecord.model_validate(r) for r in page],
         next_cursor=str(page[-1].id) if len(rows) > limit else None,
+    )
+
+
+@router.get("/verify-chain", response_model=ChainVerificationOut)
+async def verify_audit_chain(session: SessionDep) -> ChainVerificationOut:
+    """Recompute the whole hash chain; reports the first broken link, if any."""
+    result = await verify_chain(session)
+    return ChainVerificationOut(
+        ok=result.ok, records_checked=result.records_checked, first_broken_id=result.first_broken_id
     )
 
 

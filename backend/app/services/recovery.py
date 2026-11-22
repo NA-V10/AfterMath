@@ -14,7 +14,15 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ConflictError, InvalidInputError, NotFoundError
-from app.database.models import Incident, RecoveryAction, RecoveryStrategy, ResourceInventory
+from app.database.models import (
+    ApprovalRecord,
+    Incident,
+    RecoveryAction,
+    RecoveryExecution,
+    RecoveryStrategy,
+    ResourceInventory,
+)
+from app.governance.rules.state_machine import SUPERSEDABLE
 from app.governance.rules.validator import ValidationReport, content_hash, validate_plan
 from app.recovery.evaluate import impact_hours, run
 from app.recovery.model import (
@@ -28,6 +36,7 @@ from app.recovery.model import (
     Unschedulable,
 )
 from app.recovery.scheduler import plan as make_plan
+from app.schemas.governance import ApprovalOut
 from app.schemas.recovery import (
     ActionOut,
     InventoryIn,
@@ -150,6 +159,10 @@ def _actions(rows: list[RecoveryAction]) -> list[ScheduledAction]:
     ]
 
 
+async def plan_actions(session: AsyncSession, strategy_id: uuid.UUID) -> list[ScheduledAction]:
+    return _actions(await _action_rows(session, strategy_id))
+
+
 async def _action_rows(session: AsyncSession, strategy_id: uuid.UUID) -> list[RecoveryAction]:
     return list(
         (
@@ -179,8 +192,17 @@ def _summary(row: RecoveryStrategy, n_actions: int) -> StrategySummary:
         actions_count=n_actions,
         unschedulable_count=len(row.unschedulable),
         content_hash=row.content_hash,
+        version=row.version,
         created_at=row.created_at,
     )
+
+
+def approval_out(r: ApprovalRecord) -> ApprovalOut:
+    return ApprovalOut(
+        id=r.id, strategy_id=r.strategy_id, decision=r.decision,
+        content_hash=r.content_hash, actor_id=r.actor_id, actor_role=r.actor_role,
+        comment=r.comment, created_at=r.created_at,
+    )  # fmt: skip
 
 
 def _signature(actions: list[RecoveryAction]) -> tuple[Any, ...]:
@@ -197,8 +219,21 @@ async def _detail(
             actions
         ):
             identical.append(other.policy)
+    decisions = (
+        await session.scalars(
+            select(ApprovalRecord)
+            .where(ApprovalRecord.strategy_id == row.id)
+            .order_by(ApprovalRecord.created_at)
+        )
+    ).all()
+    execution_id = await session.scalar(
+        select(RecoveryExecution.id).where(RecoveryExecution.strategy_id == row.id)
+    )
     return StrategyDetail(
         **_summary(row, len(actions)).model_dump(),
+        requested_by=row.requested_by,
+        decisions=[approval_out(d) for d in decisions],
+        execution_id=execution_id,
         inventory_version=row.inventory_version,
         horizon_minutes=row.horizon_minutes,
         rationale=row.rationale,
@@ -337,8 +372,16 @@ def plan_all(twin: LoadedTwin, events: list[Any], inventory: Inventory) -> dict[
 
 
 async def generate_strategies(
-    session: AsyncSession, twin: LoadedTwin, incident_id: uuid.UUID, *, actor_id: str
+    session: AsyncSession,
+    twin: LoadedTwin,
+    incident_id: uuid.UUID,
+    *,
+    actor_id: str,
+    requested_by: str | None = None,
 ) -> list[uuid.UUID]:
+    """Plan a new round. `requested_by` is the human on whose behalf an agent plans (separation
+    of duties checks approvers against it); for direct API calls it is the caller."""
+    requested_by = requested_by or (None if actor_id.startswith("agent:") else actor_id)
     _incident, events = await _incident_events(session, incident_id)
     inv_row = await current_inventory_row(session)
     inventory = Inventory(
@@ -355,9 +398,10 @@ async def generate_strategies(
     await session.execute(
         update(RecoveryStrategy)
         .where(
-            RecoveryStrategy.incident_id == incident_id, RecoveryStrategy.status.in_(OPEN_STATUSES)
+            RecoveryStrategy.incident_id == incident_id,
+            RecoveryStrategy.status.in_([s.value for s in SUPERSEDABLE]),
         )
-        .values(status="SUPERSEDED", recommended=False)
+        .values(status="SUPERSEDED", recommended=False, version=RecoveryStrategy.version + 1)
     )
     ids = []
     event_json = [e.model_dump(mode="json") for e in events]
@@ -392,6 +436,7 @@ async def generate_strategies(
                     expected_result_hash=p.expected_result_hash,
                 ),
                 created_by=actor_id,
+                requested_by=requested_by,
             )
         )
         await session.flush()
@@ -523,6 +568,10 @@ async def recommend(
     )
     if chosen:
         chosen.recommended = True
+        # A valid plan now awaits a human decision (the agent workflow does the same).
+        incident = await session.get(Incident, incident_id)
+        if incident and incident.status in ("REPORTED", "ANALYZED"):
+            incident.status = "AWAITING_APPROVAL"
     await session.commit()
     return chosen.id if chosen else None
 

@@ -12,10 +12,10 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.agents.schemas import Briefing, IncidentExtraction
-from app.core.config import Settings
 from app.llm.base import LLMTimeoutError, ProviderResponse, TokenUsage
 from app.llm.chain import LLMClient
 from app.main import create_app
+from tests.integration.conftest import bearer, make_settings
 
 STRUCTURED = {
     "source": "STRUCTURED",
@@ -99,6 +99,10 @@ async def test_structured_incident_full_workflow(client: AsyncClient) -> None:
 
     incident = (await client.get(f"/incidents/{incident_id}")).json()
     assert incident["status"] == "AWAITING_APPROVAL"
+    # STRATEGIST plans on behalf of the person who started the analysis (separation of duties).
+    planned = (await client.get("/recovery/strategies", params={"incident_id": incident_id})).json()
+    detail = (await client.get(f"/recovery/strategies/{planned[0]['id']}")).json()
+    assert detail["requested_by"] == "test-admin"
     governance = agents["GUARDIAN"][0]["output"]
     assert governance["any_valid"] is True
     assert [v["status"] for v in governance["verdicts"]] == ["VALIDATED"] * 3
@@ -233,16 +237,18 @@ class Hallucinator:
 
 @pytest.fixture
 async def client_with_llm(
-    migrated_db: str, seeded: None, request: pytest.FixtureRequest
+    migrated_db: str, users: dict[str, list[str]], request: pytest.FixtureRequest
 ) -> AsyncIterator[AsyncClient]:
     app = create_app(
-        Settings(database_url=migrated_db, aftermath_env="test", log_level="ERROR"),
+        make_settings(migrated_db, log_level="ERROR"),
         llm=LLMClient(request.param(), timeout_s=1, max_attempts=2),
     )
     transport = ASGITransport(app=app)
     async with (
         app.router.lifespan_context(app),
-        AsyncClient(transport=transport, base_url="http://test/api/v1") as c,
+        AsyncClient(
+            transport=transport, base_url="http://test/api/v1", headers=bearer(app, "test-admin")
+        ) as c,
     ):
         yield c
 

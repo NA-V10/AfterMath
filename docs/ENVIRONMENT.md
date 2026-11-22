@@ -61,3 +61,22 @@ Not blocked: pydantic-core, shapely, asyncpg, Next.js SWC, lightningcss, Microso
 ## Phase 3 note (2026-11-21)
 
 The LangGraph checkpointer question is resolved with a custom asyncpg saver (ADR-0013); psycopg is not needed. The `anthropic` SDK and LangGraph's native dependencies (orjson, ormsgpack) load under Application Control.
+
+## Phase 4–5 notes (2026-11-22)
+
+**import-linter is blocked.**
+- Application Control now blocks import-linter's native module (`grimp._rustgrimp`): "DLL load failed … Application Control policy".
+- Until that is resolved, the three import contracts are checked with an equivalent pure-Python check. It builds an AST import graph and applies the forbidden and layers rules transitively.
+- That script is not yet in the repo. Phase 7 should either add it as a fallback or run import-linter in CI on Linux.
+
+**Long test runs can stall in PowerShell.**
+- Full pytest runs whose output was piped through PowerShell (`| Select-Object` or `*>`) twice stalled for over 20 minutes at 100% CPU.
+- The same run writing to a file with `> file 2>&1` completes in about 3½ minutes, and each property test passes in seconds on its own.
+- The cause is not diagnosed. Redirect long runs to a file.
+
+**Authentication settings (Phase 5).**
+- The repo `.env` holds a random `JWT_SECRET` and `DEMO_PASSWORD`, generated locally and git-ignored.
+- `python -m app.cli seed-users` creates the viewer, operator, approver and admin accounts with that password.
+- The E2E suite reads `DEMO_PASSWORD` from the environment or from `.env`.
+
+**New dependency:** PyJWT (pure Python). Password hashing uses the standard library's scrypt (ADR-0014).

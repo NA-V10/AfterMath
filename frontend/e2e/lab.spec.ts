@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+import { signInAs } from "./auth";
+
 /** docs/TESTING_STRATEGY.md — E2E journey 2 (Phase 2): run a scenario, replay the cascade. */
 
 const consoleErrors: string[] = [];
 test.beforeEach(async ({ page }) => {
+  await signInAs(page, "admin");
   consoleErrors.length = 0;
   page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
   page.on("pageerror", (e) => consoleErrors.push(e.message));

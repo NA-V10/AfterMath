@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 
 from app.api.deps import SessionDep
+from app.api.identity import Viewer
 from app.core.config import APP_VERSION, get_settings
 from app.database import repositories as repo
 
@@ -50,7 +51,7 @@ class SystemStatus(BaseModel):
 
 
 CAPABILITIES = Capabilities(
-    phase=4, digital_twin=True, simulation=True, agents=True, recovery=True, governance=False
+    phase=5, digital_twin=True, simulation=True, agents=True, recovery=True, governance=True
 )
 
 
@@ -82,7 +83,7 @@ async def readiness(request: Request, session: SessionDep) -> JSONResponse:
 
 
 @router.get("/system/status", response_model=SystemStatus)
-async def system_status(request: Request, session: SessionDep) -> SystemStatus:
+async def system_status(request: Request, session: SessionDep, _: Viewer) -> SystemStatus:
     revision = await session.scalar(text("SELECT version_num FROM alembic_version"))
     release = await repo.current_release(session)
     return SystemStatus(

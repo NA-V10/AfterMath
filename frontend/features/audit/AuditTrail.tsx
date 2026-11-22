@@ -3,20 +3,38 @@
 import { useState } from "react";
 
 import { ErrorState, Loading, Panel } from "@/components/ui/primitives";
-import { useAuditLog } from "@/lib/queries";
+import { useAuditLog, useVerifyChain } from "@/lib/queries";
 
 /** Read-only view of the append-only, hash-chained audit log. */
 export function AuditTrail() {
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const cursor = cursors[cursors.length - 1];
   const audit = useAuditLog(cursor);
+  const verify = useVerifyChain();
 
   return (
     <div className="p-3">
       <Panel
         title="Audit trail"
         actions={
-          <span className="text-[11px] text-dim">append-only · hash-chained · newest first</span>
+          <span className="flex items-center gap-2 text-[11px] text-dim">
+            append-only · hash-chained · newest first
+            <button
+              type="button"
+              onClick={() => verify.mutate()}
+              disabled={verify.isPending}
+              className="rounded-sm border border-line-strong px-1.5 py-0.5 text-fg hover:bg-raised disabled:opacity-40"
+            >
+              {verify.isPending ? "Verifying…" : "Verify chain"}
+            </button>
+            {verify.data && (
+              <span data-testid="chain-result" className={verify.data.ok ? "text-ok" : "font-semibold text-crit"}>
+                {verify.data.ok
+                  ? `intact · ${verify.data.records_checked} records`
+                  : `BROKEN at record #${verify.data.first_broken_id}`}
+              </span>
+            )}
+          </span>
         }
       >
         {audit.isPending ? (

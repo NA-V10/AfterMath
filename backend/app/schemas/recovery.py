@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.governance.rules.validator import ValidationReport
 from app.recovery.model import StrategyMetrics, Unschedulable
+from app.schemas.governance import ApprovalOut
 
 
 class InventoryOut(BaseModel):
@@ -68,11 +69,15 @@ class StrategySummary(BaseModel):
     actions_count: int
     unschedulable_count: int
     content_hash: str
+    version: int = Field(description="optimistic-concurrency version (send as expected_version)")
     created_at: datetime
     synthetic: Literal[True] = True
 
 
 class StrategyDetail(StrategySummary):
+    requested_by: str | None = Field(description="who asked for this planning round")
+    decisions: list[ApprovalOut]
+    execution_id: uuid.UUID | None
     inventory_version: int
     horizon_minutes: int
     rationale: str | None

@@ -66,3 +66,53 @@ Security-relevant events are logged at `INFO` with `security=true` and audited: 
 - **What agents may write:** SENTINEL updates the incident's assessed fields and evidence; ORACLE creates an immutable simulation run and applies it to the operational picture. Every write is audited as `AGENT:<name>` with the `workflow_run_id`. No agent can approve, execute, or modify stored results; those paths do not exist in the agent toolset.
 - **What is persisted:** structured outputs, short user-facing summaries, tool calls (with result digests), LLM attempt outcomes and token counts. Provider reasoning is never requested or stored.
 - `LLM_API_KEY` is a `SecretStr`; logging redacts `api_key`/`llm_api_key`.
+
+## 9. As implemented (Phase 5)
+
+### Authentication
+- See [ADR-0014](decisions/ADR-0014-authentication-and-sessions.md).
+- Every route except `/health`, `/health/ready` and `/auth/token` requires a bearer token, and a test checks this for every operation.
+- Roles are re-read from `app_user` on each request.
+
+### Roles per route
+
+| Role | Can |
+|---|---|
+| viewer | Read everything; run what-if simulations without applying them |
+| operator | Everything a viewer can, plus: create incidents, analyse and clarify, generate and validate strategies, **execute** approved strategies, apply a run to the operational picture, close incidents |
+| approver | Everything an operator can, plus **approve or reject** |
+| admin | Everything an approver can, plus change the inventory and reset the operational picture |
+
+Users are managed with the CLI (`seed-users`, `create-user`). There is no user-management API yet.
+
+### Approve and reject
+Approval and rejection live in `services/governance.decide`. The rules come from `governance.rules.policies.decide_approval`:
+- The approver role is required.
+- **Separation of duties:** the approver must not be the person who requested the planning round. For agent-planned rounds, that is whoever started the analysis. The setting is on by default and logged at startup.
+- The strategy must be `VALIDATED` and the incident must be awaiting a decision.
+- The submitted `content_hash` and `expected_version` must equal the stored ones (409 if not).
+- A rejection needs a comment.
+- Only one strategy per incident can be approved at a time.
+
+### Execute
+- Requires an `Idempotency-Key`. Reusing a key returns the first result; reusing it for a different strategy is a 409.
+- The incident row and then the strategy row are locked `FOR UPDATE`. Concurrent calls therefore serialise, and exactly one execution can happen.
+- Checks, in order:
+  1. The operator role, and the strategy is `APPROVED`.
+  2. An approval record exists with a hash equal to the current content hash.
+  3. Full GUARDIAN revalidation: V-001…V-009 against the approved inventory version, plus V-010…V-012 against the current twin, inventory and incident.
+- Any failure turns the strategy `VALIDATION_FAILED`, which is permanent, and returns 409 `revalidation-failed` with the failed rules.
+- Denied attempts are audited (`strategy.execute_denied`, `strategy.revalidation_failed`).
+
+### Transactions and immutable records
+- Each decision or execution, with its audit records, commits in a single transaction.
+- `approval_record`, `recovery_execution` and `recovery_verification` are append-only, enforced by the `reject_mutation()` trigger.
+
+### Execution stays in the simulation
+- "Execution" replays the plan through the simulation engine.
+- The resulting immutable `RECOVERY` run is applied to the operational picture, and consumables are deducted as a new inventory version.
+- No code path leaves the process.
+
+### Secrets
+- `JWT_SECRET` and `DEMO_PASSWORD` come only from the environment.
+- In production, the API refuses to start with the placeholder secret, a secret shorter than 32 characters, or the placeholder database password.

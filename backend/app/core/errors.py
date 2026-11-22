@@ -5,7 +5,7 @@ Internal exception details are never returned to clients; they are logged with t
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -47,6 +47,31 @@ class ServiceUnavailableError(AppError):
     status, slug, title = 503, "service-unavailable", "Dependency unavailable"
 
 
+class UnauthorizedError(AppError):
+    status, slug, title = 401, "unauthorized", "Authentication required"
+    headers: ClassVar[dict[str, str]] = {"WWW-Authenticate": 'Bearer realm="aftermath"'}
+
+
+class ForbiddenError(AppError):
+    status, slug, title = 403, "forbidden", "Not permitted"
+
+
+class InvalidTransitionError(AppError):
+    status, slug, title = 409, "invalid-state-transition", "Invalid state transition"
+
+
+class ContentHashMismatchError(AppError):
+    status, slug, title = 409, "content-hash-mismatch", "Strategy content changed"
+
+
+class VersionConflictError(AppError):
+    status, slug, title = 409, "version-conflict", "Resource was modified"
+
+
+class RevalidationFailedError(AppError):
+    status, slug, title = 409, "revalidation-failed", "Strategy failed revalidation"
+
+
 def problem(
     request: Request,
     status: int,
@@ -70,7 +95,9 @@ def problem(
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(request: Request, exc: AppError) -> JSONResponse:
-        return problem(request, exc.status, exc.slug, exc.title, exc.detail, **exc.extra)
+        response = problem(request, exc.status, exc.slug, exc.title, exc.detail, **exc.extra)
+        response.headers.update(getattr(exc, "headers", {}))
+        return response
 
     @app.exception_handler(RequestValidationError)
     async def _validation(request: Request, exc: RequestValidationError) -> JSONResponse:

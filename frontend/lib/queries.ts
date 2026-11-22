@@ -3,6 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "@/lib/api";
+import { setSession } from "@/lib/session";
 
 export type AssetCategory = Schemas["AssetSummary"]["category"];
 export type PhysicalCondition = Schemas["AssetSummary"]["condition"];
@@ -346,4 +347,107 @@ export function useValidateStrategy(incidentId: string) {
       ),
     onSettled: () => void client.invalidateQueries({ queryKey: ["recovery", "round", incidentId] }),
   });
+}
+
+// ------------------------------------------------------------------ Phase 5: auth & governance
+export type Execution = Schemas["RecoveryExecutionOut"];
+
+export async function signIn(username: string, password: string) {
+  const out = await unwrap(api.POST("/api/v1/auth/token", { body: { username, password } }));
+  setSession({ token: out.access_token, expiresAt: out.expires_at, user: out.user });
+  return out;
+}
+
+export function useMe(enabled: boolean) {
+  return useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => unwrap(api.GET("/api/v1/auth/me")),
+    enabled,
+    staleTime: 60_000,
+  });
+}
+
+/** After any governance decision, refresh everything that shows strategy or incident state. */
+function useGovernanceRefresh(incidentId: string) {
+  const client = useQueryClient();
+  return () => {
+    void client.invalidateQueries({ queryKey: ["recovery", "round", incidentId] });
+    void client.invalidateQueries({ queryKey: ["recovery", "execution"] });
+    void client.invalidateQueries({ queryKey: ["incidents"] });
+    void client.invalidateQueries({ queryKey: ["inventory"] });
+    void client.invalidateQueries({ queryKey: ["picture"] });
+    void client.invalidateQueries({ queryKey: ["audit"] });
+  };
+}
+
+export interface DecisionInput {
+  strategyId: string;
+  contentHash: string;
+  version: number;
+  comment: string;
+}
+
+export function useDecide(incidentId: string, decision: "approve" | "reject") {
+  const refresh = useGovernanceRefresh(incidentId);
+  return useMutation({
+    mutationFn: ({ strategyId, contentHash, version, comment }: DecisionInput) => {
+      const path = { strategy_id: strategyId };
+      const base = { content_hash: contentHash, expected_version: version };
+      return decision === "approve"
+        ? unwrap(
+            api.POST("/api/v1/recovery/strategies/{strategy_id}/approve", {
+              params: { path },
+              body: { ...base, comment: comment.trim() || null },
+            }),
+          )
+        : unwrap(
+            api.POST("/api/v1/recovery/strategies/{strategy_id}/reject", {
+              params: { path },
+              body: { ...base, comment },
+            }),
+          );
+    },
+    onSettled: refresh,
+  });
+}
+
+export function useExecute(incidentId: string) {
+  const refresh = useGovernanceRefresh(incidentId);
+  return useMutation({
+    mutationFn: ({ strategyId, idempotencyKey }: { strategyId: string; idempotencyKey: string }) =>
+      unwrap(
+        api.POST("/api/v1/recovery/strategies/{strategy_id}/execute", {
+          params: { path: { strategy_id: strategyId }, header: { "Idempotency-Key": idempotencyKey } },
+        }),
+      ),
+    onSettled: refresh,
+  });
+}
+
+export function useExecution(id: string | null | undefined) {
+  return useQuery({
+    queryKey: ["recovery", "execution", id],
+    queryFn: () =>
+      unwrap(api.GET("/api/v1/recovery/executions/{execution_id}", { params: { path: { execution_id: id! } } })),
+    enabled: !!id,
+    staleTime: Infinity, // executions are immutable
+  });
+}
+
+export function useCloseIncident(incidentId: string) {
+  const refresh = useGovernanceRefresh(incidentId);
+  return useMutation({
+    mutationFn: (reason: string) =>
+      unwrap(
+        api.POST("/api/v1/incidents/{incident_id}/close", {
+          params: { path: { incident_id: incidentId } },
+          body: { reason },
+        }),
+      ),
+    onSettled: refresh,
+  });
+}
+
+export function useVerifyChain() {
+  return useMutation({ mutationFn: () => unwrap(api.GET("/api/v1/audit/verify-chain")) });
 }

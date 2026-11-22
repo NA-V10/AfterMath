@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 
+import { clearSession, getSession } from "@/lib/session";
 import type { components, paths } from "@/types/api";
 
 export type Schemas = components["schemas"];
@@ -8,6 +9,29 @@ export type Schemas = components["schemas"];
 export const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://localhost:8000";
 
 export const api = createClient<paths>({ baseUrl: API_ORIGIN });
+
+/** Attach the bearer token to every call; a 401 means the session is gone (expired/revoked). */
+api.use({
+  onRequest({ request }) {
+    const session = getSession();
+    if (session) request.headers.set("Authorization", `Bearer ${session.token}`);
+    else if (!request.url.endsWith("/auth/token")) {
+      // Not signed in: don't send a request that can only be refused.
+      throw new ApiError(401, null, null, "Sign in to use AFTERMATH.");
+    }
+    return request;
+  },
+  onResponse({ request, response }) {
+    if (response.status === 401 && !request.url.endsWith("/auth/token")) clearSession();
+    return response;
+  },
+});
+
+/** Headers for calls made outside openapi-fetch (streams, file downloads). */
+export function authHeaders(): Record<string, string> {
+  const session = getSession();
+  return session ? { Authorization: `Bearer ${session.token}` } : {};
+}
 
 /** RFC 9457 problem details as produced by the backend. */
 export interface Problem {
@@ -45,7 +69,8 @@ export async function unwrap<T>(
   let result: { data?: T; error?: unknown; response: Response };
   try {
     result = await call;
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
     throw new ApiError(0, null, null, `Cannot reach the AFTERMATH API at ${API_ORIGIN}.`);
   }
   const { data, error, response } = result;

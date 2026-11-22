@@ -183,6 +183,101 @@
         "title": "AnalyzeAccepted",
         "type": "object"
       },
+      "ApprovalOut": {
+        "properties": {
+          "actor_id": {
+            "title": "Actor Id",
+            "type": "string"
+          },
+          "actor_role": {
+            "title": "Actor Role",
+            "type": "string"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decision": {
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "strategy_id": {
+            "format": "uuid",
+            "title": "Strategy Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "strategy_id",
+          "decision",
+          "content_hash",
+          "actor_id",
+          "actor_role",
+          "comment",
+          "created_at"
+        ],
+        "title": "ApprovalOut",
+        "type": "object"
+      },
+      "ApproveIn": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "content_hash",
+          "expected_version"
+        ],
+        "title": "ApproveIn",
+        "type": "object"
+      },
       "AreaFloodEvent": {
         "additionalProperties": false,
         "description": "Assets intersecting the polygon whose elevation is below the water level are inundated\n(DAMAGED; roads and bridges become impassable). Demand zones are not damaged by floods.",
@@ -465,6 +560,33 @@
           "asset_code"
         ],
         "title": "AssetFailureEvent",
+        "type": "object"
+      },
+      "AssetOutcome": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FunctionalStatus"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "status",
+          "reason"
+        ],
+        "title": "AssetOutcome",
         "type": "object"
       },
       "AssetRef": {
@@ -982,6 +1104,36 @@
         "title": "CauseKind",
         "type": "string"
       },
+      "ChainVerificationOut": {
+        "properties": {
+          "first_broken_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Broken Id"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "records_checked": {
+            "title": "Records Checked",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ok",
+          "records_checked",
+          "first_broken_id"
+        ],
+        "title": "ChainVerificationOut",
+        "type": "object"
+      },
       "ClarificationIn": {
         "additionalProperties": false,
         "properties": {
@@ -1045,6 +1197,22 @@
           "asset_codes"
         ],
         "title": "ClarificationIn",
+        "type": "object"
+      },
+      "CloseIncidentIn": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "CloseIncidentIn",
         "type": "object"
       },
       "CriticalityEntry": {
@@ -1486,6 +1654,19 @@
         "title": "GenerateStrategiesIn",
         "type": "object"
       },
+      "GovernanceConfig": {
+        "properties": {
+          "separation_of_duties": {
+            "title": "Separation Of Duties",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "separation_of_duties"
+        ],
+        "title": "GovernanceConfig",
+        "type": "object"
+      },
       "GraphNode": {
         "properties": {
           "category": {
@@ -1845,6 +2026,100 @@
         "title": "IncidentOut",
         "type": "object"
       },
+      "IncidentReport": {
+        "properties": {
+          "audit_trail": {
+            "items": {
+              "$ref": "#/components/schemas/ReportAudit"
+            },
+            "title": "Audit Trail",
+            "type": "array"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ReportDecision"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "execution": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Impact"
+          },
+          "incident": {
+            "additionalProperties": true,
+            "title": "Incident",
+            "type": "object"
+          },
+          "notice": {
+            "default": "SIMULATION ENVIRONMENT \u2014 NOT CONNECTED TO LIVE INFRASTRUCTURE. All data is synthetic.",
+            "title": "Notice",
+            "type": "string"
+          },
+          "strategies": {
+            "items": {
+              "$ref": "#/components/schemas/ReportStrategy"
+            },
+            "title": "Strategies",
+            "type": "array"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "verification": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification"
+          }
+        },
+        "required": [
+          "generated_at",
+          "incident",
+          "impact",
+          "strategies",
+          "decisions",
+          "execution",
+          "verification",
+          "audit_trail"
+        ],
+        "title": "IncidentReport",
+        "type": "object"
+      },
       "InfrastructureHealth": {
         "properties": {
           "asset_count": {
@@ -2024,6 +2299,65 @@
           }
         },
         "title": "Liveness",
+        "type": "object"
+      },
+      "LoginIn": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginIn",
+        "type": "object"
+      },
+      "MeOut": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "governance": {
+            "$ref": "#/components/schemas/GovernanceConfig"
+          },
+          "role": {
+            "description": "highest role (viewer < operator < approver < admin)",
+            "title": "Role",
+            "type": "string"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "display_name",
+          "roles",
+          "role",
+          "governance"
+        ],
+        "title": "MeOut",
         "type": "object"
       },
       "OperationalPicture": {
@@ -2315,6 +2649,158 @@
         "title": "PolygonGeometry",
         "type": "object"
       },
+      "PrincipalOut": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "role": {
+            "description": "highest role (viewer < operator < approver < admin)",
+            "title": "Role",
+            "type": "string"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "display_name",
+          "roles",
+          "role"
+        ],
+        "title": "PrincipalOut",
+        "type": "object"
+      },
+      "RecoveryExecutionOut": {
+        "properties": {
+          "approval_id": {
+            "format": "uuid",
+            "title": "Approval Id",
+            "type": "string"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "incident_id": {
+            "format": "uuid",
+            "title": "Incident Id",
+            "type": "string"
+          },
+          "replayed": {
+            "default": false,
+            "description": "true when this response repeats an earlier request",
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "requested_by": {
+            "title": "Requested By",
+            "type": "string"
+          },
+          "revalidation": {
+            "$ref": "#/components/schemas/ValidationReport"
+          },
+          "simulation_run_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Simulation Run Id"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "COMPLETED",
+              "FAILED"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "strategy_id": {
+            "format": "uuid",
+            "title": "Strategy Id",
+            "type": "string"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "verification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerificationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "strategy_id",
+          "incident_id",
+          "simulation_run_id",
+          "approval_id",
+          "requested_by",
+          "status",
+          "revalidation",
+          "error",
+          "started_at",
+          "completed_at",
+          "verification"
+        ],
+        "title": "RecoveryExecutionOut",
+        "type": "object"
+      },
       "RecoveryProfile": {
         "additionalProperties": false,
         "description": "What it takes to repair/replace the asset (used from Phase 4).",
@@ -2371,6 +2857,34 @@
         "title": "RecoveryProfile",
         "type": "object"
       },
+      "RejectIn": {
+        "additionalProperties": false,
+        "properties": {
+          "comment": {
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Comment",
+            "type": "string"
+          },
+          "content_hash": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "expected_version": {
+            "minimum": 1.0,
+            "title": "Expected Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "content_hash",
+          "expected_version",
+          "comment"
+        ],
+        "title": "RejectIn",
+        "type": "object"
+      },
       "ReplayResult": {
         "properties": {
           "engine_matches": {
@@ -2410,6 +2924,141 @@
           "engine_matches"
         ],
         "title": "ReplayResult",
+        "type": "object"
+      },
+      "ReportAudit": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "actor": {
+            "title": "Actor",
+            "type": "string"
+          },
+          "entity": {
+            "title": "Entity",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "occurred_at",
+          "actor",
+          "action",
+          "entity"
+        ],
+        "title": "ReportAudit",
+        "type": "object"
+      },
+      "ReportDecision": {
+        "properties": {
+          "actor_id": {
+            "title": "Actor Id",
+            "type": "string"
+          },
+          "actor_role": {
+            "title": "Actor Role",
+            "type": "string"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "strategy_id": {
+            "format": "uuid",
+            "title": "Strategy Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "strategy_id",
+          "decision",
+          "actor_id",
+          "actor_role",
+          "comment",
+          "content_hash",
+          "created_at"
+        ],
+        "title": "ReportDecision",
+        "type": "object"
+      },
+      "ReportStrategy": {
+        "properties": {
+          "actions": {
+            "title": "Actions",
+            "type": "integer"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "impact_hours": {
+            "title": "Impact Hours",
+            "type": "number"
+          },
+          "planning_round": {
+            "title": "Planning Round",
+            "type": "integer"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          },
+          "recommended": {
+            "title": "Recommended",
+            "type": "boolean"
+          },
+          "risk_score": {
+            "title": "Risk Score",
+            "type": "number"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "planning_round",
+          "policy",
+          "status",
+          "recommended",
+          "impact_hours",
+          "risk_score",
+          "actions",
+          "content_hash"
+        ],
+        "title": "ReportStrategy",
         "type": "object"
       },
       "RequirementGroup": {
@@ -2456,6 +3105,29 @@
           "description"
         ],
         "title": "RequirementGroup",
+        "type": "object"
+      },
+      "Restoration": {
+        "properties": {
+          "by_count": {
+            "title": "By Count",
+            "type": "number"
+          },
+          "by_criticality": {
+            "title": "By Criticality",
+            "type": "number"
+          },
+          "by_population": {
+            "title": "By Population",
+            "type": "number"
+          }
+        },
+        "required": [
+          "by_count",
+          "by_criticality",
+          "by_population"
+        ],
+        "title": "Restoration",
         "type": "object"
       },
       "RuleResult": {
@@ -3300,6 +3972,25 @@
             "title": "Created At",
             "type": "string"
           },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ApprovalOut"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "execution_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Id"
+          },
           "expected_result_hash": {
             "title": "Expected Result Hash",
             "type": "string"
@@ -3386,6 +4077,18 @@
             "title": "Recommended",
             "type": "boolean"
           },
+          "requested_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "who asked for this planning round",
+            "title": "Requested By"
+          },
           "risk_components": {
             "additionalProperties": {
               "type": "number"
@@ -3465,6 +4168,11 @@
                 "type": "null"
               }
             ]
+          },
+          "version": {
+            "description": "optimistic-concurrency version (send as expected_version)",
+            "title": "Version",
+            "type": "integer"
           }
         },
         "required": [
@@ -3484,7 +4192,11 @@
           "actions_count",
           "unschedulable_count",
           "content_hash",
+          "version",
           "created_at",
+          "requested_by",
+          "decisions",
+          "execution_id",
           "inventory_version",
           "horizon_minutes",
           "rationale",
@@ -3773,6 +4485,11 @@
           "unschedulable_count": {
             "title": "Unschedulable Count",
             "type": "integer"
+          },
+          "version": {
+            "description": "optimistic-concurrency version (send as expected_version)",
+            "title": "Version",
+            "type": "integer"
           }
         },
         "required": [
@@ -3792,6 +4509,7 @@
           "actions_count",
           "unschedulable_count",
           "content_hash",
+          "version",
           "created_at"
         ],
         "title": "StrategySummary",
@@ -3975,6 +4693,35 @@
           "affected_population"
         ],
         "title": "TimelinePoint",
+        "type": "object"
+      },
+      "TokenOut": {
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "token_type": {
+            "const": "bearer",
+            "default": "bearer",
+            "title": "Token Type",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/PrincipalOut"
+          }
+        },
+        "required": [
+          "access_token",
+          "expires_at",
+          "user"
+        ],
+        "title": "TokenOut",
         "type": "object"
       },
       "Trade": {
@@ -4167,6 +4914,130 @@
           "inventory_version"
         ],
         "title": "ValidationReport",
+        "type": "object"
+      },
+      "VerificationOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "execution_id": {
+            "format": "uuid",
+            "title": "Execution Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/VerificationResult"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "verified_by": {
+            "title": "Verified By",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "execution_id",
+          "verified_by",
+          "created_at",
+          "result"
+        ],
+        "title": "VerificationOut",
+        "type": "object"
+      },
+      "VerificationResult": {
+        "properties": {
+          "actual_result_hash": {
+            "title": "Actual Result Hash",
+            "type": "string"
+          },
+          "after": {
+            "$ref": "#/components/schemas/Restoration"
+          },
+          "before": {
+            "$ref": "#/components/schemas/Restoration"
+          },
+          "expected_result_hash": {
+            "title": "Expected Result Hash",
+            "type": "string"
+          },
+          "functionally_restored": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Functionally Restored",
+            "type": "array"
+          },
+          "horizon_minutes": {
+            "title": "Horizon Minutes",
+            "type": "integer"
+          },
+          "impact_score_after": {
+            "title": "Impact Score After",
+            "type": "number"
+          },
+          "impact_score_before": {
+            "title": "Impact Score Before",
+            "type": "number"
+          },
+          "matches_expectation": {
+            "title": "Matches Expectation",
+            "type": "boolean"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "repaired_assets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Repaired Assets",
+            "type": "array"
+          },
+          "repaired_not_functional": {
+            "items": {
+              "$ref": "#/components/schemas/AssetOutcome"
+            },
+            "title": "Repaired Not Functional",
+            "type": "array"
+          },
+          "unresolved": {
+            "items": {
+              "$ref": "#/components/schemas/AssetOutcome"
+            },
+            "title": "Unresolved",
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "matches_expectation",
+          "expected_result_hash",
+          "actual_result_hash",
+          "repaired_assets",
+          "functionally_restored",
+          "repaired_not_functional",
+          "unresolved",
+          "before",
+          "after",
+          "impact_score_before",
+          "impact_score_after",
+          "horizon_minutes"
+        ],
+        "title": "VerificationResult",
         "type": "object"
       },
       "WorkflowOut": {
@@ -4517,6 +5388,57 @@
           },
           {
             "in": "query",
+            "name": "actor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Actor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "in": "query",
             "name": "limit",
             "required": false,
             "schema": {
@@ -4575,6 +5497,28 @@
         ]
       }
     },
+    "/api/v1/audit/verify-chain": {
+      "get": {
+        "description": "Recompute the whole hash chain; reports the first broken link, if any.",
+        "operationId": "verify_audit_chain_api_v1_audit_verify_chain_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainVerificationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Verify Audit Chain",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
     "/api/v1/audit/{record_id}": {
       "get": {
         "operationId": "get_audit_api_v1_audit__record_id__get",
@@ -4614,6 +5558,70 @@
         "summary": "Get Audit",
         "tags": [
           "audit"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "description": "The signed-in user, their roles and the governance settings that apply to them.",
+        "operationId": "me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token": {
+      "post": {
+        "description": "Exchange a username and password for a bearer token. Failures are audited.",
+        "operationId": "login_api_v1_auth_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
         ]
       }
     },
@@ -4722,7 +5730,7 @@
         ]
       },
       "post": {
-        "description": "Structured incidents are validated deterministically against the twin. Free-text reports\nare stored verbatim (untrusted) and await SENTINEL analysis (Phase 3).",
+        "description": "Structured incidents are validated deterministically against the twin. Free-text reports\nare stored verbatim (untrusted) and await SENTINEL analysis. Role: operator.",
         "operationId": "create_incident_api_v1_incidents_post",
         "requestBody": {
           "content": {
@@ -4822,7 +5830,7 @@
     },
     "/api/v1/incidents/{incident_id}/analyze": {
       "post": {
-        "description": "Start the agent workflow (SENTINEL -> CARTOGRAPHER -> ORACLE) in the background.",
+        "description": "Start the agent workflow (SENTINEL \u2192 CARTOGRAPHER \u2192 ORACLE \u2192 STRATEGIST \u2192 GUARDIAN) in\nthe background. Role: operator. You become the requester of the plans it produces.",
         "operationId": "analyze_incident_api_v1_incidents__incident_id__analyze_post",
         "parameters": [
           {
@@ -4861,6 +5869,60 @@
         "summary": "Analyze Incident",
         "tags": [
           "agents"
+        ]
+      }
+    },
+    "/api/v1/incidents/{incident_id}/close": {
+      "post": {
+        "description": "Close an incident with a reason. Open strategies are superseded. Role: operator.",
+        "operationId": "close_incident_api_v1_incidents__incident_id__close_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "incident_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Incident Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseIncidentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Close Incident",
+        "tags": [
+          "incidents"
         ]
       }
     },
@@ -5267,7 +6329,7 @@
         ]
       },
       "post": {
-        "description": "Record a new inventory version (existing strategies keep referencing their version).",
+        "description": "Record a new inventory version (existing strategies keep referencing their version).\nRole: admin.",
         "operationId": "update_inventory_api_v1_inventory_post",
         "requestBody": {
           "content": {
@@ -5330,6 +6392,7 @@
     },
     "/api/v1/operational-picture/apply/{simulation_id}": {
       "post": {
+        "description": "Show a completed run as the current operational picture. Role: operator.",
         "operationId": "apply_picture_api_v1_operational_picture_apply__simulation_id__post",
         "parameters": [
           {
@@ -5373,7 +6436,7 @@
     },
     "/api/v1/operational-picture/reset": {
       "post": {
-        "description": "Return the operational picture to the baseline. History is kept (append-only).",
+        "description": "Return the operational picture to the baseline. History is kept (append-only).\nRole: admin.",
         "operationId": "reset_picture_api_v1_operational_picture_reset_post",
         "requestBody": {
           "content": {
@@ -5410,6 +6473,92 @@
         "summary": "Reset Picture",
         "tags": [
           "operational picture"
+        ]
+      }
+    },
+    "/api/v1/recovery/executions/{execution_id}": {
+      "get": {
+        "operationId": "get_execution_api_v1_recovery_executions__execution_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "execution_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Execution Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryExecutionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Execution",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
+    "/api/v1/recovery/executions/{execution_id}/verification": {
+      "get": {
+        "operationId": "get_verification_api_v1_recovery_executions__execution_id__verification_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "execution_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Execution Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Verification",
+        "tags": [
+          "recovery"
         ]
       }
     },
@@ -5484,7 +6633,7 @@
         ]
       },
       "post": {
-        "description": "Plan three strategies (new planning round) and validate them with GUARDIAN's rules.\nNormally invoked by the agent workflow (STRATEGIST + GUARDIAN).",
+        "description": "Plan three strategies (new planning round) and validate them with GUARDIAN's rules.\nNormally invoked by the agent workflow (STRATEGIST + GUARDIAN). Role: operator.",
         "operationId": "generate_strategies_api_v1_recovery_strategies_post",
         "requestBody": {
           "content": {
@@ -5611,6 +6760,172 @@
         ]
       }
     },
+    "/api/v1/recovery/strategies/{strategy_id}/approve": {
+      "post": {
+        "description": "Approve exactly the content you reviewed: `content_hash` and `expected_version` must match\nthe stored strategy. Role: approver; separation of duties applies (see `GET /auth/me`).",
+        "operationId": "approve_strategy_api_v1_recovery_strategies__strategy_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "strategy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Strategy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve Strategy",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
+    "/api/v1/recovery/strategies/{strategy_id}/execute": {
+      "post": {
+        "description": "**Simulated** execution of an APPROVED strategy: GUARDIAN revalidates it (V-001\u2026V-012)\nagainst the current twin and inventory, the plan is replayed through the simulation engine,\nthe result is applied to the operational picture and verified. Nothing leaves the simulator.\nRole: operator. Runs synchronously (milliseconds), so it returns 201 with the result.",
+        "operationId": "execute_strategy_api_v1_recovery_strategies__strategy_id__execute_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "strategy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Strategy Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Required. Repeating a request with the same key returns the first result.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Required. Repeating a request with the same key returns the first result.",
+              "maxLength": 128,
+              "minLength": 8,
+              "pattern": "^[A-Za-z0-9._:-]+$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryExecutionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Execute Strategy",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
+    "/api/v1/recovery/strategies/{strategy_id}/reject": {
+      "post": {
+        "description": "Reject with a required comment. REJECTED is final. Role: approver.",
+        "operationId": "reject_strategy_api_v1_recovery_strategies__strategy_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "strategy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Strategy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reject Strategy",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
     "/api/v1/recovery/strategies/{strategy_id}/validate": {
       "post": {
         "description": "Run GUARDIAN's deterministic rules (V-001..V-009) against the stored strategy.",
@@ -5652,6 +6967,65 @@
         "summary": "Validate Strategy",
         "tags": [
           "recovery"
+        ]
+      }
+    },
+    "/api/v1/reports/incidents/{incident_id}": {
+      "get": {
+        "description": "The full recovery report for an incident, built only from stored records.",
+        "operationId": "incident_report_api_v1_reports_incidents__incident_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "incident_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Incident Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "json",
+              "enum": [
+                "json",
+                "markdown"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentReport"
+                }
+              },
+              "text/markdown": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Incident Report",
+        "tags": [
+          "reports"
         ]
       }
     },
@@ -5801,7 +7175,7 @@
         ]
       },
       "post": {
-        "description": "Run a deterministic simulation synchronously and persist it (immutable).",
+        "description": "Run a deterministic what-if simulation synchronously and persist it (immutable).\nRole: viewer; applying the result to the operational picture needs operator.",
         "operationId": "create_simulation_api_v1_simulations_post",
         "requestBody": {
           "content": {

@@ -190,3 +190,75 @@ POST `/auth/token` (username/password → JWT) · GET `/auth/me`.
 The agent workflow normally calls the same services: STRATEGIST generates, GUARDIAN validates and recommends. When at least one strategy is valid, the incident moves to `AWAITING_APPROVAL`.
 
 Approval, rejection, execution and verification are Phase 5. Phase 4 exposes no endpoint that changes infrastructure state.
+
+## As implemented (Phase 5)
+
+**Authentication.** Every route except `/health`, `/health/ready` and `/auth/token` returns **401** without a valid `Authorization: Bearer` token. The 401 response includes `WWW-Authenticate: Bearer`. A missing role gives **403** `forbidden`. The `local:operator` development identity has been removed.
+
+### Auth
+
+**POST `/auth/token`**
+- Body: `{username, password}`.
+- Returns `{access_token, token_type: "bearer", expires_at, user}`.
+- Wrong password and unknown user give the same 401. Both are audited.
+
+**GET `/auth/me`**
+- Returns the user, their roles and `governance.separation_of_duties`.
+
+### Decisions
+
+**POST `/recovery/strategies/{id}/approve`**
+- Body: `{content_hash, expected_version, comment?}`. Role: approver.
+- Returns **201** with the `ApprovalOut` record.
+- Errors:
+
+  | Status | Problem type | When |
+  |---|---|---|
+  | 409 | `content-hash-mismatch` | The strategy's content changed |
+  | 409 | `version-conflict` | The strategy's version changed |
+  | 409 | `invalid-state-transition` | The strategy is not VALIDATED |
+  | 409 | `conflict` | Another strategy for the incident is already approved or executed |
+  | 403 | `forbidden` | Missing role, or separation of duties |
+
+**POST `/recovery/strategies/{id}/reject`**
+- Same as approve, except `comment` is required (at least 3 characters).
+- After rejecting, if nothing in the round is left to decide, the incident returns to `ANALYZED`.
+
+### Execution
+
+**POST `/recovery/strategies/{id}/execute`**
+- The `Idempotency-Key` header is required (otherwise 422). Role: operator.
+- Execution is simulated and synchronous, taking milliseconds. It returns **201** with `RecoveryExecutionOut`: status, the full 12-rule revalidation report and the embedded verification. This deliberately differs from the 202 in the design.
+- A repeated key returns the same execution with `replayed: true`.
+- Errors:
+
+  | Status | Problem type | When |
+  |---|---|---|
+  | 409 | `revalidation-failed` | Revalidation failed; the response includes `failed_rules` |
+  | 409 | `invalid-state-transition` | The strategy is not APPROVED |
+  | 409 | `conflict` | The key was already used for another strategy |
+
+**GET `/recovery/executions/{id}`** and **GET `/recovery/executions/{id}/verification`**
+- Return the stored execution and its verification.
+
+### Other endpoints
+
+**POST `/incidents/{id}/close`**
+- Body: `{reason}`. Role: operator.
+- Open strategies are superseded.
+
+**GET `/audit/verify-chain`**
+- Returns `{ok, records_checked, first_broken_id}`.
+- `/audit` also accepts the `actor`, `from` and `to` filters.
+
+**GET `/reports/incidents/{id}?format=json|markdown`**
+- Built only from stored records. The simulation notice appears in the header and footer.
+- Markdown is returned as `text/markdown` with a download filename.
+
+### Changed in Phase 5
+- **Strategies:** `StrategySummary` and `StrategyDetail` gain `version`. `StrategyDetail` also gains `requested_by`, `decisions` and `execution_id`.
+- **Roles on existing routes:**
+  - `POST /inventory` and `POST /operational-picture/reset` need **admin**.
+  - `POST /operational-picture/apply/{id}` and `POST /simulations` with `apply_to_picture: true` need **operator**.
+  - Plain what-if simulations are open to viewers.
+- **Incident status:** when strategy generation produces at least one valid strategy, the incident moves to `AWAITING_APPROVAL`. Directly planned structured incidents can therefore be approved too.

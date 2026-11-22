@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+import { signInAs } from "./auth";
+
 /** E2E journey (Phase 3): report an incident in free text and watch the agents analyse it. */
 
 const consoleErrors: string[] = [];
 test.beforeEach(async ({ page }) => {
+  await signInAs(page, "admin");
   consoleErrors.length = 0;
   page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
   page.on("pageerror", (e) => consoleErrors.push(e.message));

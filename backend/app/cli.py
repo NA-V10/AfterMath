@@ -4,13 +4,17 @@ uv run python -m app.cli validate-dataset   # validate the synthetic dataset fil
 uv run python -m app.cli seed               # validate + load into PostgreSQL (idempotent)
 uv run python -m app.cli export-schemas     # write JSON Schemas to data/schemas/
 uv run python -m app.cli verify-audit       # recompute the audit hash chain
+uv run python -m app.cli seed-users         # demo accounts; password from DEMO_PASSWORD (.env)
+uv run python -m app.cli create-user NAME --name "..." --roles operator
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import getpass
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -27,6 +31,7 @@ from app.graph.dataset import (
 from app.graph.model import Asset
 from app.graph.validation import Severity, validate_snapshot
 from app.services.audit import verify_chain
+from app.services.auth import upsert_user
 from app.services.dataset import seed_dataset
 from app.services.recovery import seed_inventory
 from app.services.scenarios import load_scenario_files, sync_scenarios
@@ -160,6 +165,52 @@ def _benchmark(out: Path) -> int:
     return 0
 
 
+DEMO_USERS = [
+    ("viewer", "Demo Viewer", ["viewer"]),
+    ("operator", "Demo Operator", ["operator"]),
+    ("approver", "Demo Approver (incident commander)", ["approver"]),
+    ("admin", "Demo Administrator", ["admin"]),
+]
+
+
+async def _upsert_users(users: list[tuple[str, str, list[str]]], password: str) -> int:
+    db = Database(get_settings().database_url, pool_size=1)
+    try:
+        async with db.sessionmaker() as session:
+            for username, display, roles in users:
+                await upsert_user(
+                    session, username=username, display_name=display, password=password,
+                    roles=roles, actor_id="cli:users",
+                )  # fmt: skip
+                print(f"  {username:<10} roles={','.join(roles)}")
+    except AppError as exc:
+        print(f"error: {exc.detail}", file=sys.stderr)
+        return 1
+    finally:
+        await db.dispose()
+    return 0
+
+
+def _seed_users() -> int:
+    secret = get_settings().demo_password
+    if secret is None or not secret.get_secret_value():
+        print(
+            "error: set DEMO_PASSWORD in your .env (at least 12 characters) to create the demo "
+            "accounts. It is never committed; .env is git-ignored.",
+            file=sys.stderr,
+        )
+        return 1
+    print("Demo accounts (password from DEMO_PASSWORD):")
+    return asyncio.run(_upsert_users(DEMO_USERS, secret.get_secret_value()))
+
+
+def _create_user(username: str, display: str, roles: list[str]) -> int:
+    password = os.environ.get("AFTERMATH_NEW_PASSWORD") or getpass.getpass(
+        f"Password for {username}: "
+    )
+    return asyncio.run(_upsert_users([(username, display, roles)], password))
+
+
 def main(argv: list[str] | None = None) -> int:
     settings = get_settings()
     parser = argparse.ArgumentParser(prog="aftermath")
@@ -180,6 +231,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument(
         "--out", type=Path, default=settings.data_dir.parent / "frontend" / "types" / "openapi.json"
     )
+    sub.add_parser("seed-users", help="create/reset the four demo accounts from DEMO_PASSWORD")
+    p = sub.add_parser("create-user", help="create or reset one user (password prompted)")
+    p.add_argument("username")
+    p.add_argument("--name", required=True, help="display name")
+    p.add_argument("--roles", required=True, help="comma-separated: viewer,operator,approver,admin")
     args = parser.parse_args(argv)
 
     match args.command:
@@ -195,6 +251,10 @@ def main(argv: list[str] | None = None) -> int:
             return _benchmark(args.out)
         case "export-openapi":
             return _export_openapi(args.out)
+        case "seed-users":
+            return _seed_users()
+        case "create-user":
+            return _create_user(args.username, args.name, args.roles.split(","))
     return 2
 
 

@@ -6,8 +6,9 @@ from typing import Annotated
 from fastapi import APIRouter, Query, status
 
 from app.api.deps import SessionDep, TwinDep
-from app.api.identity import ActorDep
-from app.core.errors import InvalidInputError
+from app.api.identity import Admin, Operator, Viewer
+from app.core.errors import ForbiddenError, InvalidInputError
+from app.governance.rules.policies import Role, has_role
 from app.schemas.infrastructure import Page
 from app.schemas.simulation import (
     OperationalPicture,
@@ -49,10 +50,13 @@ async def get_scenario(key: str, session: SessionDep) -> ScenarioOut:
 
 @router.post("", response_model=SimulationDetail, status_code=status.HTTP_201_CREATED)
 async def create_simulation(
-    body: SimulationRequest, session: SessionDep, twin: TwinDep, actor: ActorDep
+    body: SimulationRequest, session: SessionDep, twin: TwinDep, user: Viewer
 ) -> SimulationDetail:
-    """Run a deterministic simulation synchronously and persist it (immutable)."""
-    return await service.run_simulation(session, twin, body, actor_id=actor)
+    """Run a deterministic what-if simulation synchronously and persist it (immutable).
+    Role: viewer; applying the result to the operational picture needs operator."""
+    if body.apply_to_picture and not has_role(user.roles, Role.OPERATOR):
+        raise ForbiddenError("Applying a run to the operational picture needs the operator role.")
+    return await service.run_simulation(session, twin, body, actor_id=user.username)
 
 
 @router.get("", response_model=Page[SimulationSummary])
@@ -110,16 +114,18 @@ async def get_picture(session: SessionDep, twin: TwinDep) -> OperationalPicture:
 
 @picture_router.post("/apply/{simulation_id}", response_model=OperationalPicture)
 async def apply_picture(
-    simulation_id: uuid.UUID, session: SessionDep, twin: TwinDep, actor: ActorDep
+    simulation_id: uuid.UUID, session: SessionDep, twin: TwinDep, user: Operator
 ) -> OperationalPicture:
-    await service.apply_picture(session, simulation_id, actor_id=actor)
+    """Show a completed run as the current operational picture. Role: operator."""
+    await service.apply_picture(session, simulation_id, actor_id=user.username)
     return await service.current_picture(session, twin)
 
 
 @picture_router.post("/reset", response_model=OperationalPicture)
 async def reset_picture(
-    body: PictureResetRequest, session: SessionDep, twin: TwinDep, actor: ActorDep
+    body: PictureResetRequest, session: SessionDep, twin: TwinDep, user: Admin
 ) -> OperationalPicture:
-    """Return the operational picture to the baseline. History is kept (append-only)."""
-    await service.reset_picture(session, actor_id=actor, reason=body.reason)
+    """Return the operational picture to the baseline. History is kept (append-only).
+    Role: admin."""
+    await service.reset_picture(session, actor_id=user.username, reason=body.reason)
     return await service.current_picture(session, twin)

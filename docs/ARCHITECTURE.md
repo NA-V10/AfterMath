@@ -193,8 +193,10 @@ aftermath/
 │   │   ├── simulation/             # PURE: lattice evaluator, event engine, impact, hashing
 │   │   ├── recovery/               # PURE: actions, resources, policies, scheduler, risk
 │   │   ├── governance/
-│   │   │   ├── rules/              # PURE: validator, state machines, verification
-│   │   │   └── service.py          # approvals/execution (uses DB)
+│   │   │   └── rules/              # PURE: validator, state machine, policies, verification
+│   │   │                           #   (the DB-backed approval/execution service is
+│   │   │                           #    services/governance.py: the layer contract puts
+│   │   │                           #    governance below database, so it cannot hold I/O)
 │   │   ├── agents/                 # LangGraph workflow, agents, prompts, output schemas, tools facade
 │   │   ├── llm/                    # provider protocol, anthropic, openai_compat, deterministic, fallback
 │   │   ├── services/               # application services (infrastructure, incident, simulation, recovery, audit)

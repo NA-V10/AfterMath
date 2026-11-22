@@ -59,3 +59,26 @@ Instances with ≤ 7 actions are solved by brute force over all orderings with t
 ## 6. Honesty rules for reporting
 
 Test results are reported exactly as the runner outputs them. Skipped tests (e.g. integration tests without Docker) are reported as skipped, not passed.
+
+## 7. As implemented (Phase 5)
+
+| Property | Test | Notes |
+|---|---|---|
+| P11, P12 | `tests/integration/test_governance_stateful.py` | Hypothesis `RuleBasedStateMachine` over the real API (12 examples × 10 steps) |
+| P11 / P12, targeted | `test_governance_api.py` | One test per negative: unapproved, rejected, superseded by re-plan, tampered after approval, inventory shortage after approval (V-010) |
+| P13 | `test_approve_execute_verify_report` | The executed run replays to the identical hash |
+| P14 | `test_governance_records_are_append_only_and_the_chain_verifies`, plus the end of the stateful test | Approval, execution and verification rows are immutable (trigger) |
+| Authentication | `test_auth_api.py` | Every operation in the OpenAPI document returns 401 without a token. Also: role matrix, forged and expired tokens, a deactivated or demoted account losing access at once, login failures audited |
+| Concurrency | `test_concurrent_executions_run_exactly_once` | Three parallel executes of one approved strategy give exactly one 201 and two 409s |
+
+**How the stateful test works.**
+- Each example creates an incident and plans it as `test-operator`.
+- It then applies random approve, reject, execute, tamper and re-plan calls as different users.
+- Every response is checked against a model of what should be allowed.
+- Invariants: API state equals model state, and at most one strategy is executed, always with a matching approval and never after tampering.
+
+**Mutation check of the stateful test.**
+- Disabling revalidation at execute made it fail. Hypothesis reduced the failure to the minimal sequence tamper → approve → execute.
+- Letting VALIDATED strategies pass the execution policy was still blocked, by the missing approval record and the state machine. This shows defence in depth, not a gap in the test.
+
+**E2E journeys 3 and 4** are covered by `e2e/governance.spec.ts`, with sign-in in `e2e/signin.spec.ts`. The free-text start of journey 3 stays in `agents.spec.ts`.

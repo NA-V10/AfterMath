@@ -16,7 +16,8 @@ AFTERMATH is an infrastructure resilience and disaster-recovery decision-support
 | 2 | Deterministic simulation engine | ✅ complete ([report](docs/reports/PHASE_2_REPORT.md)) |
 | 3 | Multi-agent system | ✅ complete ([report](docs/reports/PHASE_3_REPORT.md)) |
 | 4 | Recovery optimisation | ✅ complete ([report](docs/reports/PHASE_4_REPORT.md)) |
-| 5 | Governance & execution | next |
+| 5 | Governance & execution | ✅ complete ([report](docs/reports/PHASE_5_REPORT.md)) |
+| 6 | Complete frontend | next |
 
 ## Quick start (Windows / PowerShell, hybrid dev mode)
 
@@ -27,25 +28,30 @@ Prerequisites: Docker Desktop (running), [uv](https://docs.astral.sh/uv/), Node 
 > or write `python -m uv` wherever this guide says `uv`.
 
 ```powershell
-copy .env.example .env                 # local-only defaults
+copy .env.example .env                 # local-only defaults; then set JWT_SECRET and DEMO_PASSWORD
 docker compose up -d db                # PostgreSQL 16 (localhost only)
 
 cd backend
 uv sync                                # Python 3.13 venv + dependencies
 uv run python -m alembic upgrade head  # create the schema
 uv run python -m app.cli seed          # load the synthetic district, scenarios and inventory (idempotent)
+uv run python -m app.cli seed-users    # demo accounts viewer/operator/approver/admin (needs DEMO_PASSWORD in .env)
 uv run python -m uvicorn app.main:app --port 8000   # API: http://localhost:8000/api/v1/docs
 
 cd ..\frontend
 pnpm install
-pnpm dev                               # UI: http://localhost:3000
+pnpm dev                               # UI: http://localhost:3000 — sign in as operator / approver / …
 ```
+
+Everything requires signing in. Operators report incidents, run analyses and execute approved
+plans; approvers approve or reject. By default an approver cannot approve a plan they requested
+(separation of duties). Execution is **simulated**: it replays the plan in the simulator.
 
 ### Tests
 
 ```powershell
 cd backend
-uv run python -m pytest                # unit + Hypothesis property + integration (needs the db container)
+uv run python -m pytest > pytest.log  # unit + property + integration (needs the db container); see ENVIRONMENT.md on output piping
 uv run python -m ruff check . ; uv run python -m mypy app
 uv run python -c "from importlinter.cli import lint_imports_command; lint_imports_command()"
 

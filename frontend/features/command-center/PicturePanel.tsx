@@ -6,11 +6,13 @@ import Link from "next/link";
 import { ErrorState, Loading, Panel, Stat } from "@/components/ui/primitives";
 import { STATUS, formatMinutes, formatNumber } from "@/lib/domain";
 import { usePicture, useResetPicture } from "@/lib/queries";
+import { hasRole, useSession } from "@/lib/session";
 
 /** The current operational picture: the baseline, or a simulation applied to it. */
 export function PicturePanel() {
   const picture = usePicture();
   const reset = useResetPicture();
+  const canReset = hasRole(useSession(), "admin");
 
   return (
     <Panel
@@ -22,8 +24,9 @@ export function PicturePanel() {
           <button
             type="button"
             onClick={() => reset.mutate("Reset from Command Center")}
-            disabled={reset.isPending}
-            className="flex items-center gap-1 rounded-sm border border-line-strong px-1.5 text-[11px] hover:bg-raised"
+            disabled={reset.isPending || !canReset}
+            title={canReset ? undefined : "Resetting the operational picture needs the admin role"}
+            className="flex items-center gap-1 rounded-sm border border-line-strong px-1.5 text-[11px] hover:bg-raised disabled:opacity-40"
           >
             <RotateCcw className="size-3" /> Reset to baseline
           </button>

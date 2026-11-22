@@ -155,7 +155,11 @@ The inventory is in `data/synthetic/meridian-valley/inventory.json` and is versi
 
 ### Validation and status
 
-- **Rules:** V-001…V-009 are implemented. V-010…V-012 run at execution time and arrive in Phase 5.
+- **Rules:** V-001…V-009 are implemented. V-010…V-012 run at execution time (`validate_execution`, Phase 5):
+  - V-010 checks that the twin hash is unchanged. If the inventory has a new version, it re-checks V-005 and V-006 against the current stock.
+  - V-011 checks that the strategy belongs to the incident and the incident awaits a decision.
+  - V-012 checks that no sibling strategy is executing or executed.
+- **Verification (Phase 5):** `governance.rules.verification.verify` (§7) compares the executed run with the no-recovery run at the same horizon. "Before" is that no-recovery run, not the state at t=0. It also checks the plan's expected result hash, so `matches_expectation` must be true; a mismatch is logged as an error.
 - **Re-simulation (V-008):** the plan is replayed against a freshly built action catalogue. If the plan references unknown assets (V-001 failed), V-008 reports the plan as malformed instead of crashing.
 - **Status:** `VALIDATION_FAILED` is terminal. Generating a new planning round marks the previous round's DRAFT and VALIDATED strategies `SUPERSEDED`.
 

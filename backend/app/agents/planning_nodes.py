@@ -19,6 +19,7 @@ from app.agents.schemas import (
     StrategyProposal,
     StrategyVerdict,
 )
+from app.database.models import WorkflowRun
 from app.schemas.recovery import StrategyDetail
 from app.services import recovery as recovery_service
 
@@ -87,9 +88,12 @@ async def strategist(
 
         async def generate() -> list[uuid.UUID]:
             async with deps.db.sessionmaker() as s:
+                # Plans are made on behalf of whoever started the analysis (separation of duties).
+                run = await s.get(WorkflowRun, run_id_of(config))
                 return await recovery_service.generate_strategies(
-                    s, twin, incident_id, actor_id="agent:STRATEGIST"
-                )
+                    s, twin, incident_id, actor_id="agent:STRATEGIST",
+                    requested_by=run.requested_by if run else None,
+                )  # fmt: skip
 
         ids = await ctx.tool("generate_strategies", {"incident_id": str(incident_id)}, generate)
 

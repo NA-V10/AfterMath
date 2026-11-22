@@ -15,6 +15,7 @@ import {
   useWorkflow,
   useWorkflows,
 } from "@/lib/queries";
+import { hasRole, useSession } from "@/lib/session";
 
 import { ExecutionDetail } from "./ExecutionDetail";
 import { IncidentIntake } from "./IncidentIntake";
@@ -175,6 +176,7 @@ export function AgentActivity() {
   const [runId, setRunId] = useState<string | null>(null);
   const workflows = useWorkflows(incidentId);
   const effectiveRun = runId ?? workflows.data?.[0]?.id ?? null;
+  const canReport = hasRole(useSession(), "operator");
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -185,12 +187,18 @@ export function AgentActivity() {
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col gap-px overflow-y-auto bg-line">
           <Panel title="Report an incident" className="shrink-0 border-0">
-            <IncidentIntake
-              onStarted={(i, r) => {
-                setIncidentId(i);
-                setRunId(r);
-              }}
-            />
+            {canReport ? (
+              <IncidentIntake
+                onStarted={(i, r) => {
+                  setIncidentId(i);
+                  setRunId(r);
+                }}
+              />
+            ) : (
+              <p className="p-3 text-[12px] text-muted">
+                Only operators can report incidents and start an analysis. You can follow every analysis below.
+              </p>
+            )}
           </Panel>
           <Panel title="Incidents" className="min-h-[200px] flex-1 border-0" bodyClassName="overflow-y-auto">
             {incidents.isPending ? (

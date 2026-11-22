@@ -46,6 +46,7 @@ from app.simulation.model import (
     InitiatingEvent,
     SimEvent,
     SimulationConfig,
+    SimulationResult,
     TimelinePoint,
 )
 
@@ -148,6 +149,51 @@ async def _resolve(
     return list(req.initiating_events), horizon, None, None, {"type": "custom"}
 
 
+async def persist_completed(
+    session: AsyncSession,
+    run: SimulationRun,
+    result: SimulationResult,
+    *,
+    actor_id: str,
+    source: dict[str, Any],
+) -> SimulationRun:
+    """Store a completed run with its events and audit it, in the caller's transaction."""
+    run.engine_version, run.scoring_version = result.engine_version, result.scoring_version
+    run.status, run.result_hash = "COMPLETED", result.result_hash
+    run.final_state = [s.model_dump(mode="json") for s in result.final_state]
+    run.metrics = {
+        "final": result.final_metrics.model_dump(mode="json"),
+        "peak": result.peak_metrics.model_dump(mode="json"),
+        "timeline": [p.model_dump(mode="json") for p in result.timeline],
+    }
+    session.add(run)
+    await session.flush()
+    session.add_all(
+        SimulationEventRow(
+            run_id=run.id, seq=e.seq, t_minutes=e.t_minutes, wave=e.wave, event_type=e.kind.value,
+            asset_code=e.asset_code,
+            from_status=e.from_status.value if e.from_status else None,
+            to_status=e.to_status.value if e.to_status else None,
+            details=e.details,
+        )
+        for e in result.events
+    )  # fmt: skip
+    await append_audit(
+        session, actor_type="USER", actor_id=actor_id, action="simulation.completed",
+        entity_type="simulation_run", entity_id=str(run.id),
+        details={"source": source, "result_hash": result.result_hash,
+                 "impact_score": result.final_metrics.impact_score},
+    )  # fmt: skip
+    return run
+
+
+async def apply_run_to_picture(
+    session: AsyncSession, run_id: uuid.UUID, *, actor_id: str, reason: str | None
+) -> None:
+    """Promote a run to the operational picture in the caller's transaction."""
+    await _apply_picture(session, run_id, actor_id=actor_id, reason=reason)
+
+
 async def run_simulation(
     session: AsyncSession, twin: LoadedTwin, req: SimulationRequest, *, actor_id: str
 ) -> SimulationDetail:
@@ -184,32 +230,7 @@ async def run_simulation(
         ) from None
 
     run.duration_ms = round((time.perf_counter() - started) * 1000, 2)
-    run.engine_version, run.scoring_version = result.engine_version, result.scoring_version
-    run.status, run.result_hash = "COMPLETED", result.result_hash
-    run.final_state = [s.model_dump(mode="json") for s in result.final_state]
-    run.metrics = {
-        "final": result.final_metrics.model_dump(mode="json"),
-        "peak": result.peak_metrics.model_dump(mode="json"),
-        "timeline": [p.model_dump(mode="json") for p in result.timeline],
-    }
-    session.add(run)
-    await session.flush()
-    session.add_all(
-        SimulationEventRow(
-            run_id=run.id, seq=e.seq, t_minutes=e.t_minutes, wave=e.wave, event_type=e.kind.value,
-            asset_code=e.asset_code,
-            from_status=e.from_status.value if e.from_status else None,
-            to_status=e.to_status.value if e.to_status else None,
-            details=e.details,
-        )
-        for e in result.events
-    )  # fmt: skip
-    await append_audit(
-        session, actor_type="USER", actor_id=actor_id, action="simulation.completed",
-        entity_type="simulation_run", entity_id=str(run.id),
-        details={"source": source, "result_hash": result.result_hash,
-                 "impact_score": result.final_metrics.impact_score},
-    )  # fmt: skip
+    await persist_completed(session, run, result, actor_id=actor_id, source=source)
     if req.apply_to_picture:
         await _apply_picture(session, run.id, actor_id=actor_id, reason=req.label)
     await session.commit()

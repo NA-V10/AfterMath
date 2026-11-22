@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+import { signInAs } from "./auth";
+
 /** docs/TESTING_STRATEGY.md — E2E journey 1 (Phase 1). Runs against the real backend. */
 
 test.beforeEach(async ({ page }) => {
+  await signInAs(page, "admin");
   const consoleErrors: string[] = [];
   page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
   page.on("pageerror", (e) => consoleErrors.push(e.message));

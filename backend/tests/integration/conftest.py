@@ -8,18 +8,23 @@ from __future__ import annotations
 import asyncio
 import os
 from collections.abc import AsyncIterator
+from contextlib import AsyncExitStack
 
 import asyncpg
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings
+from app.core.security import issue_token
 from app.database.session import Database
 from app.graph.dataset import load_dataset_dir, to_snapshot
 from app.main import BACKEND_ROOT, create_app
+from app.services.auth import upsert_user
 from app.services.dataset import seed_dataset
 from app.services.recovery import seed_inventory
 from app.services.scenarios import load_scenario_files, sync_scenarios
@@ -102,10 +107,69 @@ async def session(database: Database) -> AsyncIterator[AsyncSession]:
         yield s
 
 
+#: Test accounts. The password is a fixture value for the throwaway test database only.
+TEST_PASSWORD = "integration-test-password"
+USERS: dict[str, list[str]] = {
+    "test-viewer": ["viewer"],
+    "test-operator": ["operator"],
+    "test-operator2": ["operator"],
+    "test-approver": ["approver"],
+    "test-approver2": ["approver"],
+    "test-admin": ["admin"],
+}
+
+
 @pytest.fixture(scope="session")
-async def client(seeded: None, migrated_db: str) -> AsyncIterator[AsyncClient]:
-    app = create_app(Settings(database_url=migrated_db, aftermath_env="test", log_level="WARNING"))
-    async with app.router.lifespan_context(app):
-        transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test/api/v1") as c:
-            yield c
+async def users(seeded: None, database: Database) -> dict[str, list[str]]:
+    async with database.sessionmaker() as session:
+        for name, roles in USERS.items():
+            await upsert_user(
+                session, username=name, display_name=name.replace("-", " ").title(),
+                password=TEST_PASSWORD, roles=roles, actor_id="test:seed",
+            )  # fmt: skip
+    return USERS
+
+
+def make_settings(database_url: str, **overrides: object) -> Settings:
+    values: dict[str, object] = {
+        "database_url": database_url, "aftermath_env": "test", "log_level": "WARNING",
+        "jwt_secret": SecretStr("integration-test-jwt-secret-0123456789abcdef"),
+    }  # fmt: skip
+    return Settings(**(values | overrides))  # type: ignore[arg-type]
+
+
+def bearer(app: FastAPI, username: str) -> dict[str, str]:
+    token, _ = issue_token(
+        username,
+        USERS.get(username, []),
+        secret=app.state.settings.jwt_secret.get_secret_value(),
+        ttl_minutes=60,
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="session")
+async def app(users: dict[str, list[str]], migrated_db: str) -> AsyncIterator[FastAPI]:
+    application = create_app(make_settings(migrated_db))
+    async with application.router.lifespan_context(application):
+        yield application
+
+
+@pytest.fixture(scope="session")
+async def clients(app: FastAPI) -> AsyncIterator[dict[str, AsyncClient]]:
+    """One signed-in client per test account, plus "anon" (no token)."""
+    transport = ASGITransport(app=app)
+    async with AsyncExitStack() as stack:
+        out: dict[str, AsyncClient] = {}
+        for name in [*USERS, "anon"]:
+            headers = {} if name == "anon" else bearer(app, name)
+            out[name] = await stack.enter_async_context(
+                AsyncClient(transport=transport, base_url="http://test/api/v1", headers=headers)
+            )
+        yield out
+
+
+@pytest.fixture(scope="session")
+async def client(clients: dict[str, AsyncClient]) -> AsyncClient:
+    """The default client is the admin (every role), so feature tests are not about authz."""
+    return clients["test-admin"]

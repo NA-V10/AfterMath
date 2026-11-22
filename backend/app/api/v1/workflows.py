@@ -14,7 +14,7 @@ from sqlalchemy import select
 from app.agents.registry import AGENTS, AgentDefinition
 from app.agents.workflow import WorkflowRunner
 from app.api.deps import SessionDep, TwinDep
-from app.api.identity import ActorDep
+from app.api.identity import Operator
 from app.core.errors import ConflictError, InvalidInputError, NotFoundError
 from app.database.models import AgentExecution, Incident, WorkflowRun
 from app.schemas.infrastructure import Page
@@ -101,10 +101,11 @@ async def _workflow_out(session: Any, run: WorkflowRun) -> WorkflowOut:
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def analyze_incident(
-    incident_id: uuid.UUID, request: Request, actor: ActorDep
+    incident_id: uuid.UUID, request: Request, user: Operator
 ) -> AnalyzeAccepted:
-    """Start the agent workflow (SENTINEL -> CARTOGRAPHER -> ORACLE) in the background."""
-    run = await _runner(request).start(incident_id, actor_id=actor)
+    """Start the agent workflow (SENTINEL → CARTOGRAPHER → ORACLE → STRATEGIST → GUARDIAN) in
+    the background. Role: operator. You become the requester of the plans it produces."""
+    run = await _runner(request).start(incident_id, actor_id=user.username)
     return AnalyzeAccepted(workflow_run_id=run.id, status=run.status)
 
 
@@ -131,7 +132,7 @@ async def get_workflow(run_id: uuid.UUID, session: SessionDep) -> WorkflowOut:
 )
 async def clarify_workflow(
     run_id: uuid.UUID, body: ClarificationIn, request: Request, session: SessionDep,
-    twin: TwinDep, actor: ActorDep,
+    twin: TwinDep, user: Operator,
 ) -> AnalyzeAccepted:  # fmt: skip
     """Answer SENTINEL's question: confirm the damaged facilities (validated against the twin)."""
     run = await wf.get_run(session, run_id)
@@ -140,7 +141,7 @@ async def clarify_workflow(
     unknown = sorted(set(body.asset_codes) - set(twin.snapshot.assets_by_code))
     if unknown:
         raise InvalidInputError(f"Unknown asset code(s): {', '.join(unknown)}")
-    await _runner(request).clarify(run_id, body.model_dump(), actor_id=actor)
+    await _runner(request).clarify(run_id, body.model_dump(), actor_id=user.username)
     return AnalyzeAccepted(workflow_run_id=run_id, status="RUNNING")
 
 

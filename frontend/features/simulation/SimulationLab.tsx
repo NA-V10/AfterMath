@@ -18,6 +18,8 @@ import {
   useSimulations,
 } from "@/lib/queries";
 
+import { hasRole, useSession } from "@/lib/session";
+
 import type { Highlight } from "../twin/highlight";
 import { ComparisonPanel } from "./ComparisonPanel";
 import { EventLog } from "./EventLog";
@@ -147,6 +149,7 @@ export function SimulationLab() {
   const events = useSimulationEvents(runId);
   const replay = useReplay();
   const apply = useApplyPicture();
+  const canApply = hasRole(useSession(), "operator");
 
   const frames = useMemo(() => buildFrames(events.data ?? []), [events.data]);
   const lastFrame = frames.length - 1;
@@ -394,7 +397,13 @@ export function SimulationLab() {
                         {!replay.data.snapshot_matches && " (twin changed since this run)"}
                       </span>
                     )}
-                    <button type="button" onClick={() => apply.mutate(d.id)} disabled={apply.isPending} className="rounded-sm border border-line-strong px-2 py-0.5 hover:bg-raised">
+                    <button
+                      type="button"
+                      onClick={() => apply.mutate(d.id)}
+                      disabled={apply.isPending || !canApply}
+                      title={canApply ? undefined : "Applying to the operational picture needs the operator role"}
+                      className="rounded-sm border border-line-strong px-2 py-0.5 hover:bg-raised disabled:opacity-40"
+                    >
                       {apply.isSuccess ? "Applied to operational picture" : "Apply to operational picture"}
                     </button>
                   </div>

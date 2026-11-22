@@ -72,6 +72,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/audit/verify-chain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Verify Audit Chain
+         * @description Recompute the whole hash chain; reports the first broken link, if any.
+         */
+        get: operations["verify_audit_chain_api_v1_audit_verify_chain_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/audit/{record_id}": {
         parameters: {
             query?: never;
@@ -83,6 +103,46 @@ export interface paths {
         get: operations["get_audit_api_v1_audit__record_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description The signed-in user, their roles and the governance settings that apply to them.
+         */
+        get: operations["me_api_v1_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Login
+         * @description Exchange a username and password for a bearer token. Failures are audited.
+         */
+        post: operations["login_api_v1_auth_token_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -136,7 +196,7 @@ export interface paths {
         /**
          * Create Incident
          * @description Structured incidents are validated deterministically against the twin. Free-text reports
-         *     are stored verbatim (untrusted) and await SENTINEL analysis (Phase 3).
+         *     are stored verbatim (untrusted) and await SENTINEL analysis. Role: operator.
          */
         post: operations["create_incident_api_v1_incidents_post"];
         delete?: never;
@@ -173,9 +233,30 @@ export interface paths {
         put?: never;
         /**
          * Analyze Incident
-         * @description Start the agent workflow (SENTINEL -> CARTOGRAPHER -> ORACLE) in the background.
+         * @description Start the agent workflow (SENTINEL → CARTOGRAPHER → ORACLE → STRATEGIST → GUARDIAN) in
+         *     the background. Role: operator. You become the requester of the plans it produces.
          */
         post: operations["analyze_incident_api_v1_incidents__incident_id__analyze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/incidents/{incident_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close Incident
+         * @description Close an incident with a reason. Open strategies are superseded. Role: operator.
+         */
+        post: operations["close_incident_api_v1_incidents__incident_id__close_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -320,6 +401,7 @@ export interface paths {
         /**
          * Update Inventory
          * @description Record a new inventory version (existing strategies keep referencing their version).
+         *     Role: admin.
          */
         post: operations["update_inventory_api_v1_inventory_post"];
         delete?: never;
@@ -354,7 +436,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Apply Picture */
+        /**
+         * Apply Picture
+         * @description Show a completed run as the current operational picture. Role: operator.
+         */
         post: operations["apply_picture_api_v1_operational_picture_apply__simulation_id__post"];
         delete?: never;
         options?: never;
@@ -374,8 +459,43 @@ export interface paths {
         /**
          * Reset Picture
          * @description Return the operational picture to the baseline. History is kept (append-only).
+         *     Role: admin.
          */
         post: operations["reset_picture_api_v1_operational_picture_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/executions/{execution_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Execution */
+        get: operations["get_execution_api_v1_recovery_executions__execution_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/executions/{execution_id}/verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Verification */
+        get: operations["get_verification_api_v1_recovery_executions__execution_id__verification_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -395,7 +515,7 @@ export interface paths {
         /**
          * Generate Strategies
          * @description Plan three strategies (new planning round) and validate them with GUARDIAN's rules.
-         *     Normally invoked by the agent workflow (STRATEGIST + GUARDIAN).
+         *     Normally invoked by the agent workflow (STRATEGIST + GUARDIAN). Role: operator.
          */
         post: operations["generate_strategies_api_v1_recovery_strategies_post"];
         delete?: never;
@@ -441,6 +561,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/recovery/strategies/{strategy_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve Strategy
+         * @description Approve exactly the content you reviewed: `content_hash` and `expected_version` must match
+         *     the stored strategy. Role: approver; separation of duties applies (see `GET /auth/me`).
+         */
+        post: operations["approve_strategy_api_v1_recovery_strategies__strategy_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/strategies/{strategy_id}/execute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Execute Strategy
+         * @description **Simulated** execution of an APPROVED strategy: GUARDIAN revalidates it (V-001…V-012)
+         *     against the current twin and inventory, the plan is replayed through the simulation engine,
+         *     the result is applied to the operational picture and verified. Nothing leaves the simulator.
+         *     Role: operator. Runs synchronously (milliseconds), so it returns 201 with the result.
+         */
+        post: operations["execute_strategy_api_v1_recovery_strategies__strategy_id__execute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/strategies/{strategy_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject Strategy
+         * @description Reject with a required comment. REJECTED is final. Role: approver.
+         */
+        post: operations["reject_strategy_api_v1_recovery_strategies__strategy_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/recovery/strategies/{strategy_id}/validate": {
         parameters: {
             query?: never;
@@ -455,6 +639,26 @@ export interface paths {
          * @description Run GUARDIAN's deterministic rules (V-001..V-009) against the stored strategy.
          */
         post: operations["validate_strategy_api_v1_recovery_strategies__strategy_id__validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/incidents/{incident_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Incident Report
+         * @description The full recovery report for an incident, built only from stored records.
+         */
+        get: operations["incident_report_api_v1_reports_incidents__incident_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -507,7 +711,8 @@ export interface paths {
         put?: never;
         /**
          * Create Simulation
-         * @description Run a deterministic simulation synchronously and persist it (immutable).
+         * @description Run a deterministic what-if simulation synchronously and persist it (immutable).
+         *     Role: viewer; applying the result to the operational picture needs operator.
          */
         post: operations["create_simulation_api_v1_simulations_post"];
         delete?: never;
@@ -747,6 +952,46 @@ export interface components {
              */
             workflow_run_id: string;
         };
+        /** ApprovalOut */
+        ApprovalOut: {
+            /** Actor Id */
+            actor_id: string;
+            /** Actor Role */
+            actor_role: string;
+            /** Comment */
+            comment: string | null;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "APPROVED" | "REJECTED";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Strategy Id
+             * Format: uuid
+             */
+            strategy_id: string;
+        };
+        /** ApproveIn */
+        ApproveIn: {
+            /** Comment */
+            comment?: string | null;
+            /** Content Hash */
+            content_hash: string;
+            /** Expected Version */
+            expected_version: number;
+        };
         /**
          * AreaFloodEvent
          * @description Assets intersecting the polygon whose elevation is below the water level are inundated
@@ -856,6 +1101,16 @@ export interface components {
              * @default 0
              */
             t_minutes: number;
+        };
+        /** AssetOutcome */
+        AssetOutcome: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string;
+            status: components["schemas"]["FunctionalStatus"];
         };
         /** AssetRef */
         AssetRef: {
@@ -1056,6 +1311,15 @@ export interface components {
          * @enum {string}
          */
         CauseKind: "PHYSICAL" | "DEPENDENCY" | "SOFT_DEPENDENCY" | "BACKUP";
+        /** ChainVerificationOut */
+        ChainVerificationOut: {
+            /** First Broken Id */
+            first_broken_id: number | null;
+            /** Ok */
+            ok: boolean;
+            /** Records Checked */
+            records_checked: number;
+        };
         /** ClarificationIn */
         ClarificationIn: {
             /** Asset Codes */
@@ -1070,6 +1334,11 @@ export interface components {
             incident_type?: ("POWER_FAILURE" | "FLOODING" | "TELECOM_OUTAGE" | "WATER_DISRUPTION" | "EQUIPMENT_FAILURE" | "COMBINED") | null;
             /** Severity */
             severity?: ("LOW" | "MODERATE" | "HIGH" | "CRITICAL") | null;
+        };
+        /** CloseIncidentIn */
+        CloseIncidentIn: {
+            /** Reason */
+            reason: string;
         };
         /** CriticalityEntry */
         CriticalityEntry: {
@@ -1237,6 +1506,11 @@ export interface components {
              */
             incident_id: string;
         };
+        /** GovernanceConfig */
+        GovernanceConfig: {
+            /** Separation Of Duties */
+            separation_of_duties: boolean;
+        };
         /** GraphNode */
         GraphNode: {
             category: components["schemas"]["AssetCategory"];
@@ -1353,6 +1627,47 @@ export interface components {
             /** Title */
             title: string | null;
         };
+        /** IncidentReport */
+        IncidentReport: {
+            /** Audit Trail */
+            audit_trail: components["schemas"]["ReportAudit"][];
+            /** Decisions */
+            decisions: components["schemas"]["ReportDecision"][];
+            /** Execution */
+            execution: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Impact */
+            impact: {
+                [key: string]: unknown;
+            } | null;
+            /** Incident */
+            incident: {
+                [key: string]: unknown;
+            };
+            /**
+             * Notice
+             * @default SIMULATION ENVIRONMENT — NOT CONNECTED TO LIVE INFRASTRUCTURE. All data is synthetic.
+             */
+            notice: string;
+            /** Strategies */
+            strategies: components["schemas"]["ReportStrategy"][];
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Verification */
+            verification: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** InfrastructureHealth */
         InfrastructureHealth: {
             /** Asset Count */
@@ -1435,6 +1750,28 @@ export interface components {
              * @constant
              */
             status: "ok";
+        };
+        /** LoginIn */
+        LoginIn: {
+            /** Password */
+            password: string;
+            /** Username */
+            username: string;
+        };
+        /** MeOut */
+        MeOut: {
+            /** Display Name */
+            display_name: string;
+            governance: components["schemas"]["GovernanceConfig"];
+            /**
+             * Role
+             * @description highest role (viewer < operator < approver < admin)
+             */
+            role: string;
+            /** Roles */
+            roles: string[];
+            /** Username */
+            username: string;
         };
         /** OperationalPicture */
         OperationalPicture: {
@@ -1521,6 +1858,77 @@ export interface components {
              */
             type: "Polygon";
         };
+        /** PrincipalOut */
+        PrincipalOut: {
+            /** Display Name */
+            display_name: string;
+            /**
+             * Role
+             * @description highest role (viewer < operator < approver < admin)
+             */
+            role: string;
+            /** Roles */
+            roles: string[];
+            /** Username */
+            username: string;
+        };
+        /** RecoveryExecutionOut */
+        RecoveryExecutionOut: {
+            /**
+             * Approval Id
+             * Format: uuid
+             */
+            approval_id: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Error */
+            error: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Incident Id
+             * Format: uuid
+             */
+            incident_id: string;
+            /**
+             * Replayed
+             * @description true when this response repeats an earlier request
+             * @default false
+             */
+            replayed: boolean;
+            /** Requested By */
+            requested_by: string;
+            revalidation: components["schemas"]["ValidationReport"];
+            /** Simulation Run Id */
+            simulation_run_id: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "COMPLETED" | "FAILED";
+            /**
+             * Strategy Id
+             * Format: uuid
+             */
+            strategy_id: string;
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            verification: components["schemas"]["VerificationOut"] | null;
+        };
         /**
          * RecoveryProfile
          * @description What it takes to repair/replace the asset (used from Phase 4).
@@ -1553,6 +1961,15 @@ export interface components {
             };
             trade: components["schemas"]["Trade"];
         };
+        /** RejectIn */
+        RejectIn: {
+            /** Comment */
+            comment: string;
+            /** Content Hash */
+            content_hash: string;
+            /** Expected Version */
+            expected_version: number;
+        };
         /** ReplayResult */
         ReplayResult: {
             /**
@@ -1577,6 +1994,67 @@ export interface components {
              */
             snapshot_matches: boolean;
         };
+        /** ReportAudit */
+        ReportAudit: {
+            /** Action */
+            action: string;
+            /** Actor */
+            actor: string;
+            /** Entity */
+            entity: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+        };
+        /** ReportDecision */
+        ReportDecision: {
+            /** Actor Id */
+            actor_id: string;
+            /** Actor Role */
+            actor_role: string;
+            /** Comment */
+            comment: string | null;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decision */
+            decision: string;
+            /**
+             * Strategy Id
+             * Format: uuid
+             */
+            strategy_id: string;
+        };
+        /** ReportStrategy */
+        ReportStrategy: {
+            /** Actions */
+            actions: number;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Impact Hours */
+            impact_hours: number;
+            /** Planning Round */
+            planning_round: number;
+            /** Policy */
+            policy: string;
+            /** Recommended */
+            recommended: boolean;
+            /** Risk Score */
+            risk_score: number;
+            /** Status */
+            status: string;
+        };
         /**
          * RequirementGroup
          * @description A k-of-n requirement of an asset.
@@ -1597,6 +2075,15 @@ export interface components {
              * @description n - k: providers that can be lost without impact
              */
             spare_providers: number;
+        };
+        /** Restoration */
+        Restoration: {
+            /** By Count */
+            by_count: number;
+            /** By Criticality */
+            by_criticality: number;
+            /** By Population */
+            by_population: number;
         };
         /** RuleResult */
         RuleResult: {
@@ -1848,6 +2335,10 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Decisions */
+            decisions: components["schemas"]["ApprovalOut"][];
+            /** Execution Id */
+            execution_id: string | null;
             /** Expected Result Hash */
             expected_result_hash: string;
             /** Horizon Minutes */
@@ -1888,6 +2379,11 @@ export interface components {
             rationale_source: string | null;
             /** Recommended */
             recommended: boolean;
+            /**
+             * Requested By
+             * @description who asked for this planning round
+             */
+            requested_by: string | null;
             /** Risk Components */
             risk_components: {
                 [key: string]: number;
@@ -1915,6 +2411,11 @@ export interface components {
             /** Validated At */
             validated_at: string | null;
             validation_report: components["schemas"]["ValidationReport"] | null;
+            /**
+             * Version
+             * @description optimistic-concurrency version (send as expected_version)
+             */
+            version: number;
         };
         /** StrategyMetrics */
         StrategyMetrics: {
@@ -2037,6 +2538,11 @@ export interface components {
             total_cost: number;
             /** Unschedulable Count */
             unschedulable_count: number;
+            /**
+             * Version
+             * @description optimistic-concurrency version (send as expected_version)
+             */
+            version: number;
         };
         /** StructuredIncidentCreate */
         StructuredIncidentCreate: {
@@ -2092,6 +2598,23 @@ export interface components {
             impaired: number;
             /** T Minutes */
             t_minutes: number;
+        };
+        /** TokenOut */
+        TokenOut: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Token Type
+             * @default bearer
+             * @constant
+             */
+            token_type: "bearer";
+            user: components["schemas"]["PrincipalOut"];
         };
         /**
          * Trade
@@ -2157,6 +2680,60 @@ export interface components {
             rules: components["schemas"]["RuleResult"][];
             /** Snapshot Hash */
             snapshot_hash: string;
+        };
+        /** VerificationOut */
+        VerificationOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Execution Id
+             * Format: uuid
+             */
+            execution_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            result: components["schemas"]["VerificationResult"];
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Verified By */
+            verified_by: string;
+        };
+        /** VerificationResult */
+        VerificationResult: {
+            /** Actual Result Hash */
+            actual_result_hash: string;
+            after: components["schemas"]["Restoration"];
+            before: components["schemas"]["Restoration"];
+            /** Expected Result Hash */
+            expected_result_hash: string;
+            /** Functionally Restored */
+            functionally_restored: string[];
+            /** Horizon Minutes */
+            horizon_minutes: number;
+            /** Impact Score After */
+            impact_score_after: number;
+            /** Impact Score Before */
+            impact_score_before: number;
+            /** Matches Expectation */
+            matches_expectation: boolean;
+            /** Outcome */
+            outcome: string;
+            /** Repaired Assets */
+            repaired_assets: string[];
+            /** Repaired Not Functional */
+            repaired_not_functional: components["schemas"]["AssetOutcome"][];
+            /** Unresolved */
+            unresolved: components["schemas"]["AssetOutcome"][];
         };
         /** WorkflowOut */
         WorkflowOut: {
@@ -2302,6 +2879,9 @@ export interface operations {
                 entity_type?: string | null;
                 entity_id?: string | null;
                 action?: string | null;
+                actor?: string | null;
+                from?: string | null;
+                to?: string | null;
                 limit?: number;
                 /** @description return records with id < cursor */
                 cursor?: number | null;
@@ -2332,6 +2912,26 @@ export interface operations {
             };
         };
     };
+    verify_audit_chain_api_v1_audit_verify_chain_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChainVerificationOut"];
+                };
+            };
+        };
+    };
     get_audit_api_v1_audit__record_id__get: {
         parameters: {
             query?: never;
@@ -2350,6 +2950,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuditRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_api_v1_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeOut"];
+                };
+            };
+        };
+    };
+    login_api_v1_auth_token_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenOut"];
                 };
             };
             /** @description Validation Error */
@@ -2524,6 +3177,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalyzeAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_incident_api_v1_incidents__incident_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseIncidentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentOut"];
                 };
             };
             /** @description Validation Error */
@@ -2861,6 +3549,68 @@ export interface operations {
             };
         };
     };
+    get_execution_api_v1_recovery_executions__execution_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryExecutionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_verification_api_v1_recovery_executions__execution_id__verification_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerificationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_strategies_api_v1_recovery_strategies_get: {
         parameters: {
             query?: {
@@ -2988,6 +3738,110 @@ export interface operations {
             };
         };
     };
+    approve_strategy_api_v1_recovery_strategies__strategy_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    execute_strategy_api_v1_recovery_strategies__strategy_id__execute_post: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required. Repeating a request with the same key returns the first result. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryExecutionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_strategy_api_v1_recovery_strategies__strategy_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     validate_strategy_api_v1_recovery_strategies__strategy_id__validate_post: {
         parameters: {
             query?: never;
@@ -3006,6 +3860,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ValidationReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    incident_report_api_v1_reports_incidents__incident_id__get: {
+        parameters: {
+            query?: {
+                format?: "json" | "markdown";
+            };
+            header?: never;
+            path: {
+                incident_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IncidentReport"];
+                    "text/markdown": unknown;
                 };
             };
             /** @description Validation Error */

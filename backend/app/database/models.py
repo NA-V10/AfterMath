@@ -493,6 +493,9 @@ class RecoveryStrategy(Base):
     validation_report: Mapped[dict[str, Any] | None] = mapped_column()
     validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    # The human who asked for this planning round (an agent may do the planning on their behalf);
+    # separation of duties compares approvers against it.
+    requested_by: Mapped[str | None] = mapped_column(String(128))
     created_at: Mapped[datetime] = created_at_col()
     updated_at: Mapped[datetime] = updated_at_col()
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -534,5 +537,111 @@ class RecoveryAction(Base):
         CheckConstraint(_enum_check("action_type", ACTION_TYPES), name="type_valid"),
         CheckConstraint(
             "end_minutes > start_minutes AND start_minutes >= 0", name="interval_valid"
+        ),
+    )
+
+
+# ============================================================ Phase 5
+ROLES = ["viewer", "operator", "approver", "admin"]
+
+
+class AppUser(Base):
+    __tablename__ = "app_user"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    username: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    display_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
+    roles: Mapped[list[Any]] = mapped_column(nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = updated_at_col()
+
+    __table_args__ = (
+        CheckConstraint("username ~ '^[a-z][a-z0-9._-]{1,63}$'", name="username_format"),
+        CheckConstraint("jsonb_typeof(roles) = 'array'", name="roles_array"),
+    )
+
+
+class ApprovalRecord(Base):
+    """One human decision on one exact strategy content (append-only)."""
+
+    __tablename__ = "approval_record"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    strategy_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recovery_strategy.id", ondelete="RESTRICT"),
+        nullable=False, index=True,
+    )  # fmt: skip
+    decision: Mapped[str] = mapped_column(String(16), nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    actor_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    actor_role: Mapped[str] = mapped_column(String(16), nullable=False)
+    comment: Mapped[str | None] = mapped_column(Text)
+    request_id: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (
+        CheckConstraint("decision IN ('APPROVED', 'REJECTED')", name="decision_valid"),
+        CheckConstraint(
+            "decision <> 'REJECTED' OR length(trim(coalesce(comment, ''))) > 0",
+            name="rejection_has_comment",
+        ),
+    )
+
+
+class RecoveryExecution(Base):
+    """Simulated execution of an approved strategy (the API's `recovery_id`)."""
+
+    __tablename__ = "recovery_execution"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    strategy_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recovery_strategy.id", ondelete="RESTRICT"),
+        nullable=False, unique=True,
+    )  # fmt: skip
+    incident_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("incident.id", ondelete="RESTRICT"), nullable=False,
+        index=True,
+    )  # fmt: skip
+    simulation_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("simulation_run.id", ondelete="RESTRICT")
+    )
+    approval_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("approval_record.id", ondelete="RESTRICT"), nullable=False
+    )
+    requested_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    revalidation: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    error: Mapped[dict[str, Any] | None] = mapped_column()
+    started_at: Mapped[datetime] = created_at_col()
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint("status IN ('COMPLETED', 'FAILED')", name="status_valid"),
+        CheckConstraint(
+            "status <> 'COMPLETED' OR simulation_run_id IS NOT NULL", name="completed_has_run"
+        ),
+    )
+
+
+class RecoveryVerification(Base):
+    __tablename__ = "recovery_verification"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    execution_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recovery_execution.id", ondelete="RESTRICT"),
+        nullable=False, unique=True,
+    )  # fmt: skip
+    outcome: Mapped[str] = mapped_column(String(24), nullable=False)
+    matches_expectation: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    result: Mapped[dict[str, Any]] = mapped_column(nullable=False)
+    verified_by: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = created_at_col()
+
+    __table_args__ = (
+        CheckConstraint(
+            "outcome IN ('FULLY_RESTORED', 'PARTIALLY_RESTORED')", name="outcome_valid"
         ),
     )

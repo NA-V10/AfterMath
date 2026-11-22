@@ -4,6 +4,8 @@ import uuid
 
 from httpx import AsyncClient
 
+from tests.integration.conftest import bearer
+
 
 async def test_liveness_and_readiness(client: AsyncClient) -> None:
     assert (await client.get("/health")).json() == {"status": "ok"}
@@ -31,7 +33,8 @@ async def test_system_status_reports_capabilities_honestly(client: AsyncClient) 
     assert body["simulation_notice"].startswith("SIMULATION ENVIRONMENT")
     assert body["dataset"]["asset_count"] == 50
     assert body["capabilities"]["digital_twin"] is True
-    assert body["capabilities"]["governance"] is False  # Phase 5
+    assert body["capabilities"]["governance"] is True
+    assert body["capabilities"]["phase"] == 5
 
 
 async def test_list_assets_and_filters(client: AsyncClient) -> None:
@@ -155,7 +158,9 @@ async def test_readiness_reports_503_when_database_is_down() -> None:
     app = create_app(Settings(database_url=unreachable, aftermath_env="test", log_level="ERROR"))
     async with app.router.lifespan_context(app):
         transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test/api/v1") as c:
+        async with AsyncClient(
+            transport=transport, base_url="http://test/api/v1", headers=bearer(app, "test-admin")
+        ) as c:
             ready = await c.get("/health/ready")
             assert ready.status_code == 503
             assert ready.json()["checks"]["database"].startswith("unavailable")

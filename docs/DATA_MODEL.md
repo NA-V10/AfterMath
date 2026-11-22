@@ -255,3 +255,40 @@ CHECKs cover `action_type` and `end_minutes > start_minutes >= 0`.
 ### Migration notes
 
 Alembic autogenerate does not see the LangGraph checkpoint tables (`lg_*`, created by migration 0003). During this phase it proposed dropping them. Migration 0004 was corrected, and `migrations/env.py` now excludes `lg_*` from comparison, so `alembic check` reports no drift.
+
+## As implemented (Phase 5, migration `0005`)
+
+### `app_user`
+Columns: `id`, `username` (unique), `display_name`, `password_hash`, `roles`, `is_active`, `created_at`, `updated_at`.
+- `username` must match `^[a-z][a-z0-9._-]{1,63}$` (CHECK).
+- `password_hash` is scrypt ([ADR-0014](decisions/ADR-0014-authentication-and-sessions.md)).
+- `roles` is a jsonb array (CHECK).
+
+### `approval_record`
+Implemented as specified, plus `request_id`.
+- `decision` must be APPROVED or REJECTED (CHECK).
+- A REJECTED record must have a non-empty comment (CHECK).
+- Append-only (trigger).
+
+### `recovery_execution`
+Columns: `id`, `strategy_id` (unique), `incident_id`, `simulation_run_id`, `approval_id`, `requested_by`, `idempotency_key` (unique), `status`, `revalidation`, `error`, `started_at`, `completed_at`.
+- `status` is `COMPLETED | FAILED`. A COMPLETED row must reference its run (CHECK).
+- `approval_id` points to the approval that authorised the execution.
+- `revalidation` stores the full 12-rule report taken at execution time.
+- Append-only (trigger). The execution row is written once, in the same transaction as the run.
+
+### `recovery_verification`
+Columns: `id`, `execution_id` (unique), `outcome`, `matches_expectation`, `result`, `verified_by`, `created_at`.
+- `outcome` is `FULLY_RESTORED | PARTIALLY_RESTORED`.
+- `result` is jsonb holding the full `VerificationResult`: repaired, functionally restored, repaired-but-not-functional with the binding cause, unresolved assets, and restoration before and after by count, criticality and population.
+- `verified_by` is `agent:GUARDIAN`.
+- Append-only (trigger).
+
+### `recovery_strategy.requested_by`
+A new column: the human on whose behalf the round was planned. Separation of duties compares against it.
+
+### State changes
+- **Strategy:** the full lifecycle from §9 is now live and enforced by `governance.rules.state_machine`.
+- **Re-planning** supersedes DRAFT, VALIDATED **and APPROVED** strategies, which voids the approval.
+- **A successful execution** moves the strategy through APPROVED → EXECUTING → EXECUTED → VERIFIED in one transaction. Sibling strategies are superseded and the incident becomes `RECOVERED`.
+- **Inventory:** each execution that consumes stock creates a new `resource_inventory` version, with the reason "consumed by recovery execution …".

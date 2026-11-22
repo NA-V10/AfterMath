@@ -1,12 +1,14 @@
 "use client";
 
-import { CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Badge, SectionLabel, Stat, cn } from "@/components/ui/primitives";
 import { formatMinutes, formatNumber } from "@/lib/domain";
 import type { StrategyDetail } from "@/lib/queries";
 
+import { GovernancePanel } from "./GovernancePanel";
+import { strategyStatus } from "./status";
 import { POLICY_COLOR, POLICY_LABEL } from "./StrategyChart";
 
 const TYPE_LABEL: Record<string, string> = {
@@ -68,7 +70,7 @@ function Gantt({ s }: { s: StrategyDetail }) {
   );
 }
 
-export function StrategyDetailView({ s }: { s: StrategyDetail }) {
+export function StrategyDetailView({ s, incidentId }: { s: StrategyDetail; incidentId: string }) {
   const report = s.validation_report;
   const consumption = Object.entries(s.metrics.consumption);
   return (
@@ -76,8 +78,8 @@ export function StrategyDetailView({ s }: { s: StrategyDetail }) {
       <header className="flex flex-wrap items-center gap-2 px-3 pt-3 pb-2">
         <span className="size-2.5 rounded-full" style={{ background: POLICY_COLOR[s.policy] }} />
         <h3 className="font-semibold">{POLICY_LABEL[s.policy]}</h3>
-        <Badge color={s.status === "VALIDATED" ? "#3fb950" : s.status === "VALIDATION_FAILED" ? "#f85149" : undefined}>
-          {s.status.replace("_", " ").toLowerCase()}
+        <Badge color={strategyStatus(s.status).color}>
+          <span data-testid="strategy-status">{strategyStatus(s.status).label}</span>
         </Badge>
         {s.recommended && <Badge color="#58a6ff">recommended</Badge>}
         <span className="text-[11px] text-dim">round {s.planning_round} · inventory v{s.inventory_version} · hash {s.content_hash.slice(0, 10)}…</span>
@@ -162,11 +164,8 @@ export function StrategyDetailView({ s }: { s: StrategyDetail }) {
           </ul>
         )}
       </Section>
-      <Section title="Approval">
-        <p className="flex items-center gap-1.5 text-[12px] text-muted">
-          <ShieldCheck className="size-4 text-dim" />
-          Human approval, execution and verification arrive in Phase 5. Nothing here can execute.
-        </p>
+      <Section title="Approval and execution">
+        <GovernancePanel s={s} incidentId={incidentId} />
       </Section>
     </div>
   );

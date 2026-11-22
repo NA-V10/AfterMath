@@ -39,6 +39,8 @@ def create_app(settings: Settings | None = None, *, llm: LLMClient | None = None
     settings = settings or get_settings()
     configure_logging(settings.log_level, json=settings.json_logs)
     log = get_logger("aftermath")
+    if settings.aftermath_env == "production" and (problems := settings.insecure_defaults()):
+        raise RuntimeError("Refusing to start in production: " + "; ".join(problems))
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -62,6 +64,13 @@ def create_app(settings: Settings | None = None, *, llm: LLMClient | None = None
             llm=app.state.llm.description,
             workflows_resumed=resumed,
         )
+        log.info(
+            "governance_config",
+            security=True,
+            separation_of_duties=settings.governance_separation_of_duties,
+            token_ttl_minutes=settings.jwt_ttl_minutes,
+            insecure_defaults=settings.insecure_defaults(),
+        )
         yield
         await app.state.workflow_runner.shutdown()
         await app.state.db.dispose()
@@ -79,6 +88,7 @@ def create_app(settings: Settings | None = None, *, llm: LLMClient | None = None
         redoc_url=None,
         lifespan=lifespan,
     )
+    app.state.settings = settings
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

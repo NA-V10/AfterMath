@@ -18,6 +18,7 @@ dependencies = [
   "langgraph>=0.6",
   "anthropic>=1.0",
   "httpx>=0.28",
+  "pyjwt>=2.10",
 ]
 
 [dependency-groups]
@@ -54,6 +55,8 @@ ignore = ["S101"]   # assert is fine in tests
 # SQL here is assembled only from constant fragments (table names, ON CONFLICT clauses);
 # every value is a bound parameter.
 "app/database/checkpointer.py" = ["S608"]
+# Tests use fixed fixture passwords/secrets for throwaway databases and tokens.
+"tests/**" = ["S105", "S106"]
 
 [tool.mypy]
 python_version = "3.13"

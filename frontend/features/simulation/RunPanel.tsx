@@ -7,6 +7,7 @@ import { ErrorState, IconButton, SectionLabel, Segmented, cn } from "@/component
 import type { Schemas } from "@/lib/api";
 import { formatMinutes } from "@/lib/domain";
 import { type SimulationRequest, useGraph, useRunSimulation, useScenarios } from "@/lib/queries";
+import { hasRole, useSession } from "@/lib/session";
 
 type Mode = "scenario" | "custom";
 type Condition = "DAMAGED" | "DEGRADED" | "DESTROYED";
@@ -39,6 +40,7 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
   const [horizon, setHorizon] = useState(4320);
   const [label, setLabel] = useState("");
   const [apply, setApply] = useState(false);
+  const canApply = hasRole(useSession(), "operator");
 
   const assets = useMemo(
     () => (graph.data?.nodes ?? []).filter((n) => n.category !== "DEMAND_ZONE"),
@@ -48,7 +50,11 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
   const canRun = mode === "scenario" ? scenarioKey !== null : rows.length > 0;
 
   const submit = () => {
-    const base = { horizon_minutes: horizon, label: label.trim() || null, apply_to_picture: apply };
+    const base = {
+      horizon_minutes: horizon,
+      label: label.trim() || null,
+      apply_to_picture: apply && canApply,
+    };
     const body: SimulationRequest =
       mode === "scenario"
         ? { ...base, scenario_key: scenarioKey }
@@ -178,8 +184,17 @@ export function RunPanel({ onRun }: { onRun: (id: string) => void }) {
         />
       </label>
 
-      <label className="flex cursor-pointer items-center gap-2 text-[12px] text-muted">
-        <input type="checkbox" checked={apply} onChange={(e) => setApply(e.target.checked)} className="accent-[#58a6ff]" />
+      <label
+        className="flex cursor-pointer items-center gap-2 text-[12px] text-muted"
+        title={canApply ? undefined : "Applying to the operational picture needs the operator role"}
+      >
+        <input
+          type="checkbox"
+          checked={apply && canApply}
+          disabled={!canApply}
+          onChange={(e) => setApply(e.target.checked)}
+          className="accent-[#58a6ff]"
+        />
         Apply result to the operational picture
       </label>
 
