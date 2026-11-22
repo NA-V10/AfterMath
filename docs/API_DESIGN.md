@@ -147,3 +147,46 @@ POST `/auth/token` (username/password → JWT) · GET `/auth/me`.
 | GET `/infrastructure/criticality` | Exact N-1 report, cached per snapshot |
 
 **Identity before Phase 5:** state-changing calls are attributed to `local:operator` and are refused with 401 when `AFTERMATH_ENV=production`. These endpoints are not yet protected by authentication. This is a known, documented gap until Phase 5.
+
+## As implemented (Phase 4)
+
+### Inventory
+
+**GET `/inventory`**
+- Returns the current inventory version.
+
+**POST `/inventory`**
+- Body: `{renewables, consumables, reason}`. Creates a new version, which becomes current.
+- Not yet restricted to the admin role (Phase 5).
+
+### Strategies
+
+**POST `/recovery/strategies`** `{incident_id}` (the horizon is fixed at 7 days)
+- Starts a new planning round for the incident: plans all three policies, validates each one, marks the recommended strategy, and supersedes the previous round.
+- Returns **201** with a `StrategyRound`: strategies, comparison and the no-action `baseline_timeline` / `baseline_impact_hours`.
+- Errors:
+  - 404: unknown incident.
+  - 409: the incident has no validated initiating events (not yet analysed).
+  - 409: the incident is already in recovery.
+
+**GET `/recovery/strategies?incident_id=&status=`**
+- Lists strategy summaries.
+
+**GET `/recovery/strategies/compare?incident_id=`**
+- Returns the latest round.
+- 404 if the incident has never been planned.
+
+**GET `/recovery/strategies/{id}`**
+- Returns `StrategyDetail`: actions, metrics, risk components, benefits, limitations, unschedulable actions, validation report, and `identical_to`, which lists the policies that produced the same plan.
+
+**POST `/recovery/strategies/{id}/validate`**
+- Re-runs GUARDIAN on the stored content and returns the report.
+- Errors:
+  - 409 for a `SUPERSEDED` strategy.
+  - 409 for a `VALIDATION_FAILED` strategy (terminal).
+
+### Through the workflow
+
+The agent workflow normally calls the same services: STRATEGIST generates, GUARDIAN validates and recommends. When at least one strategy is valid, the incident moves to `AWAITING_APPROVAL`.
+
+Approval, rejection, execution and verification are Phase 5. Phase 4 exposes no endpoint that changes infrastructure state.

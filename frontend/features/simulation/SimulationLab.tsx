@@ -207,7 +207,7 @@ export function SimulationLab() {
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[300px_minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col gap-px overflow-y-auto bg-line">
-          <Panel title="Run a simulation" className="border-0" bodyClassName="">
+          <Panel title="Run a simulation" className="shrink-0 border-0" bodyClassName="">
             <RunPanel onRun={selectRun} />
           </Panel>
           <Panel

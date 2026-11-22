@@ -122,3 +122,24 @@ Differences from §1–§5, each covered by tests:
 - **ORACLE** runs the persisted, immutable simulation for the incident and applies it to the operational picture. Agents may create these analysis records but have no tool that approves, executes, or alters stored results.
 - **Durability:** state is checkpointed after every node by `AsyncpgCheckpointSaver` (ADR-0013). On startup, `RUNNING` workflows resume from their last checkpoint. The checkpointer is tested through a real interrupt/resume across a fresh saver instance.
 - **Measurement:** the deterministic SENTINEL scores 10/10 on the labelled corpus (`data/synthetic/meridian-valley/reports/corpus.json`). The rules were developed against this same corpus, so this proves the rules behave as designed, **not** that they generalise; a held-out corpus is needed before quoting accuracy.
+
+## 7. As implemented (Phase 4)
+
+Code: `app/agents/planning_nodes.py`, `app/services/recovery.py`.
+
+**Workflow:** `… → oracle → strategist → guardian → END`.
+- If at least one strategy passes validation, the incident becomes `AWAITING_APPROVAL`.
+- If none passes, it stays `ANALYZED`.
+- The `approval → execution → verification` steps after GUARDIAN arrive in Phase 5.
+
+### STRATEGIST
+
+- **Tools:** `generate_strategies` and `compare_strategies`, both deterministic. Together they produce the three plans, their metrics and the comparative benefits and limitations.
+- **What the LLM writes:** only a `Rationale` per strategy, through `explain(task="strategist.rationale")`. The rationale passes the same grounding check as other agent text: asset codes and figures must appear in the deterministic facts.
+- **Fallback:** if the LLM is unavailable or its output is ungrounded, the deterministic template is stored instead. The template's name is recorded in `rationale_source`.
+
+### GUARDIAN
+
+- **No LLM:** GUARDIAN makes no LLM calls, and a test asserts this.
+- **Tools:** `validate_strategy`, which applies rules V-001…V-009, and `recommend_strategy`.
+- **Recommendation rule:** fewest impact-hours, then lowest risk, then policy name. The rule text (`RECOMMENDATION_RULE`) is stored in GUARDIAN's output, so the reason for the recommendation is visible.

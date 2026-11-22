@@ -307,6 +307,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Inventory */
+        get: operations["get_inventory_api_v1_inventory_get"];
+        put?: never;
+        /**
+         * Update Inventory
+         * @description Record a new inventory version (existing strategies keep referencing their version).
+         */
+        post: operations["update_inventory_api_v1_inventory_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operational-picture": {
         parameters: {
             query?: never;
@@ -355,6 +376,85 @@ export interface paths {
          * @description Return the operational picture to the baseline. History is kept (append-only).
          */
         post: operations["reset_picture_api_v1_operational_picture_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/strategies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Strategies */
+        get: operations["list_strategies_api_v1_recovery_strategies_get"];
+        put?: never;
+        /**
+         * Generate Strategies
+         * @description Plan three strategies (new planning round) and validate them with GUARDIAN's rules.
+         *     Normally invoked by the agent workflow (STRATEGIST + GUARDIAN).
+         */
+        post: operations["generate_strategies_api_v1_recovery_strategies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/strategies/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compare Strategies
+         * @description The latest planning round for an incident, with the no-action baseline for comparison.
+         */
+        get: operations["compare_strategies_api_v1_recovery_strategies_compare_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/strategies/{strategy_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Strategy */
+        get: operations["get_strategy_api_v1_recovery_strategies__strategy_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recovery/strategies/{strategy_id}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate Strategy
+         * @description Run GUARDIAN's deterministic rules (V-001..V-009) against the stored strategy.
+         */
+        post: operations["validate_strategy_api_v1_recovery_strategies__strategy_id__validate_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -583,6 +683,41 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActionOut */
+        ActionOut: {
+            /** Action Type */
+            action_type: string;
+            /** Consumables */
+            consumables: {
+                [key: string]: number;
+            };
+            /** Cost */
+            cost: number;
+            /** Crew Size */
+            crew_size: number | null;
+            /** End Minutes */
+            end_minutes: number;
+            /** Key */
+            key: string;
+            /** Prerequisite Seqs */
+            prerequisite_seqs: number[];
+            /** Rationale */
+            rationale: string;
+            /** Resources */
+            resources: {
+                [key: string]: unknown;
+            }[];
+            /** Seq */
+            seq: number;
+            /** Start Minutes */
+            start_minutes: number;
+            /** Supplies Minutes */
+            supplies_minutes: number | null;
+            /** Target Asset Code */
+            target_asset_code: string;
+            /** Trade */
+            trade: string | null;
+        };
         /** AgentDefinition */
         AgentDefinition: {
             /** Available */
@@ -857,6 +992,27 @@ export interface components {
             workflow_run_id: string | null;
         };
         /**
+         * BackupSuppliedEvent
+         * @description Temporary power for an asset (mobile generator or refuelling of its own backup): adds
+         *     `minutes` of backup endurance. Used by recovery plans.
+         */
+        BackupSuppliedEvent: {
+            /** Asset Code */
+            asset_code: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "BACKUP_SUPPLIED";
+            /** Minutes */
+            minutes: number;
+            /**
+             * T Minutes
+             * @default 0
+             */
+            t_minutes: number;
+        };
+        /**
          * Capabilities
          * @description Which product capabilities are implemented in this build (no fake features).
          */
@@ -1001,7 +1157,7 @@ export interface components {
          * EventKind
          * @enum {string}
          */
-        EventKind: "CONDITION_CHANGED" | "STATUS_CHANGED" | "BACKUP_ENGAGED" | "BACKUP_DISENGAGED" | "BACKUP_EXHAUSTED" | "ISOLATION_DETECTED" | "ISOLATION_RESOLVED" | "HORIZON_REACHED";
+        EventKind: "CONDITION_CHANGED" | "STATUS_CHANGED" | "BACKUP_ENGAGED" | "BACKUP_DISENGAGED" | "BACKUP_EXHAUSTED" | "BACKUP_SUPPLIED" | "ISOLATION_DETECTED" | "ISOLATION_RESOLVED" | "HORIZON_REACHED";
         /** ExecutionOut */
         ExecutionOut: {
             /** Agent */
@@ -1073,6 +1229,14 @@ export interface components {
          * @enum {string}
          */
         FunctionalStatus: "OPERATIONAL" | "DEGRADED" | "ON_BACKUP" | "FAILED";
+        /** GenerateStrategiesIn */
+        GenerateStrategiesIn: {
+            /**
+             * Incident Id
+             * Format: uuid
+             */
+            incident_id: string;
+        };
         /** GraphNode */
         GraphNode: {
             category: components["schemas"]["AssetCategory"];
@@ -1165,7 +1329,7 @@ export interface components {
             /** Incident Type */
             incident_type: string | null;
             /** Initiating Events */
-            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[] | null;
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"] | components["schemas"]["BackupSuppliedEvent"])[] | null;
             /** Missing Information */
             missing_information: string[];
             /** Occurred At */
@@ -1221,6 +1385,47 @@ export interface components {
             picture: "baseline";
             /** Population Total */
             population_total: number;
+        };
+        /** InventoryIn */
+        InventoryIn: {
+            /** Consumables */
+            consumables: {
+                [key: string]: number;
+            };
+            /** Reason */
+            reason: string;
+            /** Renewables */
+            renewables: {
+                [key: string]: number;
+            };
+        };
+        /** InventoryOut */
+        InventoryOut: {
+            /** Consumables */
+            consumables: {
+                [key: string]: number;
+            };
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by: string;
+            /** Reason */
+            reason: string | null;
+            /** Renewables */
+            renewables: {
+                [key: string]: number;
+            };
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Version */
+            version: number;
         };
         /** Liveness */
         Liveness: {
@@ -1350,6 +1555,11 @@ export interface components {
         };
         /** ReplayResult */
         ReplayResult: {
+            /**
+             * Engine Matches
+             * @description False if the engine version changed since the original run (hashes then differ by construction even when results are identical)
+             */
+            engine_matches: boolean;
             /** Hash Matches */
             hash_matches: boolean;
             /** Original Hash */
@@ -1388,6 +1598,17 @@ export interface components {
              */
             spare_providers: number;
         };
+        /** RuleResult */
+        RuleResult: {
+            /** Description */
+            description: string;
+            /** Findings */
+            findings: string[];
+            /** Passed */
+            passed: boolean;
+            /** Rule */
+            rule: string;
+        };
         /** ScenarioOut */
         ScenarioOut: {
             /** Content Hash */
@@ -1397,7 +1618,7 @@ export interface components {
             /** Horizon Minutes */
             horizon_minutes: number;
             /** Initiating Events */
-            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[];
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"] | components["schemas"]["BackupSuppliedEvent"])[];
             /** Key */
             key: string;
             /** Name */
@@ -1504,7 +1725,7 @@ export interface components {
             /** Incident Id */
             incident_id: string | null;
             /** Initiating Events */
-            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[];
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"] | components["schemas"]["BackupSuppliedEvent"])[];
             /** Kind */
             kind: string;
             /** Label */
@@ -1549,7 +1770,7 @@ export interface components {
             /** Incident Id */
             incident_id?: string | null;
             /** Initiating Events */
-            initiating_events?: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[] | null;
+            initiating_events?: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"] | components["schemas"]["BackupSuppliedEvent"])[] | null;
             /** Label */
             label?: string | null;
             /** Scenario Key */
@@ -1612,6 +1833,211 @@ export interface components {
             /** Code */
             code: string;
         };
+        /** StrategyDetail */
+        StrategyDetail: {
+            /** Actions */
+            actions: components["schemas"]["ActionOut"][];
+            /** Actions Count */
+            actions_count: number;
+            /** Benefits */
+            benefits: string[];
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Expected Result Hash */
+            expected_result_hash: string;
+            /** Horizon Minutes */
+            horizon_minutes: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Identical To
+             * @description other policies in this round with the same plan
+             */
+            identical_to: string[];
+            /** Impact Hours */
+            impact_hours: number;
+            /**
+             * Incident Id
+             * Format: uuid
+             */
+            incident_id: string;
+            /** Inventory Version */
+            inventory_version: number;
+            /** Limitations */
+            limitations: string[];
+            /** Makespan Minutes */
+            makespan_minutes: number;
+            metrics: components["schemas"]["StrategyMetrics"];
+            /** Objective */
+            objective: string;
+            /** Planning Round */
+            planning_round: number;
+            /** Policy */
+            policy: string;
+            /** Rationale */
+            rationale: string | null;
+            /** Rationale Source */
+            rationale_source: string | null;
+            /** Recommended */
+            recommended: boolean;
+            /** Risk Components */
+            risk_components: {
+                [key: string]: number;
+            };
+            /** Risk Score */
+            risk_score: number;
+            /** Status */
+            status: string;
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Time To 90Pct Operational Minutes */
+            time_to_90pct_operational_minutes: number | null;
+            /** Time To Critical Services Minutes */
+            time_to_critical_services_minutes: number | null;
+            /** Total Cost */
+            total_cost: number;
+            /** Unschedulable */
+            unschedulable: components["schemas"]["Unschedulable"][];
+            /** Unschedulable Count */
+            unschedulable_count: number;
+            /** Validated At */
+            validated_at: string | null;
+            validation_report: components["schemas"]["ValidationReport"] | null;
+        };
+        /** StrategyMetrics */
+        StrategyMetrics: {
+            /** Affected Population Final */
+            affected_population_final: number;
+            /** Assets Restored */
+            assets_restored: number;
+            /** Backup Exhausted Before Restoration */
+            backup_exhausted_before_restoration: string[];
+            /** Consumption */
+            consumption: {
+                [key: string]: number;
+            };
+            /** Crew Minutes */
+            crew_minutes: {
+                [key: string]: number;
+            };
+            /** Final Impact Score */
+            final_impact_score: number;
+            /**
+             * Impact Hours
+             * @description integral of impact score over the horizon / 60
+             */
+            impact_hours: number;
+            /** Makespan Minutes */
+            makespan_minutes: number;
+            /** Peak Impact Score */
+            peak_impact_score: number;
+            /**
+             * Policy Loss
+             * @description the policy's own weighted unserved service-hours
+             */
+            policy_loss: number;
+            /** Remaining */
+            remaining: {
+                [key: string]: number;
+            };
+            /** Time To 90Pct Operational Minutes */
+            time_to_90pct_operational_minutes: number | null;
+            /** Time To Critical Services Minutes */
+            time_to_critical_services_minutes: number | null;
+            /** Timeline */
+            timeline: components["schemas"]["TimelinePoint"][];
+            /** Total Cost */
+            total_cost: number;
+            /** Unrestored Assets */
+            unrestored_assets: string[];
+        };
+        /** StrategyRound */
+        StrategyRound: {
+            /**
+             * Baseline Impact Hours
+             * @description impact-hours with no recovery action
+             */
+            baseline_impact_hours: number;
+            /** Baseline Timeline */
+            baseline_timeline: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Incident Id
+             * Format: uuid
+             */
+            incident_id: string;
+            /** Planning Round */
+            planning_round: number;
+            /** Recommended Strategy Id */
+            recommended_strategy_id: string | null;
+            /** Strategies */
+            strategies: components["schemas"]["StrategyDetail"][];
+        };
+        /** StrategySummary */
+        StrategySummary: {
+            /** Actions Count */
+            actions_count: number;
+            /** Content Hash */
+            content_hash: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Impact Hours */
+            impact_hours: number;
+            /**
+             * Incident Id
+             * Format: uuid
+             */
+            incident_id: string;
+            /** Makespan Minutes */
+            makespan_minutes: number;
+            /** Objective */
+            objective: string;
+            /** Planning Round */
+            planning_round: number;
+            /** Policy */
+            policy: string;
+            /** Recommended */
+            recommended: boolean;
+            /** Risk Score */
+            risk_score: number;
+            /** Status */
+            status: string;
+            /**
+             * Synthetic
+             * @default true
+             * @constant
+             */
+            synthetic: true;
+            /** Time To 90Pct Operational Minutes */
+            time_to_90pct_operational_minutes: number | null;
+            /** Time To Critical Services Minutes */
+            time_to_critical_services_minutes: number | null;
+            /** Total Cost */
+            total_cost: number;
+            /** Unschedulable Count */
+            unschedulable_count: number;
+        };
         /** StructuredIncidentCreate */
         StructuredIncidentCreate: {
             /**
@@ -1620,7 +2046,7 @@ export interface components {
              */
             incident_type: "POWER_FAILURE" | "FLOODING" | "TELECOM_OUTAGE" | "WATER_DISRUPTION" | "EQUIPMENT_FAILURE" | "COMBINED";
             /** Initiating Events */
-            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"])[];
+            initiating_events: (components["schemas"]["AssetFailureEvent"] | components["schemas"]["AreaFloodEvent"] | components["schemas"]["AssetRestoredEvent"] | components["schemas"]["BackupSuppliedEvent"])[];
             /** Occurred At */
             occurred_at?: string | null;
             /**
@@ -1692,6 +2118,20 @@ export interface components {
             /** Max Depth */
             max_depth: number | null;
         };
+        /** Unschedulable */
+        Unschedulable: {
+            /** Asset Code */
+            asset_code: string;
+            /** Detail */
+            detail: string;
+            /** Key */
+            key: string;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "INSUFFICIENT_RESOURCES" | "NO_ACCESS" | "BEYOND_HORIZON" | "NO_BENEFIT";
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -1704,6 +2144,19 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** ValidationReport */
+        ValidationReport: {
+            /** Engine Version */
+            engine_version: string;
+            /** Inventory Version */
+            inventory_version: number;
+            /** Passed */
+            passed: boolean;
+            /** Rules */
+            rules: components["schemas"]["RuleResult"][];
+            /** Snapshot Hash */
+            snapshot_hash: string;
         };
         /** WorkflowOut */
         WorkflowOut: {
@@ -2271,6 +2724,59 @@ export interface operations {
             };
         };
     };
+    get_inventory_api_v1_inventory_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryOut"];
+                };
+            };
+        };
+    };
+    update_inventory_api_v1_inventory_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InventoryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_picture_api_v1_operational_picture_get: {
         parameters: {
             query?: never;
@@ -2342,6 +2848,164 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OperationalPicture"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_strategies_api_v1_recovery_strategies_get: {
+        parameters: {
+            query?: {
+                incident_id?: string | null;
+                status?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategySummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_strategies_api_v1_recovery_strategies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateStrategiesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyRound"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_strategies_api_v1_recovery_strategies_compare_get: {
+        parameters: {
+            query: {
+                incident_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyRound"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_strategy_api_v1_recovery_strategies__strategy_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StrategyDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validate_strategy_api_v1_recovery_strategies__strategy_id__validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                strategy_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationReport"];
                 };
             };
             /** @description Validation Error */

@@ -217,3 +217,41 @@ Append-only: a trigger rejects `UPDATE`/`DELETE`, and the application DB role ha
 - **New: `operational_picture_change`** `(id, kind APPLY|RESET, simulation_run_id, actor_id, reason, created_at)`. This is the append-only history of what the operational picture shows. The current picture is the latest row (APPLY shows that run's final state; RESET or no rows shows the baseline).
 - **Immutability:** a `reject_mutation()` trigger blocks UPDATE/DELETE on `simulation_run`, `simulation_event` and `operational_picture_change`, alongside the audit log.
 - Incident references come from the `incident_reference_seq` sequence: `INC-<year>-<nnnn>`.
+
+## As implemented (Phase 4, migration `0004`)
+
+### `resource_inventory`
+
+- Implemented as specified, with an added `is_synthetic` column (CHECK `synthetic_only`).
+- Resource keys are `crew:<TRADE>`, `mobile_generator` and `fuel_truck` for renewables; consumables are part kinds plus `fuel_l` and `budget`.
+- The seed command loads version 1 from `data/synthetic/meridian-valley/inventory.json`. `POST /inventory` adds a new version and moves `is_current`.
+
+### `recovery_strategy`
+
+- **Replay inputs instead of `simulation_run_id`.** Each strategy stores what it needs to be re-simulated independently: `snapshot_hash`, `incident_events` (jsonb) and `horizon_minutes`. Also added:
+  - `expected_result_hash`
+  - `risk_components`
+  - `rationale_source`
+  - `recommended`
+  - `created_by`
+- **Content hash.** `content_hash` covers the policy, the inventory, the incident events, the actions, the horizon and `expected_result_hash`, all as canonical JSON.
+- **Constraints.** CHECKs cover `status` (the full lifecycle, including the Phase 5 states), `policy` and `risk_score` 0–100. There is a unique constraint on `(incident_id, planning_round, policy)`.
+- **Transitions.** Phase 4 uses only these transitions:
+  - DRAFT → VALIDATED / VALIDATION_FAILED
+  - DRAFT/VALIDATED → SUPERSEDED, when a new round is generated
+
+  The `governance.rules.state_machine` module and the transitions involving approval arrive in Phase 5.
+
+### `recovery_action`
+
+`target_asset_code` is a text code rather than an FK, as with `simulation_event`. Each action also stores:
+- `key`: the catalogue key, e.g. `REPAIR:SUB-02`
+- `resources` (renewable use)
+- `cost`
+- `supplies_minutes` (temporary power)
+
+CHECKs cover `action_type` and `end_minutes > start_minutes >= 0`.
+
+### Migration notes
+
+Alembic autogenerate does not see the LangGraph checkpoint tables (`lg_*`, created by migration 0003). During this phase it proposed dropping them. Migration 0004 was corrected, and `migrations/env.py` now excludes `lg_*` from comparison, so `alembic check` reports no drift.

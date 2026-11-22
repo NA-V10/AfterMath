@@ -19,10 +19,9 @@ test("free-text report is analysed by SENTINEL, CARTOGRAPHER and ORACLE", async 
   await intake.getByRole("button", { name: "Report & analyse" }).click();
 
   await expect(page.getByTestId("workflow-status")).toHaveText("completed", { timeout: 30_000 });
-  for (const agent of ["SENTINEL", "CARTOGRAPHER", "ORACLE"]) {
+  for (const agent of ["SENTINEL", "CARTOGRAPHER", "ORACLE", "STRATEGIST", "GUARDIAN"]) {
     await expect(page.getByTestId(`agent-card-${agent}`)).toHaveAttribute("data-status", "SUCCEEDED");
   }
-  await expect(page.getByTestId("agent-card-STRATEGIST")).toHaveAttribute("data-status", "PHASE");
 
   await page.getByTestId("agent-card-SENTINEL").click();
   const sentinel = page.getByTestId("execution-SENTINEL");

@@ -116,3 +116,58 @@ Execution replays the approved schedule through the event engine. Verification t
 - `repaired_assets` (condition INTACT) vs `functionally_restored` (level 2) vs `repaired_but_not_functional` (with the binding unmet dependency as the reason)
 - before/after per asset, per service and per population zone; restoration % by count, criticality-weighted and population
 - `unresolved_failures` with causes; `matches_expectation` = the actual curve equals the strategy's expected curve (it must, under deterministic simulation; a mismatch indicates a defect and is flagged loudly)
+
+## 8. As implemented (Phase 4)
+
+Where the build differs from the design above, the code is authoritative and the differences are listed here.
+
+**Modules:** `app.recovery.{model,catalogue,evaluate,scheduler,benchmark}` and `app.governance.rules.validator`. All are pure: no I/O and no database. This is enforced by import-linter.
+
+### Catalogue
+
+- **Action types:** `REPAIR`, `REPLACE`, `DEPLOY_MOBILE_GENERATOR` and `REFUEL_BACKUP`.
+  - Blocked roads are road *assets* that get a `REPAIR` from the civil crew, so there is no separate `CLEAR_ROAD` type.
+  - `REPLACE` is used for DESTROYED assets. It costs 3× a repair and uses the category's `replace_parts`.
+- **Temporary power** is offered only to intact assets with criticality ≥ 80 that lose power in the no-action simulation:
+  - A generator supplies 72 h.
+  - A refuel takes 90 min and adds 12 h of backup.
+  - Both take effect through a new engine event, `BACKUP_SUPPLIED`, which bumped the engine to 1.1.0.
+- **Planning horizon** is 7 days. Every action includes 30 min of mobilisation.
+
+### Inventory
+
+The inventory is in `data/synthetic/meridian-valley/inventory.json` and is versioned in `resource_inventory`. It is **deliberately scarce**: one crew per trade, one mobile generator, one fuel truck and one spare power transformer. With slack resources, all three policies produced the same plan, so the comparison was meaningless. Scarcity is what makes the policies trade off.
+
+### Scheduler
+
+- **Value function:** each policy minimises its own **weighted unserved service**, Σ_a w_a ∫ (2 − level_a(t))/2 dt. The weights come from `evaluate.policy_weights`:
+  - CRITICAL_FIRST: 100 × criticality for life-critical assets (hospital, EOC, fire station, water treatment and water pumping), and 0.1 × criticality for everything else.
+  - MAX_RESTORATION: 1 per infrastructure asset.
+  - BALANCED: the asset's criticality, plus zone population ÷ 500.
+- **Bundles:** a bundle is the candidate, plus the road repairs it needs for access, plus repairs of its damaged upstream HARD providers. The gain is the policy loss before the bundle minus the loss after it, both computed by replaying the plan through the simulation engine.
+- **Priority:**
+  - CRITICAL_FIRST: (gain, −finish).
+  - MAX_RESTORATION: gain per crew-hour.
+  - BALANCED: gain per normalised cost, where cost is crew-hours + spend/50k + consumable scarcity.
+  - Ties are broken by bundle size, then by key.
+- **Prerequisites:** the only true precedence is road access. Repairs of upstream providers are bundled for their value, but they are not prerequisites.
+- **Cross-policy yardstick:** strategies are compared on `impact_hours`, the area under the simulation's impact score. The policy loss is not used for comparison, because each policy weights it differently. The recommendation is the strategy with the fewest impact-hours, then the lowest risk, then the policy name. It is a stated rule, not an LLM judgement.
+
+### Validation and status
+
+- **Rules:** V-001…V-009 are implemented. V-010…V-012 run at execution time and arrive in Phase 5.
+- **Re-simulation (V-008):** the plan is replayed against a freshly built action catalogue. If the plan references unknown assets (V-001 failed), V-008 reports the plan as malformed instead of crashing.
+- **Status:** `VALIDATION_FAILED` is terminal. Generating a new planning round marks the previous round's DRAFT and VALIDATED strategies `SUPERSEDED`.
+
+### Benchmark
+
+[reports/RECOVERY_BENCHMARK.md](reports/RECOVERY_BENCHMARK.md) compares the heuristic with brute-force enumeration of repair orderings:
+
+| Scenario | Policy | Gap to optimum |
+|---|---|---|
+| Three of the four scenarios | All three policies | 0% |
+| `severe-storm` | MAX_RESTORATION | 0% |
+| `severe-storm` | CRITICAL_FIRST | 0.46% |
+| `severe-storm` | BALANCED | 5.6% |
+
+The median gap is 0%, well below the 10% trigger for revisiting CP-SAT (§6).

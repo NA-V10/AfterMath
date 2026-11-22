@@ -14,6 +14,7 @@ const KIND_LABEL: Record<Schemas["SimEvent"]["kind"], string> = {
   BACKUP_ENGAGED: "backup on",
   BACKUP_DISENGAGED: "backup off",
   BACKUP_EXHAUSTED: "backup empty",
+  BACKUP_SUPPLIED: "power supplied",
   ISOLATION_DETECTED: "isolated",
   ISOLATION_RESOLVED: "reconnected",
   HORIZON_REACHED: "horizon",

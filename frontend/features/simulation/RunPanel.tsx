@@ -25,6 +25,7 @@ const HORIZONS = [
 function describeEvent(e: Schemas["ScenarioOut"]["initiating_events"][number]): string {
   if (e.kind === "AREA_FLOOD") return `${formatMinutes(e.t_minutes ?? 0)} flood to ${e.water_level_m} m`;
   if (e.kind === "ASSET_FAILURE") return `${formatMinutes(e.t_minutes ?? 0)} ${e.asset_code} ${(e.condition ?? "DAMAGED").toLowerCase()}`;
+  if (e.kind === "BACKUP_SUPPLIED") return `${formatMinutes(e.t_minutes ?? 0)} ${e.asset_code} +${e.minutes} min backup`;
   return `${formatMinutes(e.t_minutes ?? 0)} ${e.asset_code} restored`;
 }
 

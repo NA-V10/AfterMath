@@ -1,6 +1,115 @@
 {
   "components": {
     "schemas": {
+      "ActionOut": {
+        "properties": {
+          "action_type": {
+            "title": "Action Type",
+            "type": "string"
+          },
+          "consumables": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Consumables",
+            "type": "object"
+          },
+          "cost": {
+            "title": "Cost",
+            "type": "integer"
+          },
+          "crew_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Crew Size"
+          },
+          "end_minutes": {
+            "title": "End Minutes",
+            "type": "integer"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "prerequisite_seqs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Prerequisite Seqs",
+            "type": "array"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "resources": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Resources",
+            "type": "array"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          },
+          "start_minutes": {
+            "title": "Start Minutes",
+            "type": "integer"
+          },
+          "supplies_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplies Minutes"
+          },
+          "target_asset_code": {
+            "title": "Target Asset Code",
+            "type": "string"
+          },
+          "trade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trade"
+          }
+        },
+        "required": [
+          "seq",
+          "key",
+          "action_type",
+          "target_asset_code",
+          "start_minutes",
+          "end_minutes",
+          "trade",
+          "crew_size",
+          "resources",
+          "consumables",
+          "cost",
+          "supplies_minutes",
+          "prerequisite_seqs",
+          "rationale"
+        ],
+        "title": "ActionOut",
+        "type": "object"
+      },
       "AgentDefinition": {
         "properties": {
           "available": {
@@ -723,6 +832,41 @@
         "title": "AuditRecord",
         "type": "object"
       },
+      "BackupSuppliedEvent": {
+        "additionalProperties": false,
+        "description": "Temporary power for an asset (mobile generator or refuelling of its own backup): adds\n`minutes` of backup endurance. Used by recovery plans.",
+        "properties": {
+          "asset_code": {
+            "pattern": "^[A-Z]{2,5}-\\d{2,3}$|^[A-Z]{2,5}-[A-Z]{2,5}$",
+            "title": "Asset Code",
+            "type": "string"
+          },
+          "kind": {
+            "const": "BACKUP_SUPPLIED",
+            "default": "BACKUP_SUPPLIED",
+            "title": "Kind",
+            "type": "string"
+          },
+          "minutes": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 20160.0,
+            "title": "Minutes",
+            "type": "integer"
+          },
+          "t_minutes": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "T Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "asset_code",
+          "minutes"
+        ],
+        "title": "BackupSuppliedEvent",
+        "type": "object"
+      },
       "Capabilities": {
         "description": "Which product capabilities are implemented in this build (no fake features).",
         "properties": {
@@ -1116,6 +1260,7 @@
           "BACKUP_ENGAGED",
           "BACKUP_DISENGAGED",
           "BACKUP_EXHAUSTED",
+          "BACKUP_SUPPLIED",
           "ISOLATION_DETECTED",
           "ISOLATION_RESOLVED",
           "HORIZON_REACHED"
@@ -1325,6 +1470,21 @@
         ],
         "title": "FunctionalStatus",
         "type": "string"
+      },
+      "GenerateStrategiesIn": {
+        "additionalProperties": false,
+        "properties": {
+          "incident_id": {
+            "format": "uuid",
+            "title": "Incident Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "incident_id"
+        ],
+        "title": "GenerateStrategiesIn",
+        "type": "object"
       },
       "GraphNode": {
         "properties": {
@@ -1567,7 +1727,8 @@
                     "mapping": {
                       "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
                       "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
-                      "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                      "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent",
+                      "BACKUP_SUPPLIED": "#/components/schemas/BackupSuppliedEvent"
                     },
                     "propertyName": "kind"
                   },
@@ -1580,6 +1741,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/AssetRestoredEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/BackupSuppliedEvent"
                     }
                   ]
                 },
@@ -1756,6 +1920,98 @@
           "component_count"
         ],
         "title": "InfrastructureHealth",
+        "type": "object"
+      },
+      "InventoryIn": {
+        "additionalProperties": false,
+        "properties": {
+          "consumables": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "minProperties": 1,
+            "title": "Consumables",
+            "type": "object"
+          },
+          "reason": {
+            "maxLength": 300,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          },
+          "renewables": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "minProperties": 1,
+            "title": "Renewables",
+            "type": "object"
+          }
+        },
+        "required": [
+          "renewables",
+          "consumables",
+          "reason"
+        ],
+        "title": "InventoryIn",
+        "type": "object"
+      },
+      "InventoryOut": {
+        "properties": {
+          "consumables": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Consumables",
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "title": "Created By",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "renewables": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Renewables",
+            "type": "object"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "renewables",
+          "consumables",
+          "reason",
+          "created_by",
+          "created_at"
+        ],
+        "title": "InventoryOut",
         "type": "object"
       },
       "Liveness": {
@@ -2117,6 +2373,11 @@
       },
       "ReplayResult": {
         "properties": {
+          "engine_matches": {
+            "description": "False if the engine version changed since the original run (hashes then differ by construction even when results are identical)",
+            "title": "Engine Matches",
+            "type": "boolean"
+          },
           "hash_matches": {
             "title": "Hash Matches",
             "type": "boolean"
@@ -2145,7 +2406,8 @@
           "original_hash",
           "replay_hash",
           "hash_matches",
-          "snapshot_matches"
+          "snapshot_matches",
+          "engine_matches"
         ],
         "title": "ReplayResult",
         "type": "object"
@@ -2196,6 +2458,37 @@
         "title": "RequirementGroup",
         "type": "object"
       },
+      "RuleResult": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "findings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Findings",
+            "type": "array"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "boolean"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule",
+          "description",
+          "passed",
+          "findings"
+        ],
+        "title": "RuleResult",
+        "type": "object"
+      },
       "ScenarioOut": {
         "properties": {
           "content_hash": {
@@ -2216,7 +2509,8 @@
                 "mapping": {
                   "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
                   "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
-                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent",
+                  "BACKUP_SUPPLIED": "#/components/schemas/BackupSuppliedEvent"
                 },
                 "propertyName": "kind"
               },
@@ -2229,6 +2523,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AssetRestoredEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/BackupSuppliedEvent"
                 }
               ]
             },
@@ -2549,7 +2846,8 @@
                 "mapping": {
                   "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
                   "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
-                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent",
+                  "BACKUP_SUPPLIED": "#/components/schemas/BackupSuppliedEvent"
                 },
                 "propertyName": "kind"
               },
@@ -2562,6 +2860,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AssetRestoredEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/BackupSuppliedEvent"
                 }
               ]
             },
@@ -2727,7 +3028,8 @@
                     "mapping": {
                       "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
                       "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
-                      "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                      "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent",
+                      "BACKUP_SUPPLIED": "#/components/schemas/BackupSuppliedEvent"
                     },
                     "propertyName": "kind"
                   },
@@ -2740,6 +3042,9 @@
                     },
                     {
                       "$ref": "#/components/schemas/AssetRestoredEvent"
+                    },
+                    {
+                      "$ref": "#/components/schemas/BackupSuppliedEvent"
                     }
                   ]
                 },
@@ -2966,6 +3271,532 @@
         "title": "StatusDifference",
         "type": "object"
       },
+      "StrategyDetail": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/ActionOut"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "actions_count": {
+            "title": "Actions Count",
+            "type": "integer"
+          },
+          "benefits": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Benefits",
+            "type": "array"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expected_result_hash": {
+            "title": "Expected Result Hash",
+            "type": "string"
+          },
+          "horizon_minutes": {
+            "title": "Horizon Minutes",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "identical_to": {
+            "description": "other policies in this round with the same plan",
+            "items": {
+              "type": "string"
+            },
+            "title": "Identical To",
+            "type": "array"
+          },
+          "impact_hours": {
+            "title": "Impact Hours",
+            "type": "number"
+          },
+          "incident_id": {
+            "format": "uuid",
+            "title": "Incident Id",
+            "type": "string"
+          },
+          "inventory_version": {
+            "title": "Inventory Version",
+            "type": "integer"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "makespan_minutes": {
+            "title": "Makespan Minutes",
+            "type": "integer"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/StrategyMetrics"
+          },
+          "objective": {
+            "title": "Objective",
+            "type": "string"
+          },
+          "planning_round": {
+            "title": "Planning Round",
+            "type": "integer"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "rationale_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale Source"
+          },
+          "recommended": {
+            "title": "Recommended",
+            "type": "boolean"
+          },
+          "risk_components": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Risk Components",
+            "type": "object"
+          },
+          "risk_score": {
+            "title": "Risk Score",
+            "type": "number"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "time_to_90pct_operational_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To 90Pct Operational Minutes"
+          },
+          "time_to_critical_services_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To Critical Services Minutes"
+          },
+          "total_cost": {
+            "title": "Total Cost",
+            "type": "integer"
+          },
+          "unschedulable": {
+            "items": {
+              "$ref": "#/components/schemas/Unschedulable"
+            },
+            "title": "Unschedulable",
+            "type": "array"
+          },
+          "unschedulable_count": {
+            "title": "Unschedulable Count",
+            "type": "integer"
+          },
+          "validated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validated At"
+          },
+          "validation_report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidationReport"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "incident_id",
+          "planning_round",
+          "policy",
+          "status",
+          "recommended",
+          "objective",
+          "impact_hours",
+          "time_to_critical_services_minutes",
+          "time_to_90pct_operational_minutes",
+          "makespan_minutes",
+          "total_cost",
+          "risk_score",
+          "actions_count",
+          "unschedulable_count",
+          "content_hash",
+          "created_at",
+          "inventory_version",
+          "horizon_minutes",
+          "rationale",
+          "rationale_source",
+          "metrics",
+          "risk_components",
+          "benefits",
+          "limitations",
+          "unschedulable",
+          "expected_result_hash",
+          "validation_report",
+          "validated_at",
+          "actions",
+          "identical_to"
+        ],
+        "title": "StrategyDetail",
+        "type": "object"
+      },
+      "StrategyMetrics": {
+        "additionalProperties": false,
+        "properties": {
+          "affected_population_final": {
+            "title": "Affected Population Final",
+            "type": "integer"
+          },
+          "assets_restored": {
+            "title": "Assets Restored",
+            "type": "integer"
+          },
+          "backup_exhausted_before_restoration": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Backup Exhausted Before Restoration",
+            "type": "array"
+          },
+          "consumption": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Consumption",
+            "type": "object"
+          },
+          "crew_minutes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Crew Minutes",
+            "type": "object"
+          },
+          "final_impact_score": {
+            "title": "Final Impact Score",
+            "type": "number"
+          },
+          "impact_hours": {
+            "description": "integral of impact score over the horizon / 60",
+            "title": "Impact Hours",
+            "type": "number"
+          },
+          "makespan_minutes": {
+            "title": "Makespan Minutes",
+            "type": "integer"
+          },
+          "peak_impact_score": {
+            "title": "Peak Impact Score",
+            "type": "number"
+          },
+          "policy_loss": {
+            "description": "the policy's own weighted unserved service-hours",
+            "title": "Policy Loss",
+            "type": "number"
+          },
+          "remaining": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Remaining",
+            "type": "object"
+          },
+          "time_to_90pct_operational_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To 90Pct Operational Minutes"
+          },
+          "time_to_critical_services_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To Critical Services Minutes"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelinePoint"
+            },
+            "title": "Timeline",
+            "type": "array"
+          },
+          "total_cost": {
+            "title": "Total Cost",
+            "type": "integer"
+          },
+          "unrestored_assets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unrestored Assets",
+            "type": "array"
+          }
+        },
+        "required": [
+          "impact_hours",
+          "policy_loss",
+          "final_impact_score",
+          "peak_impact_score",
+          "makespan_minutes",
+          "time_to_critical_services_minutes",
+          "time_to_90pct_operational_minutes",
+          "assets_restored",
+          "unrestored_assets",
+          "affected_population_final",
+          "total_cost",
+          "crew_minutes",
+          "consumption",
+          "remaining",
+          "backup_exhausted_before_restoration",
+          "timeline"
+        ],
+        "title": "StrategyMetrics",
+        "type": "object"
+      },
+      "StrategyRound": {
+        "properties": {
+          "baseline_impact_hours": {
+            "description": "impact-hours with no recovery action",
+            "title": "Baseline Impact Hours",
+            "type": "number"
+          },
+          "baseline_timeline": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Baseline Timeline",
+            "type": "array"
+          },
+          "incident_id": {
+            "format": "uuid",
+            "title": "Incident Id",
+            "type": "string"
+          },
+          "planning_round": {
+            "title": "Planning Round",
+            "type": "integer"
+          },
+          "recommended_strategy_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended Strategy Id"
+          },
+          "strategies": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyDetail"
+            },
+            "title": "Strategies",
+            "type": "array"
+          }
+        },
+        "required": [
+          "incident_id",
+          "planning_round",
+          "recommended_strategy_id",
+          "baseline_impact_hours",
+          "baseline_timeline",
+          "strategies"
+        ],
+        "title": "StrategyRound",
+        "type": "object"
+      },
+      "StrategySummary": {
+        "properties": {
+          "actions_count": {
+            "title": "Actions Count",
+            "type": "integer"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "impact_hours": {
+            "title": "Impact Hours",
+            "type": "number"
+          },
+          "incident_id": {
+            "format": "uuid",
+            "title": "Incident Id",
+            "type": "string"
+          },
+          "makespan_minutes": {
+            "title": "Makespan Minutes",
+            "type": "integer"
+          },
+          "objective": {
+            "title": "Objective",
+            "type": "string"
+          },
+          "planning_round": {
+            "title": "Planning Round",
+            "type": "integer"
+          },
+          "policy": {
+            "title": "Policy",
+            "type": "string"
+          },
+          "recommended": {
+            "title": "Recommended",
+            "type": "boolean"
+          },
+          "risk_score": {
+            "title": "Risk Score",
+            "type": "number"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "synthetic": {
+            "const": true,
+            "default": true,
+            "title": "Synthetic",
+            "type": "boolean"
+          },
+          "time_to_90pct_operational_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To 90Pct Operational Minutes"
+          },
+          "time_to_critical_services_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To Critical Services Minutes"
+          },
+          "total_cost": {
+            "title": "Total Cost",
+            "type": "integer"
+          },
+          "unschedulable_count": {
+            "title": "Unschedulable Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "incident_id",
+          "planning_round",
+          "policy",
+          "status",
+          "recommended",
+          "objective",
+          "impact_hours",
+          "time_to_critical_services_minutes",
+          "time_to_90pct_operational_minutes",
+          "makespan_minutes",
+          "total_cost",
+          "risk_score",
+          "actions_count",
+          "unschedulable_count",
+          "content_hash",
+          "created_at"
+        ],
+        "title": "StrategySummary",
+        "type": "object"
+      },
       "StructuredIncidentCreate": {
         "additionalProperties": false,
         "properties": {
@@ -2987,7 +3818,8 @@
                 "mapping": {
                   "AREA_FLOOD": "#/components/schemas/AreaFloodEvent",
                   "ASSET_FAILURE": "#/components/schemas/AssetFailureEvent",
-                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent"
+                  "ASSET_RESTORED": "#/components/schemas/AssetRestoredEvent",
+                  "BACKUP_SUPPLIED": "#/components/schemas/BackupSuppliedEvent"
                 },
                 "propertyName": "kind"
               },
@@ -3000,6 +3832,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AssetRestoredEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/BackupSuppliedEvent"
                 }
               ]
             },
@@ -3223,6 +4058,41 @@
         "title": "TraversalResult",
         "type": "object"
       },
+      "Unschedulable": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_code": {
+            "title": "Asset Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "INSUFFICIENT_RESOURCES",
+              "NO_ACCESS",
+              "BEYOND_HORIZON",
+              "NO_BENEFIT"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "asset_code",
+          "reason",
+          "detail"
+        ],
+        "title": "Unschedulable",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -3261,6 +4131,42 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "ValidationReport": {
+        "properties": {
+          "engine_version": {
+            "title": "Engine Version",
+            "type": "string"
+          },
+          "inventory_version": {
+            "title": "Inventory Version",
+            "type": "integer"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "boolean"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RuleResult"
+            },
+            "title": "Rules",
+            "type": "array"
+          },
+          "snapshot_hash": {
+            "title": "Snapshot Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "passed",
+          "rules",
+          "engine_version",
+          "snapshot_hash",
+          "inventory_version"
+        ],
+        "title": "ValidationReport",
         "type": "object"
       },
       "WorkflowOut": {
@@ -4340,6 +5246,67 @@
         ]
       }
     },
+    "/api/v1/inventory": {
+      "get": {
+        "operationId": "get_inventory_api_v1_inventory_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Inventory",
+        "tags": [
+          "recovery"
+        ]
+      },
+      "post": {
+        "description": "Record a new inventory version (existing strategies keep referencing their version).",
+        "operationId": "update_inventory_api_v1_inventory_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Inventory",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
     "/api/v1/operational-picture": {
       "get": {
         "operationId": "get_picture_api_v1_operational_picture_get",
@@ -4443,6 +5410,248 @@
         "summary": "Reset Picture",
         "tags": [
           "operational picture"
+        ]
+      }
+    },
+    "/api/v1/recovery/strategies": {
+      "get": {
+        "operationId": "list_strategies_api_v1_recovery_strategies_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "incident_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Incident Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Z_]+$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StrategySummary"
+                  },
+                  "title": "Response List Strategies Api V1 Recovery Strategies Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Strategies",
+        "tags": [
+          "recovery"
+        ]
+      },
+      "post": {
+        "description": "Plan three strategies (new planning round) and validate them with GUARDIAN's rules.\nNormally invoked by the agent workflow (STRATEGIST + GUARDIAN).",
+        "operationId": "generate_strategies_api_v1_recovery_strategies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateStrategiesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyRound"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Strategies",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
+    "/api/v1/recovery/strategies/compare": {
+      "get": {
+        "description": "The latest planning round for an incident, with the no-action baseline for comparison.",
+        "operationId": "compare_strategies_api_v1_recovery_strategies_compare_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "incident_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Incident Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyRound"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare Strategies",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
+    "/api/v1/recovery/strategies/{strategy_id}": {
+      "get": {
+        "operationId": "get_strategy_api_v1_recovery_strategies__strategy_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "strategy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Strategy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategyDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Strategy",
+        "tags": [
+          "recovery"
+        ]
+      }
+    },
+    "/api/v1/recovery/strategies/{strategy_id}/validate": {
+      "post": {
+        "description": "Run GUARDIAN's deterministic rules (V-001..V-009) against the stored strategy.",
+        "operationId": "validate_strategy_api_v1_recovery_strategies__strategy_id__validate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "strategy_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Strategy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Strategy",
+        "tags": [
+          "recovery"
         ]
       }
     },

@@ -15,7 +15,8 @@ AFTERMATH is an infrastructure resilience and disaster-recovery decision-support
 | 1 | Infrastructure digital twin | ✅ complete ([report](docs/reports/PHASE_1_REPORT.md)) |
 | 2 | Deterministic simulation engine | ✅ complete ([report](docs/reports/PHASE_2_REPORT.md)) |
 | 3 | Multi-agent system | ✅ complete ([report](docs/reports/PHASE_3_REPORT.md)) |
-| 4 | Recovery optimisation | next |
+| 4 | Recovery optimisation | ✅ complete ([report](docs/reports/PHASE_4_REPORT.md)) |
+| 5 | Governance & execution | next |
 
 ## Quick start (Windows / PowerShell, hybrid dev mode)
 
@@ -32,7 +33,7 @@ docker compose up -d db                # PostgreSQL 16 (localhost only)
 cd backend
 uv sync                                # Python 3.13 venv + dependencies
 uv run python -m alembic upgrade head  # create the schema
-uv run python -m app.cli seed          # load the synthetic district + scenarios (idempotent)
+uv run python -m app.cli seed          # load the synthetic district, scenarios and inventory (idempotent)
 uv run python -m uvicorn app.main:app --port 8000   # API: http://localhost:8000/api/v1/docs
 
 cd ..\frontend
@@ -78,7 +79,7 @@ pnpm test:e2e                          # Playwright via installed Microsoft Edge
 
 ```
 backend/    FastAPI app (app/graph = pure domain core), Alembic migrations, tests
-frontend/   Next.js app (Twin, Command Center, Audit; other screens arrive with their phases)
+frontend/   Next.js app (Command Center, Twin, Simulation Lab, Agent Activity, Recovery Command, Audit)
 data/       Synthetic dataset, scenario definitions, generated JSON Schemas
 docs/       Product, architecture, ADRs, reports
 scripts/    Database init scripts

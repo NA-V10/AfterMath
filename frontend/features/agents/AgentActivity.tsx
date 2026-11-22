@@ -184,7 +184,7 @@ export function AgentActivity() {
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-px bg-line lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col gap-px overflow-y-auto bg-line">
-          <Panel title="Report an incident" className="border-0">
+          <Panel title="Report an incident" className="shrink-0 border-0">
             <IncidentIntake
               onStarted={(i, r) => {
                 setIncidentId(i);
@@ -232,8 +232,8 @@ export function AgentActivity() {
           ) : (
             <p className="mx-auto max-w-lg p-8 text-center text-muted">
               Report an incident to watch SENTINEL assess it, CARTOGRAPHER trace its dependencies
-              and ORACLE simulate the cascade. Recovery planning (STRATEGIST, GUARDIAN) arrives in
-              Phase 4.
+              and ORACLE simulate the cascade, then STRATEGIST plan recovery strategies and
+              GUARDIAN validate them for human approval.
             </p>
           )}
         </div>

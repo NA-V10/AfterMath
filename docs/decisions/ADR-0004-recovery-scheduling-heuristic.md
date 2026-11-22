@@ -15,3 +15,6 @@ Use a serial SGS driven by dynamic, policy-specific priority rules with bundle v
 
 ## Alternatives considered
 MILP/CP-SAT now (heavier dependency, less explainable); pure greedy without bundles (misses value of upstream repairs); LLM-generated plans (not trustworthy, not reproducible).
+
+## Outcome (Phase 4, 2026-11-22)
+Implemented as decided. Brute-force benchmark ([RECOVERY_BENCHMARK.md](../reports/RECOVERY_BENCHMARK.md)): 0% gap on 10 of 12 scenario-policy pairs; worst 5.6% (BALANCED, severe storm). Median gap 0%, below the 10% CP-SAT trigger, so no solver dependency is proposed. V-010..V-012 apply at execution time and are implemented in Phase 5.

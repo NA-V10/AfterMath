@@ -302,3 +302,48 @@ export function useClarify(runId: string) {
     onSuccess: () => void client.invalidateQueries({ queryKey: ["workflows", "detail", runId] }),
   });
 }
+
+// ------------------------------------------------------------------ Phase 4: recovery
+export type StrategyDetail = Schemas["StrategyDetail"];
+export type StrategyRound = Schemas["StrategyRound"];
+
+export function useInventory() {
+  return useQuery({ queryKey: ["inventory"], queryFn: () => unwrap(api.GET("/api/v1/inventory")) });
+}
+
+export function useStrategyRound(incidentId: string | null) {
+  return useQuery({
+    queryKey: ["recovery", "round", incidentId],
+    queryFn: () =>
+      unwrap(
+        api.GET("/api/v1/recovery/strategies/compare", { params: { query: { incident_id: incidentId! } } }),
+      ),
+    enabled: incidentId !== null,
+    retry: false, // 404 simply means "not planned yet"
+  });
+}
+
+export function useGenerateStrategies() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (incidentId: string) =>
+      unwrap(api.POST("/api/v1/recovery/strategies", { body: { incident_id: incidentId } })),
+    onSuccess: (round) => {
+      client.setQueryData(["recovery", "round", round.incident_id], round);
+      void client.invalidateQueries({ queryKey: ["incidents"] });
+    },
+  });
+}
+
+export function useValidateStrategy(incidentId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (strategyId: string) =>
+      unwrap(
+        api.POST("/api/v1/recovery/strategies/{strategy_id}/validate", {
+          params: { path: { strategy_id: strategyId } },
+        }),
+      ),
+    onSettled: () => void client.invalidateQueries({ queryKey: ["recovery", "round", incidentId] }),
+  });
+}
